@@ -271,7 +271,7 @@
         dom_element: dom_element,
         model: null,                                      // Scene graph root. Created in rendering module.
         model_data: null,                                 // Descriptions of all models. Created in loading module.
-        mouse: BrainBrowser.utils.captureMouse(dom_element),
+        mouse: BrainBrowser.utils.captureMouse(dom_element, 'surface-viewer'),
         touches: BrainBrowser.utils.captureTouch(dom_element),
         updated: true,
         zoom: 1,

@@ -493,7 +493,7 @@
 
     if (panel.canvas && BrainBrowser.utils.isFunction(panel.canvas.getContext)) {
       panel.context = panel.canvas.getContext("2d");
-      panel.mouse = BrainBrowser.utils.captureMouse(panel.canvas);
+      panel.mouse = BrainBrowser.utils.captureMouse(panel.canvas, 'volume-viewer');
       panel.touches = BrainBrowser.utils.captureTouch(panel.canvas);
     }
 
