@@ -224,13 +224,13 @@
     * BrainBrowser.utils.getOffset(dom_element);
     * ```
     */
-    getOffset: function(element) {
+    getOffset: function(element, view) {
       var top = 0;
       var left = 0;
       
       var scrollTop = 0;
       var scrollParent = BrainBrowser.utils.getScrollParent(element);
-      while(scrollParent && !scrollParent.isSameNode($("html")[0])) {
+      while(scrollParent && !scrollParent.isSameNode($("html")[0]) && view === 'volume-viewer') {
         scrollTop += scrollParent.scrollTop;        
         scrollParent = BrainBrowser.utils.getScrollParent(scrollParent.parentNode);
       }
@@ -268,11 +268,11 @@
     * BrainBrowser.utils.captureMouse(dom_element);
     * ```
     */
-    captureMouse: function(element) {
+    captureMouse: function(element, view) {
       var mouse = { x: 0, y: 0, left: false, middle: false, right: false};
 
       document.addEventListener("mousemove", function(event) {
-        var offset = BrainBrowser.utils.getOffset(element);
+        var offset = BrainBrowser.utils.getOffset(element, view);
         var x, y;
         if (event.pageX !== undefined) {
           x = event.pageX;
