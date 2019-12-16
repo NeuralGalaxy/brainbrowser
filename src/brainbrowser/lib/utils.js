@@ -230,7 +230,7 @@
       
       var scrollTop = 0;
       var scrollParent = BrainBrowser.utils.getScrollParent(element);
-      while(scrollParent && !scrollParent.isSameNode($("html")[0]) && view === 'volume-viewer') {
+      while(scrollParent && !scrollParent.isSameNode($("html")[0])) {
         scrollTop += scrollParent.scrollTop;        
         scrollParent = BrainBrowser.utils.getScrollParent(scrollParent.parentNode);
       }
