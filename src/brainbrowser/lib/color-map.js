@@ -349,8 +349,8 @@
 
         context.fillStyle = "#FFA000";
 
-        const paddingWidth = 55;
-        const subpaddingWidth = 27;
+        const paddingWidth = 0.5;
+        const subpaddingWidth = -20;
         // Min mark
         context.fillRect(paddingWidth, 20, 1, 10);
         context.fillText(-2.96, paddingWidth, 40);
@@ -370,7 +370,7 @@
 
         // Max mark
         context.fillRect(canvas.width - paddingWidth, 20, 1, 10);
-        context.fillText(2.96, canvas.width - paddingWidth , 40);
+        context.fillText(2.96, canvas.width - paddingWidth - 19.5 , 40);
 
         return canvas;
       }
