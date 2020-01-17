@@ -228,7 +228,6 @@
 
       getSliceImage: function(slice, zoom, contrast, brightness, clamp) {
         zoom = zoom || 1;
-        console.log('work in getsliceimage', clamp);
 
         var color_map = volume.color_map;
         var error_message;
