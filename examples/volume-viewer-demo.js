@@ -447,9 +447,22 @@ $(function() {
       var color_map_select = $('<select id="color-map-select"></select>').change(function() {
         var selection = $(this).find(":selected");
 
-        viewer.loadVolumeColorMapFromURL(vol_id, selection.val(), selection.data("cursor-color"), function() {
-          viewer.redrawVolumes();
-        });
+        viewer.setVolumeColorMap(vol_id, BrainBrowser.createColorMap(
+          '0 0 1 1 1\n' +
+          '15 0 1 1 1\n' +
+          '30 0 0 0.8 1\n' +
+          '40 0 0 0 1\n' +
+          '50 0 0 0 1\n' +
+          '60 1 0 0 1\n' +
+          '75 1 1 0 1\n' +
+          '90 1 1 0 1\n',
+          {scale: 255}
+        ));
+        viewer.redrawVolumes();
+
+        // viewer.loadVolumeColorMapFromURL(vol_id, selection.val(), selection.data("cursor-color"), function() {
+        //   viewer.redrawVolumes();
+        // });
       });
 
       BrainBrowser.config.get("color_maps").forEach(function(color_map) {
