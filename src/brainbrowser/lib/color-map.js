@@ -28,6 +28,52 @@
 (function() {
   "use strict";
 
+  const isHereHasColor = function (color_map_colors, colorIdx) {
+    if (colorIdx === undefined) {
+      return false;
+    }
+    const realLoc = colorIdx * 4;
+    return (color_map_colors[realLoc] !== undefined
+      && color_map_colors[realLoc + 1] !== undefined
+      && color_map_colors[realLoc + 2] !== undefined
+      && color_map_colors[realLoc + 3] !== undefined);
+  };
+
+  const fillBlankColors = function (color_map_colors, leftIdx, rightIdx) {
+    if (!isHereHasColor(color_map_colors, leftIdx) && !isHereHasColor(color_map_colors, rightIdx)) {
+      return;
+    }
+
+    if (leftIdx === undefined) {
+      leftIdx = 0;
+    }
+    if (rightIdx === undefined) {
+      rightIdx = color_map_colors.length / 4;
+    }
+
+    let headerColorArr;
+    let tailColorArr;
+    if (isHereHasColor(color_map_colors, leftIdx)) {
+      headerColorArr = color_map_colors.slice(leftIdx * 4, leftIdx * 4 + 4);
+    } else {
+      headerColorArr = color_map_colors.slice(rightIdx * 4, rightIdx * 4 + 4);
+    }
+    if (isHereHasColor(color_map_colors, rightIdx)) {
+      tailColorArr = color_map_colors.slice(rightIdx * 4, rightIdx * 4 + 4);
+    } else {
+      tailColorArr = color_map_colors.slice(leftIdx * 4, leftIdx * 4 + 4);
+    }
+
+    for (let i = leftIdx + 1; i < rightIdx; i++) {
+      const leftLen = i - leftIdx;
+      const rightLen = rightIdx - i;
+      const totalLen = rightIdx - leftIdx;
+      color_map_colors[i * 4] = (headerColorArr[0] * rightLen + tailColorArr[0] * leftLen) / totalLen;
+      color_map_colors[i * 4 + 1] = (headerColorArr[1] * rightLen + tailColorArr[1] * leftLen) / totalLen;
+      color_map_colors[i * 4 + 2] = (headerColorArr[2] * rightLen + tailColorArr[2] * leftLen) / totalLen;
+      color_map_colors[i * 4 + 3] = (headerColorArr[3] * rightLen + tailColorArr[3] * leftLen) / totalLen;
+    }
+  };
   /**
   * @doc function
   * @name BrainBrowser.static methods:createColorMap
@@ -97,6 +143,21 @@
 
         ic += 4;
       }
+
+      var leftIdx = undefined;
+      var preHasColor = false;
+      // fix a bug that value indicator not work
+      for (i = 0; i < color_map_colors.length / 4; i++) {
+        const hereHasColor = isHereHasColor(color_map_colors, i);
+        if (!preHasColor && hereHasColor) {
+          fillBlankColors(color_map_colors, leftIdx, i);
+        }
+        if (hereHasColor) {
+          leftIdx = i;
+        }
+        preHasColor = hereHasColor;
+      }
+      fillBlankColors(color_map_colors, leftIdx, color_map_colors.length / 4);
     }
 
     /**
