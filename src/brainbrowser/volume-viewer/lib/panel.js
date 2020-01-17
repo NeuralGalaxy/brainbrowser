@@ -192,6 +192,7 @@
         y: 0
       },
       zoom: 1,
+      clamp: false,
       contrast: 1,
       brightness: 0,
       updated: true,

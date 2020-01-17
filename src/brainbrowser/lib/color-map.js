@@ -325,6 +325,54 @@
         context.fillText(max.toPrecision(3), canvas.width - 20, 40);
 
         return canvas;
+      },
+      /**
+      * @doc special function
+      * @name color_map.color_map:createTaskElement
+      * @param {number} min Min value of the color data.
+      * @param {number} max Max value of the color data.
+      *
+      * @description
+      * Create an element representing the color map.
+      * ```js
+      * color_map.createTaskElement(0.0, 7.0);
+      * ```
+      */
+      createTaskElement: function(min, max, width) {
+        var canvas;
+        var context;
+        var colors = color_map.colors;
+        var range = max - min;
+
+        canvas  = createCanvas(colors, 20, 40, width,flip);
+        context = canvas.getContext("2d");
+
+        context.fillStyle = "#FFA000";
+
+        const paddingWidth = 55;
+        const subpaddingWidth = 27;
+        // Min mark
+        context.fillRect(paddingWidth, 20, 1, 10);
+        context.fillText(-2.96, paddingWidth, 40);
+
+        // Quarter mark
+        context.fillRect(canvas.width / 4 + subpaddingWidth, 20, 1, 10);
+        context.fillText(-1.96, 0.25 * canvas.width + subpaddingWidth, 40);
+
+        // Middle mark
+        context.fillRect(canvas.width / 2, 20, 1, 10);
+        context.fillText(0, 0.5 * canvas.width, 40);
+
+        // Three-quarter mark
+        context.fillRect(3 * canvas.width / 4 - subpaddingWidth, 20, 1, 10);
+        context.fillText(1.96, 0.75 * canvas.width - subpaddingWidth, 40);
+
+
+        // Max mark
+        context.fillRect(canvas.width - paddingWidth, 20, 1, 10);
+        context.fillText(2.96, canvas.width - paddingWidth , 40);
+
+        return canvas;
       }
     };
 
@@ -334,7 +382,9 @@
 
       if ((value < min || value > max) && !clamp) {
         return -1;
-      } else {
+      }
+      else {
+        
         color_map_index = Math.floor(Math.max(0, Math.min((value - min) * increment, color_map_length - 1)));
         if (flip) {
           color_map_index = color_map_length - 1 - color_map_index;

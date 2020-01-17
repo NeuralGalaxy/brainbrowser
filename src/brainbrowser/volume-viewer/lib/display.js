@@ -89,6 +89,23 @@
 
       /**
       * @doc function
+      * @name display.display:setClamp
+      * @param {boolean} clamp The contrast value.
+      * @description
+      * Set clamp for all panels in the display.
+      * ```js
+      * display.setClamp(true);
+      * ```
+      */
+      setClamp: function (clamp) {
+        console.log('here is clamp', clamp);
+        display.forEach(function (panel) {
+          panel.clamp = clamp;
+        });
+      },
+
+      /**
+      * @doc function
       * @name display.display:setContrast
       * @param {number} contrast The contrast value.
       * @description
