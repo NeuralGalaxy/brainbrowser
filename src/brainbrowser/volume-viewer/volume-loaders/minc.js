@@ -226,7 +226,7 @@
         ];
       },
 
-      getSliceImage: function(slice, zoom, contrast, brightness) {
+      getSliceImage: function(slice, zoom, contrast, brightness, clamp) {
         zoom = zoom || 1;
 
         var color_map = volume.color_map;
@@ -253,6 +253,7 @@
           color_map.mapColors(slice.data, {
             min: volume.intensity_min,
             max: volume.intensity_max,
+            clamp: clamp,
             contrast: contrast,
             brightness: brightness,
             destination: source_image.data
