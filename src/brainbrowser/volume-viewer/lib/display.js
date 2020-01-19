@@ -98,7 +98,6 @@
       * ```
       */
       setClamp: function (clamp) {
-        console.log('here is clamp', clamp);
         display.forEach(function (panel) {
           panel.clamp = clamp;
         });
