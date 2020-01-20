@@ -338,39 +338,39 @@
       * color_map.createTaskElement(0.0, 7.0);
       * ```
       */
-      createTaskElement: function(min, max, width) {
+      createTaskElement: function(min, max, width, spectrumRange) {
         var canvas;
         var context;
         var colors = color_map.colors;
         var range = max - min;
-
+        
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#FFA000";
 
         const paddingWidth = 0.5;
-        const subpaddingWidth = -20;
+        const subpaddingWidth = 0.5 * canvas.width * (spectrumRange.min_value/spectrumRange.max_value);
         // Min mark
         context.fillRect(paddingWidth, 20, 1, 10);
-        context.fillText(-2.96, paddingWidth, 40);
+        context.fillText(-(spectrumRange.max_value), paddingWidth, 40);
 
         // Quarter mark
-        context.fillRect(canvas.width / 4 + subpaddingWidth, 20, 1, 10);
-        context.fillText(-1.96, 0.25 * canvas.width + subpaddingWidth, 40);
+        context.fillRect(canvas.width / 2 + subpaddingWidth, 20, 1, 10);
+        context.fillText(-(spectrumRange.min_value), 0.5 * canvas.width - subpaddingWidth, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
         context.fillText(0, 0.5 * canvas.width, 40);
 
         // Three-quarter mark
-        context.fillRect(3 * canvas.width / 4 - subpaddingWidth, 20, 1, 10);
-        context.fillText(1.96, 0.75 * canvas.width - subpaddingWidth, 40);
+        context.fillRect(canvas.width / 2 - subpaddingWidth, 20, 1, 10);
+        context.fillText(spectrumRange.min_value, 0.5 * canvas.width + subpaddingWidth, 40);
 
 
         // Max mark
         context.fillRect(canvas.width - paddingWidth, 20, 1, 10);
-        context.fillText(2.96, canvas.width - paddingWidth - 19.5 , 40);
+        context.fillText(spectrumRange.max_value, canvas.width - paddingWidth - 19.5 , 40);
 
         return canvas;
       }
