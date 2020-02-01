@@ -328,21 +328,20 @@
       },
       /**
       * @doc special function
-      * @name color_map.color_map:createTaskElement
+      * @name color_map.color_map:createSymmPosNegElement
       * @param {number} min Min value of the color data.
       * @param {number} max Max value of the color data.
       *
       * @description
       * Create an element representing the color map.
       * ```js
-      * color_map.createTaskElement(0.0, 7.0);
+      * color_map.createSymmPosNegElement(0.0, 7.0);
       * ```
       */
-      createTaskElement: function(min, max, width, spectrumRange) {
+     createSymmPosNegElement: function(width, spectrumRange) {
         var canvas;
         var context;
         var colors = color_map.colors;
-        var range = max - min;
         
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
