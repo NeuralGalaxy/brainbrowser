@@ -338,7 +338,7 @@
       * color_map.createSymmPosNegElement(0.0, 7.0);
       * ```
       */
-     createSymmPosNegElement: function(width, spectrumRange) {
+     createSymmPosNegElement: function(spectrumRange, width) {
         var canvas;
         var context;
         var colors = color_map.colors;
