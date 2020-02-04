@@ -428,6 +428,12 @@
         context.fillRect(i + margin, 0, 1, color_height);
       }
 
+      canvas.addEventListener('click', function(event) {
+         var color_map_index = parseInt((event.layerX) / 216 * color_map.colors.length / 4) * 4;
+         var color = Array.prototype.slice.call(color_map.colors, color_map_index, color_map_index + 4);
+         console.log(color, 'cilck color');
+      });
+
       return canvas;
     }
 
