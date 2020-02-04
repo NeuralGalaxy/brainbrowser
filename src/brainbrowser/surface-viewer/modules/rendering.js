@@ -27,7 +27,7 @@
 * Author: Natacha Beck <natabeck@gmail.com>
 */
 
-BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
+BrainBrowser.SurfaceViewer.modules.rendering = function(viewer, controlView) {
   "use strict";
 
   var THREE = BrainBrowser.SurfaceViewer.THREE;
@@ -980,143 +980,162 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   // CONTROLS
   ////////////////////////////////
 
-  (function() {
-    var model = viewer.model;
-    var movement = "rotate";
-    var last_x = null;
-    var last_y = null;
-    var last_touch_distance = null;
-
-    function drag(pointer, multiplier) {
-      var inverse = new THREE.Matrix4();
-      var x       = pointer.x;
-      var y       = pointer.y;
-      var dx, dy;
-
-
-      if (last_x !== null) {
-        dx = x - last_x;
-        dy = y - last_y;
-
-        if (movement === "rotate") {
-
-          // Want to always be rotating around world axes.
-          inverse.getInverse(model.matrix);
-          var axis = new THREE.Vector3(1, 0, 0).applyMatrix4(inverse).normalize();
-          model.rotateOnAxis(axis, dy / 150);
-
-          inverse.getInverse(model.matrix);
-          axis = new THREE.Vector3(0, 1, 0).applyMatrix4(inverse).normalize();
-          model.rotateOnAxis(axis, dx / 150);
-
-          if (viewer.model_data.related_models !== undefined ) {
-            viewer.model_data.related_models.forEach(function(child){
-              child.rotation.x = model.rotation.x;
-              child.rotation.y = model.rotation.y;
-              child.rotation.z = model.rotation.z;
-            });
-          }
-        } else {
-          multiplier  = multiplier || 1.0;
-          multiplier *= camera.position.z / default_camera_distance;
-
-          camera.position.x -= dx * multiplier * 0.25;
-          light.position.x  -= dx * multiplier * 0.25;
-          camera.position.y += dy * multiplier * 0.25;
-          light.position.y  += dy * multiplier * 0.25;
-        }
-      }
-
-      last_x = x;
-      last_y = y;
-
-      viewer.updated = true;
-    }
-
-    function touchZoom() {
-      var dx = viewer.touches[0].x - viewer.touches[1].x;
-      var dy = viewer.touches[0].y - viewer.touches[1].y;
-
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      var delta;
-
-      if (last_touch_distance !== null) {
-        delta = distance - last_touch_distance;
-
-        viewer.zoom *= 1.0 + 0.01 * delta;
-      }
-
-      last_touch_distance = distance;
-    }
-
-    function mouseDrag(event) {
-      event.preventDefault();
-      drag(viewer.mouse, 1.1);
-    }
-
-    function touchDrag(event) {
-      event.preventDefault();
-      if (movement === "zoom") {
-        touchZoom();
-      } else {
-        drag(viewer.touches[0], 2);
-      }
-    }
-
-    function mouseDragEnd() {
-      document.removeEventListener("mousemove", mouseDrag, false);
-      document.removeEventListener("mouseup", mouseDragEnd, false);
-      last_x = null;
-      last_y = null;
-    }
-
-    function touchDragEnd() {
-      document.removeEventListener("touchmove", touchDrag, false);
-      document.removeEventListener("touchend", touchDragEnd, false);
-      last_x = null;
-      last_y = null;
-      last_touch_distance = null;
-    }
-
-    function wheelHandler(event) {
-      if (event.ctrlKey) {
-        var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-
-        event.preventDefault();
-
-        viewer.zoom *= 1.0 + 0.02 * delta;
-        if (viewer.zoomCallBack) {
-          viewer.zoomCallBack(viewer.zoom);
-        }
-      }
-    }
-
-    canvas.addEventListener("mousedown", function(event) {
-      document.addEventListener("mousemove", mouseDrag, false);
-      document.addEventListener("mouseup", mouseDragEnd, false);
-
-      movement = event.which === 1 ? "rotate" : "translate" ;
-    }, false);
-
-    canvas.addEventListener("touchstart", function(event) {
-      document.addEventListener("touchmove", touchDrag, false);
-      document.addEventListener("touchend", touchDragEnd, false);
-
-      movement = event.touches.length === 1 ? "rotate" :
-                 event.touches.length === 2 ? "zoom" :
-                 "translate";
-    }, false);
-
-    canvas.addEventListener("mousewheel", wheelHandler, false);
-    // https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
-    canvas.addEventListener("wheel", wheelHandler, false);
-    canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
-
-    canvas.addEventListener( 'contextmenu', function(event) {
-      event.preventDefault();
-    }, false);
+  // (function() {
+  
     
-  })();
+  // })();
+
+  var model = viewer.model;
+  viewer.movement = "rotate";
+  viewer.last_x = null;
+  viewer.last_y = null;
+  viewer.last_touch_distance = null;
+
+  viewer.drag = function (pointer, multiplier) {
+    var inverse = new THREE.Matrix4();
+    var x       = pointer.x;
+    var y       = pointer.y;
+    var dx, dy;
+
+    if (viewer.last_x !== null) {
+      dx = x - viewer.last_x;
+      dy = y - viewer.last_y;
+
+      if (viewer.movement === "rotate") {
+
+        // Want to always be rotating around world axes.
+        inverse.getInverse(model.matrix);
+        var axis = new THREE.Vector3(1, 0, 0).applyMatrix4(inverse).normalize();
+        model.rotateOnAxis(axis, dy / 150);
+
+        inverse.getInverse(model.matrix);
+        axis = new THREE.Vector3(0, 1, 0).applyMatrix4(inverse).normalize();
+        model.rotateOnAxis(axis, dx / 150);
+
+        if (viewer.model_data.related_models !== undefined ) {
+          viewer.model_data.related_models.forEach(function(child){
+            child.rotation.x = model.rotation.x;
+            child.rotation.y = model.rotation.y;
+            child.rotation.z = model.rotation.z;
+          });
+        }
+      } else {
+        multiplier  = multiplier || 1.0;
+        multiplier *= camera.position.z / default_camera_distance;
+
+        camera.position.x -= dx * multiplier * 0.25;
+        light.position.x  -= dx * multiplier * 0.25;
+        camera.position.y += dy * multiplier * 0.25;
+        light.position.y  += dy * multiplier * 0.25;
+      }
+    }
+
+    viewer.last_x = x;
+    viewer.last_y = y;
+    viewer.updated = true;
+  };
+
+  viewer.touchZoom = function () {
+    var dx = viewer.touches[0].x - viewer.touches[1].x;
+    var dy = viewer.touches[0].y - viewer.touches[1].y;
+
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    var delta;
+
+    if (viewer.last_touch_distance !== null) {
+      delta = distance - viewer.last_touch_distance;
+
+      viewer.zoom *= 1.0 + 0.01 * delta;
+    }
+
+    viewer.last_touch_distance = distance;
+  };
+
+  viewer.mouseDrag = function (event) {
+    event.preventDefault();
+    viewer.drag(viewer.mouse, 1.1);
+    viewer.controlView[0].drag(viewer.mouse, 1.1);
+  };
+
+  viewer.touchDrag = function (event) {
+    event.preventDefault();
+    if (viewer.movement === "zoom") {
+      viewer.touchZoom();
+    } else {
+      viewer.drag(viewer.touches[0], 2);
+    }
+  };
+
+  viewer.mouseDragEnd = function () {
+    document.removeEventListener("mousemove", viewer.mouseDrag, false);
+    document.removeEventListener("mouseup", viewer.mouseDragEnd, false);
+    viewer.last_x = null;
+    viewer.last_y = null;
+    if (viewer.controlView && viewer.controlView[0]) {
+      viewer.controlView[0].last_x = null;
+      viewer.controlView[0].last_y = null;
+    }
+  };
+
+  function wheelHandler(event) {
+    if (event.ctrlKey) {
+      var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+
+      event.preventDefault();
+
+      viewer.zoom *= 1.0 + 0.02 * delta;
+      if (viewer.zoomCallBack) {
+        viewer.zoomCallBack(viewer.zoom);
+      }
+    }
+  }
+
+  viewer.touchDragEnd = function () {
+    document.removeEventListener("touchmove", viewer.touchDrag, false);
+    document.removeEventListener("touchend", viewer.touchDragEnd, false);
+    viewer.last_x = null;
+    viewer.last_y = null;
+    viewer.last_touch_distance = null;
+    if (viewer.controlView && viewer.controlView[0]) {
+      viewer.controlView[0].last_x = null;
+      viewer.controlView[0].last_y = null;
+      viewer.controlView[0].last_touch_distance = null;
+    }
+  };
+
+  viewer.wheelHandler = function (event) {
+    if (event.ctrlKey) {
+      var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+
+      event.preventDefault();
+
+      viewer.zoom *= 1.0 + 0.02 * delta;
+    }
+  };
+
+  canvas.addEventListener("mousedown", function(event) {
+    document.addEventListener("mousemove", viewer.mouseDrag, false);
+    document.addEventListener("mouseup",viewer.mouseDragEnd, false);
+    
+    viewer.movement = event.which === 1 ? "rotate" : "translate" ;
+  }, false);
+
+  canvas.addEventListener("touchstart", function(event) {
+    document.addEventListener("touchmove", viewer.touchDrag, false);
+    document.addEventListener("touchend", viewer.touchDragEnd, false);
+    viewer.movement = event.touches.length === 1 ? "rotate" :
+               event.touches.length === 2 ? "zoom" :
+               "translate";
+  }, false);
+
+  canvas.addEventListener("mousewheel", viewer.wheelHandler, false);
+  // https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
+  canvas.addEventListener("wheel", viewer.wheelHandler, false);
+  canvas.addEventListener("DOMMouseScroll", viewer.wheelHandler, false); // Dammit Firefox
+
+  canvas.addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+  }, false);
 
 };
 
