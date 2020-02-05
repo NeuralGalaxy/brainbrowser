@@ -1061,8 +1061,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer, controlView) {
     event.preventDefault();
     if (viewer.movement === "zoom") {
       viewer.touchZoom();
+      if (viewer.controlView && viewer.controlView[0]) {
+        viewer.controlView[0].touchZoom();
+      }
     } else {
       viewer.drag(viewer.touches[0], 2);
+      if (viewer.controlView && viewer.controlView[0]) {
+        viewer.controlView[0].drag(viewer.touches[0], 2);
+      }
     }
   };
 
@@ -1110,22 +1116,32 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer, controlView) {
       event.preventDefault();
 
       viewer.zoom *= 1.0 + 0.02 * delta;
+      if (viewer.controlView && viewer.controlView[0]) {
+        viewer.controlView[0].zoom *= 1.0 + 0.02 * delta;
+      }
     }
   };
 
   canvas.addEventListener("mousedown", function(event) {
     document.addEventListener("mousemove", viewer.mouseDrag, false);
     document.addEventListener("mouseup",viewer.mouseDragEnd, false);
-    
-    viewer.movement = event.which === 1 ? "rotate" : "translate" ;
+    var movement = event.which === 1 ? "rotate" : "translate" ;
+    viewer.movement = movement;
+    if (viewer.controlView && viewer.controlView[0]) {
+      viewer.controlView[0].movement = movement;
+    }
   }, false);
 
   canvas.addEventListener("touchstart", function(event) {
     document.addEventListener("touchmove", viewer.touchDrag, false);
     document.addEventListener("touchend", viewer.touchDragEnd, false);
-    viewer.movement = event.touches.length === 1 ? "rotate" :
-               event.touches.length === 2 ? "zoom" :
-               "translate";
+    var movement = event.touches.length === 1 ? "rotate" :
+    event.touches.length === 2 ? "zoom" :
+    "translate";
+    viewer.movement = movement;
+    if (viewer.controlView && viewer.controlView[0]) {
+      viewer.controlView[0].movement = movement;
+    }
   }, false);
 
   canvas.addEventListener("mousewheel", viewer.wheelHandler, false);
