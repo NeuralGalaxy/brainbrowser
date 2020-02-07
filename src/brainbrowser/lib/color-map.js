@@ -52,7 +52,7 @@
   */
   BrainBrowser.createColorMap = function(data, options) {
     options = options || {};
-
+    var margin = options.margin !== undefined ? options.margin : 10;
     var clamp      = options.clamp === undefined ? true : options.clamp;
     var flip       = options.flip       || false;
     var scale      = options.scale      || 1;
@@ -348,27 +348,27 @@
 
         context.fillStyle = "#FFA000";
 
-        const paddingWidth = 0.5;
-        const subpaddingWidth = 0.5 * canvas.width * (spectrumRange.min_value/spectrumRange.max_value);
+        var paddingWidth = 0.5;
+        var subpaddingWidth = 0.5 * (canvas.width - margin * 2) * (spectrumRange.min_value/spectrumRange.max_value);
         // Min mark
-        context.fillRect(paddingWidth, 20, 1, 10);
+        context.fillRect(paddingWidth + margin, 20, 1, 10);
         context.fillText(-(spectrumRange.max_value), paddingWidth, 40);
 
         // Quarter mark
         context.fillRect(canvas.width / 2 + subpaddingWidth, 20, 1, 10);
-        context.fillText(-(spectrumRange.min_value), 0.5 * canvas.width - subpaddingWidth, 40);
+        context.fillText(-(spectrumRange.min_value), 0.5 * canvas.width - subpaddingWidth - margin, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
-        context.fillText(0, 0.5 * canvas.width, 40);
+        context.fillText(0, 0.5 * canvas.width - margin/4, 40);
 
         // Three-quarter mark
         context.fillRect(canvas.width / 2 - subpaddingWidth, 20, 1, 10);
-        context.fillText(spectrumRange.min_value, 0.5 * canvas.width + subpaddingWidth, 40);
+        context.fillText(spectrumRange.min_value, 0.5 * canvas.width + subpaddingWidth - margin, 40);
 
 
         // Max mark
-        context.fillRect(canvas.width - paddingWidth, 20, 1, 10);
+        context.fillRect(canvas.width - paddingWidth - margin, 20, 1, 10);
         context.fillText(spectrumRange.max_value, canvas.width - paddingWidth - 19.5 , 40);
 
         return canvas;
@@ -407,9 +407,10 @@
       var context;
       var old_scale;
 
-      canvas.width  = full_width ? full_width : 256;
+      canvas.width  = (full_width ? full_width : 256) + margin * 2;
       canvas.height = full_height;
-
+      canvas.style.paddingLeft = '10px';
+      canvas.style.paddingRight = '10px';
       for (i = 0; i < 256; i++) {
         value_array[i] = i;
       }
@@ -424,7 +425,7 @@
         context.fillStyle = "rgb(" + Math.floor(colors[i*4]) + ", " +
                                      Math.floor(colors[i*4+1]) + ", " +
                                      Math.floor(colors[i*4+2]) + ")";
-        context.fillRect(i, 0, 1, color_height);
+        context.fillRect(i + margin, 0, 1, color_height);
       }
 
       return canvas;
