@@ -52,7 +52,7 @@
   */
   BrainBrowser.createColorMap = function(data, options) {
     options = options || {};
-    var margin = options.margin !== undefined ? options.margin : 10;
+    var margin = options.margin !== undefined ? options.margin : 0;
     var clamp      = options.clamp === undefined ? true : options.clamp;
     var flip       = options.flip       || false;
     var scale      = options.scale      || 1;
