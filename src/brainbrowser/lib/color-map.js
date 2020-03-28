@@ -304,7 +304,7 @@
         context.fillStyle = "#FFA000";
 
         // Min mark
-        context.fillRect(0.5, 20, 1, 10);
+        context.fillRect(0.5 + margin, 20, 1, 10);
         context.fillText(min.toPrecision(3), 0.5, 40);
 
         // Quarter mark
@@ -321,7 +321,7 @@
 
 
         // Max mark
-        context.fillRect(canvas.width - 0.5, 20, 1, 10);
+        context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
         context.fillText(max.toPrecision(3), canvas.width - 20, 40);
 
         return canvas;
