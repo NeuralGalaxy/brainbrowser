@@ -408,7 +408,6 @@
       var old_scale;
 
       canvas.width  = (full_width ? full_width : 256) + margin * 2;
-      console.log(canvas.width, '-----------');
       canvas.height = full_height;
       canvas.style.paddingLeft = '10px';
       canvas.style.paddingRight = '10px';
