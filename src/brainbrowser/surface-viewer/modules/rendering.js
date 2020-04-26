@@ -351,6 +351,33 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     return grid;
   };
 
+  viewer.drawGridXYZ = function(grid_name, is_checked) {
+    var rotation = new THREE.Euler();
+    var color_grid;
+    var grid = viewer.model.getObjectByName(grid_name);
+    if (grid !== undefined) {
+        grid.visible   = is_checked;
+        viewer.updated = true;
+      return;
+    }
+    if (!grid && !is_checked) {
+      return;
+    }
+    if (grid_name === "gridX") {
+      rotation.set(0, 0, Math.PI/2, "XYZ");
+      color_grid = 0x00ff00;
+    }
+    if (grid_name === "gridY") {
+      rotation.set(0, Math.PI/2, 0, "XYZ");
+      color_grid = 0x0000ff;
+    }
+    if (grid_name === "gridZ") {
+      rotation.set(Math.PI/2, 0, 0, "XYZ");
+      color_grid = 0xff0000;
+    }
+
+    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+  };
   /**
   * @doc function
   * @name viewer.rendering:gridHelper
