@@ -357,6 +357,9 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.triggerEvent("clearscreen");
   };
 
+  viewer.updateColorMap = function(data) {
+    loadColorMap(BrainBrowser.createColorMap(data));
+  };
 
   ////////////////////////////////////
   // PRIVATE FUNCTIONS
