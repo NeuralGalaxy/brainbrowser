@@ -86,15 +86,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * viewer.updateViewport();
   * ```
   */
-  viewer.updateViewport = function() {
-    var dom_element = viewer.dom_element;
+ viewer.updateViewport = function(height, widht) {
+  var dom_element = viewer.dom_element;
+  effect.setSize(widht || dom_element.offsetWidth, height || dom_element.offsetHeight);
+  camera.aspect = dom_element.offsetWidth / dom_element.offsetHeight;
+  camera.updateProjectionMatrix();
 
-    effect.setSize(dom_element.offsetWidth, dom_element.offsetHeight);
-    camera.aspect = dom_element.offsetWidth / dom_element.offsetHeight;
-    camera.updateProjectionMatrix();
-
-    viewer.updated = true;
-  };
+  viewer.updated = true;
+};
 
   /**
   * @doc function
@@ -1086,6 +1085,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         event.preventDefault();
 
         viewer.zoom *= 1.0 + 0.02 * delta;
+        if (viewer.zoomCallBack) {
+          viewer.zoomCallBack(viewer.zoom);
+        }
       }
     }
 
