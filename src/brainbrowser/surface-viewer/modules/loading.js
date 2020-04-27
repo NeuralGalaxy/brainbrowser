@@ -357,6 +357,9 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.triggerEvent("clearscreen");
   };
 
+  viewer.updateColorMap = function(data) {
+    loadColorMap(BrainBrowser.createColorMap(data));
+  };
 
   ////////////////////////////////////
   // PRIVATE FUNCTIONS
@@ -446,9 +449,11 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.triggerEvent("loadcolormap", {
       color_map: color_map
     });
+    console.log(color_map, '-----+++++++++++++-');
 
     viewer.model_data.forEach(function(model_data) {
       if (model_data.intensity_data[0]) {
+        console.log(model_data.name, 'model_data.name');
         viewer.updateColors({
           model_name: model_data.name
         });

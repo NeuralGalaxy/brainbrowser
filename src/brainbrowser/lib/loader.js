@@ -231,6 +231,8 @@
     */
     loadColorMapFromURL: function(url, callback, options) {
       loader.loadFromURL(url, function(data, filename, options) {
+        console.log(typeof (data));
+        console.log(data, options, 'data, options');
         callback(BrainBrowser.createColorMap(data, options), filename, options);
       }, options);
     },
