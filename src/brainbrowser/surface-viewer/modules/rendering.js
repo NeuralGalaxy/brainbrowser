@@ -987,6 +987,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var last_y = null;
     var last_touch_distance = null;
 
+    function viewerClickCallBack() {
+      if (viewer.clickCallBack) {
+        viewer.clickCallBack();
+      }
+    }
+
     function drag(pointer, multiplier) {
       var inverse = new THREE.Matrix4();
       var x       = pointer.x;
@@ -1029,7 +1035,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
       last_x = x;
       last_y = y;
-
+      viewerClickCallBack();
       viewer.updated = true;
     }
 
@@ -1052,6 +1058,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function mouseDrag(event) {
       event.preventDefault();
       drag(viewer.mouse, 1.1);
+      viewerClickCallBack();
     }
 
     function touchDrag(event) {
@@ -1061,6 +1068,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       } else {
         drag(viewer.touches[0], 2);
       }
+      viewerClickCallBack();
     }
 
     function mouseDragEnd() {
@@ -1068,6 +1076,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.removeEventListener("mouseup", mouseDragEnd, false);
       last_x = null;
       last_y = null;
+      viewerClickCallBack();
     }
 
     function touchDragEnd() {
@@ -1076,6 +1085,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       last_x = null;
       last_y = null;
       last_touch_distance = null;
+      viewerClickCallBack();
     }
 
     function wheelHandler(event) {
