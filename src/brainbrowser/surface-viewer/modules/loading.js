@@ -262,8 +262,12 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-
     loader.loadFromURL(url, loadIntensityData, options);
+  };
+
+  viewer.loadIntensityDataFromText = function(text, options) {
+    options = checkBinary("intensity_data_types", options);
+    loadIntensityData(text, undefined, options);
   };
 
 
