@@ -450,7 +450,7 @@
 
         var canvas = panel.canvas;
         var context = panel.context;
-        var frame_width = 4;
+        var frame_width = 2;
         var half_frame_width = frame_width / 2;
         
         context.globalAlpha = 255;
@@ -467,18 +467,16 @@
         
         drawCursor(panel, cursor_color);
 
-        if (active) {
-          context.save();
-          context.strokeStyle = "#EC2121";
-          context.lineWidth = frame_width;
-          context.strokeRect(
-            half_frame_width,
-            half_frame_width,
-            canvas.width - frame_width,
-            canvas.height - frame_width
-          );
-          context.restore();
-        }
+        context.save();
+        context.strokeStyle = active ? "#1BACC8" : "#303030";
+        context.lineWidth = frame_width;
+        context.strokeRect(
+          half_frame_width,
+          half_frame_width,
+          canvas.width - frame_width,
+          canvas.height - frame_width
+        );
+        context.restore();
 
         panel.updated = false;
       }
