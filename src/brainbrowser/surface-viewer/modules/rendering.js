@@ -1056,9 +1056,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function mouseDrag(event) {
-      if (!event.ctrlKey) {
-        return;
-      }
+      viewer.moveFlag = true;
       event.preventDefault();
       drag(viewer.mouse, 1.1);
       viewerClickCallBack();
@@ -1105,6 +1103,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
+      viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
 
