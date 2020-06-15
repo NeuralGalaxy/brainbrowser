@@ -1056,6 +1056,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function mouseDrag(event) {
+      if (!event.ctrlKey) {
+        return;
+      }
       event.preventDefault();
       drag(viewer.mouse, 1.1);
       viewerClickCallBack();
