@@ -305,24 +305,24 @@
 
         // Min mark
         context.fillRect(0.5 + margin, 20, 1, 10);
-        context.fillText(min.toPrecision(3), 0.5, 40);
+        context.fillText(parseFloat(min.toPrecision(3)).toFixed(2), 0.5, 40);
 
         // Quarter mark
         context.fillRect(canvas.width / 4, 20, 1, 10);
-        context.fillText((min + 0.25 * range).toPrecision(3), 0.25 * canvas.width, 40);
+        context.fillText(parseFloat((min + 0.25 * range).toPrecision(3)).toFixed(2), 0.25 * canvas.width, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
-        context.fillText((min + 0.5 * range).toPrecision(3), 0.5 * canvas.width, 40);
+        context.fillText(parseFloat((min + 0.5 * range).toPrecision(3)).toFixed(2), 0.5 * canvas.width, 40);
 
         // Three-quarter mark
         context.fillRect(3 * canvas.width / 4, 20, 1, 10);
-        context.fillText((min + 0.75 * range).toPrecision(3), 0.75 * canvas.width, 40);
+        context.fillText(parseFloat((min + 0.75 * range).toPrecision(3)).toFixed(2), 0.75 * canvas.width, 40);
 
 
         // Max mark
         context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
-        context.fillText(max.toPrecision(3), canvas.width - 20, 40);
+        context.fillText(parseFloat(max.toPrecision(3)).toFixed(2), canvas.width - 20, 40);
 
         return canvas;
       },
@@ -352,11 +352,11 @@
         var subpaddingWidth = 0.5 * (canvas.width - margin * 2) * (spectrumRange.min_value/spectrumRange.max_value);
         // Min mark
         context.fillRect(paddingWidth + margin, 20, 1, 10);
-        context.fillText(-(spectrumRange.max_value), paddingWidth, 40);
+        context.fillText(-parseFloat((spectrumRange.max_value)).toFixed(2), paddingWidth, 40);
 
         // Quarter mark
         context.fillRect(canvas.width / 2 + subpaddingWidth, 20, 1, 10);
-        context.fillText(-(spectrumRange.min_value), 0.5 * canvas.width - subpaddingWidth - margin, 40);
+        context.fillText(-parseFloat((spectrumRange.min_value)).toFixed(2), 0.5 * canvas.width - subpaddingWidth - margin, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
@@ -364,12 +364,12 @@
 
         // Three-quarter mark
         context.fillRect(canvas.width / 2 - subpaddingWidth, 20, 1, 10);
-        context.fillText(spectrumRange.min_value, 0.5 * canvas.width + subpaddingWidth - margin, 40);
+        context.fillText(parseFloat(spectrumRange.min_value).toFixed(2), 0.5 * canvas.width + subpaddingWidth - margin, 40);
 
 
         // Max mark
         context.fillRect(canvas.width - paddingWidth - margin, 20, 1, 10);
-        context.fillText(spectrumRange.max_value, canvas.width - paddingWidth - 19.5 , 40);
+        context.fillText(parseFloat(spectrumRange.max_value).toFixed(2), canvas.width - paddingWidth - 19.5 , 40);
 
         return canvas;
       }
