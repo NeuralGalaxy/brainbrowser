@@ -338,37 +338,41 @@
       * color_map.createSymmPosNegElement(0.0, 7.0);
       * ```
       */
-     createSymmPosNegElement: function(spectrumRange, width) {
+      createSymmPosNegElement: function(spectrumRange, width) {
         var canvas;
         var context;
         var colors = color_map.colors;
         
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
-
+        
         context.fillStyle = "#FFA000";
 
-        var paddingWidth = 0.5;
+        var paddingWidth = 0;
         var subpaddingWidth = 0.5 * (canvas.width - margin * 2) * (spectrumRange.min_value/spectrumRange.max_value);
         // Min mark
         context.fillRect(paddingWidth + margin, 20, 1, 10);
         context.fillText('-' + Math.floor(spectrumRange.max_value*100)/100, paddingWidth, 40);
 
         // Quarter mark
-        context.fillRect(canvas.width / 2 + subpaddingWidth, 20, 1, 10);
-        context.fillText('-' + Math.floor(spectrumRange.min_value*100)/100, 0.5 * canvas.width - subpaddingWidth - margin, 40);
+        context.fillRect(Math.floor(canvas.width / 2 - subpaddingWidth), 20, 1, 10);
+        var minusMinText = '-' + Math.floor(spectrumRange.min_value*100)/100;
+        context.fillText(minusMinText, 0.5 * canvas.width - subpaddingWidth - context.measureText(minusMinText).width / 2 - margin, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
-        context.fillText(0, 0.5 * canvas.width - margin/4, 40);
+        var middleText = 0;
+        context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2 - margin/4, 40);
 
         // Three-quarter mark
-        context.fillRect(canvas.width / 2 - subpaddingWidth, 20, 1, 10);
-        context.fillText(Math.floor(spectrumRange.min_value*100)/100, 0.5 * canvas.width + subpaddingWidth - margin, 40);
+        context.fillRect(Math.floor(canvas.width / 2 + subpaddingWidth), 20, 1, 10);
+        var plusMinText = Math.floor(spectrumRange.min_value*100)/100;
+        context.fillText(plusMinText, 0.5 * canvas.width + subpaddingWidth - context.measureText(plusMinText).width / 2 - margin, 40);
 
         // Max mark
-        context.fillRect(canvas.width - paddingWidth - margin, 20, 1, 10);
-        context.fillText(Math.floor(spectrumRange.max_value*100)/100, canvas.width - paddingWidth - 19.5 , 40);
+        context.fillRect(canvas.width - paddingWidth - margin - 1, 20, 1, 10);
+        var plusMaxText = Math.floor(spectrumRange.max_value*100)/100;
+        context.fillText(plusMaxText, canvas.width - paddingWidth - context.measureText(plusMaxText).width , 40);
 
         return canvas;
       }
