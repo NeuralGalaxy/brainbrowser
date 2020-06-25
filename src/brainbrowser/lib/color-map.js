@@ -346,7 +346,7 @@
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
         
-        context.fillStyle = "#FFA000";
+        context.fillStyle = "#000000";
 
         var paddingWidth = 0;
         var subpaddingWidth = 0.5 * (canvas.width - margin * 2) * (spectrumRange.min_value/spectrumRange.max_value);
@@ -373,6 +373,16 @@
         context.fillRect(canvas.width - paddingWidth - margin - 1, 20, 1, 10);
         var plusMaxText = Math.floor(spectrumRange.max_value*100)/100;
         context.fillText(plusMaxText, canvas.width - paddingWidth - context.measureText(plusMaxText).width , 40);
+
+        // colorbar box
+        context.strokeStyle = "#000000"
+
+        context.moveTo(paddingWidth + margin, 0);
+        context.lineTo(canvas.width - paddingWidth - margin, 0);
+        context.stroke();
+        context.moveTo(paddingWidth + margin, 21);
+        context.lineTo(canvas.width - paddingWidth - margin, 21);
+        context.stroke();
 
         return canvas;
       }
