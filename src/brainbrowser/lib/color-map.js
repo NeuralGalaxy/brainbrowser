@@ -383,7 +383,7 @@
 
         // Max mark
         var maxText = parseFloat(max.toPrecision(3) * 100).toFixed(0) + "%";
-        context.fillText(maxText, canvas.width - context.measureText(threeQuarterText).width, 40);
+        context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
         
         return canvas;
       },
