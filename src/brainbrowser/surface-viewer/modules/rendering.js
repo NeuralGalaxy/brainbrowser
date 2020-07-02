@@ -1073,6 +1073,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function mouseDragEnd() {
+      viewer.moveFlag = false;
       document.removeEventListener("mousemove", mouseDrag, false);
       document.removeEventListener("mouseup", mouseDragEnd, false);
       last_x = null;

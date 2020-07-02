@@ -170,7 +170,7 @@
 
         result = subtree[current_key];
 
-        subtree[current_key] = undefined;
+        delete subtree[current_key];
 
         return result;
       },
@@ -228,9 +228,10 @@
       return callback(subtree);
     }
 
-    Object.keys(subtree).forEach(function(key) {
+    var keys = Object.keys(subtree)
+    for (let key of keys) {
       forEach(subtree[key], depth + 1, max_depth, callback);
-    });
+    };
   }
 
 })();
