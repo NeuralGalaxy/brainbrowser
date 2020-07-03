@@ -430,9 +430,13 @@
         context.lineTo(canvas.width - paddingWidth, 21);
         context.stroke();
 
+        var max_value = spectrumRange.max_value ? parseFloat(spectrumRange.max_value) : 0;
+        max_value =  max_value.toString().length < 4 ? max_value:  max_value.toPrecision(3);
+        var min_value = spectrumRange.min_value ? parseFloat(spectrumRange.min_value) : 0;
+        min_value = min_value.toString().length < 4  ? min_value  : min_value.toPrecision(3);
         context.fillStyle = "#595959";
         // Min mark text
-        var minusMaxText = '-' + Math.floor(spectrumRange.max_value*100)/100;
+        var minusMaxText = '-' + max_value;
         var minusMaxTextRightPos = context.measureText(minusMaxText).width;
         context.fillText(minusMaxText, paddingWidth, 40);
         // Middle mark text
@@ -441,11 +445,12 @@
         var middleTextRightPos = middleTextLeftPos + context.measureText(middleText).width;
         context.fillText(middleText, middleTextLeftPos, 40);
         // Max mark text
-        var plusMaxText = Math.floor(spectrumRange.max_value*100)/100;
+       
+        var plusMaxText = max_value;
         var pluxMaxTextLeftPos = canvas.width - paddingWidth - context.measureText(plusMaxText).width;
         context.fillText(plusMaxText, pluxMaxTextLeftPos, 40);
         // Quarter mark text
-        var minusMinText = '-' + Math.floor(spectrumRange.min_value*100)/100;
+        var minusMinText = '-' + min_value;
         var minusMinTextWidth = context.measureText(minusMinText).width;
         var minusMinTextLeftPos = 0.5 * canvas.width - subpaddingWidth - minusMinTextWidth / 2;
         if (minusMinTextLeftPos < minusMaxTextRightPos) {
@@ -456,7 +461,8 @@
         }
         context.fillText(minusMinText, minusMinTextLeftPos, 40);
         // Three-quarter mark text
-        var plusMinText = Math.floor(spectrumRange.min_value*100)/100;
+        
+        var plusMinText = min_value;
         var plusMinTextWidth = context.measureText(plusMinText).width;
         var plusMinTextLeftPos = 0.5 * canvas.width + subpaddingWidth - plusMinTextWidth / 2;
         if (plusMinTextLeftPos < middleTextRightPos) {
