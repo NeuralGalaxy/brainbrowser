@@ -380,25 +380,29 @@
         }
 
         update_timeout = setTimeout(function() {
-          var volume = panel.volume;
-          var slice;
-          
-          slice = volume.slice(panel.axis);
+          try {
+            var volume = panel.volume;
+            var slice;
+            
+            slice = volume.slice(panel.axis);
 
-          setSlice(panel, slice);
+            setSlice(panel, slice);
 
-          panel.triggerEvent("sliceupdate", {
-            volume: volume,
-            slice: slice
-          });
+            panel.triggerEvent("sliceupdate", {
+              volume: volume,
+              slice: slice
+            });
 
-          panel.updated = true;
+            panel.updated = true;
 
-          update_callbacks.forEach(function(callback) {
-            callback(slice);
-          });
-          update_callbacks.length = 0;
+            update_callbacks.forEach(function(callback) {
+              callback(slice);
+            });
+            update_callbacks.length = 0;
 
+          } catch (e) {
+            console.log('Brainbrowser updateSlice error', e);
+          }
         }, 0);
       },
 
