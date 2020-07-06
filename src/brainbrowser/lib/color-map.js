@@ -431,9 +431,9 @@
         context.stroke();
 
         var max_value = spectrumRange.max_value ? parseFloat(spectrumRange.max_value) : 0;
-        max_value =  max_value.toString().length < 4 ? max_value:  max_value.toPrecision(3);
+        max_value =  max_value.toString().length <= 4 ? max_value:  max_value.toPrecision(4);
         var min_value = spectrumRange.min_value ? parseFloat(spectrumRange.min_value) : 0;
-        min_value = min_value.toString().length < 4  ? min_value  : min_value.toPrecision(3);
+        min_value = min_value.toString().length <= 4  ? min_value  : min_value.toPrecision(4);
         context.fillStyle = "#595959";
         // Min mark text
         var minusMaxText = '-' + max_value;
