@@ -86,7 +86,7 @@
    * elsewhere in the volume viewer.
    */
   VolumeViewer.createVolume = function(header, native_data) {
-    var image_creation_context = document.createElement("canvas").getContext("2d");
+    var image_creation_canvas = document.createElement("canvas");
     var cached_slices = {};
 
     // Populate the header with the universal fields.
@@ -229,6 +229,7 @@
       getSliceImage: function(slice, zoom, contrast, brightness, clamp) {
         zoom = zoom || 1;
 
+        var image_creation_context = image_creation_canvas.getContext("2d");
         var color_map = volume.color_map;
         var error_message;
 
@@ -270,6 +271,12 @@
             {block_size: 4}
           )
         );
+
+        if (image_creation_context) {
+          image_creation_context.clearRect(0, 0, image_creation_canvas.width, image_creation_canvas.height);
+          image_creation_canvas.width = 0;
+          image_creation_canvas.height = 0;
+        }
 
         return target_image;
       },
