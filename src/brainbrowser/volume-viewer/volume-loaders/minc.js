@@ -99,6 +99,9 @@
       header: header,
       intensity_min: 0,
       intensity_max: 255,
+      clearCachedSlices: function () {
+        cached_slices = {};
+      },
       slice: function(axis, slice_num, time) {
         slice_num = slice_num === undefined ? volume.position[axis] : slice_num;
         time = time === undefined ? volume.current_time : time;
