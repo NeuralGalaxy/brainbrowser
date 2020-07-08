@@ -18063,6 +18063,12 @@
 
     };
 
+    this.clearCachedWebglObjects = function () {
+      for (let key of Object.keys(_webglObjects)) {
+        delete _webglObjects[key];
+      }
+    }
+
     this.supportsVertexTextures = function () {
 
       return _supportsVertexTextures;
