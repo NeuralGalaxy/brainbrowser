@@ -97,6 +97,13 @@
         event_listeners[event_name].push(callback);
       };
 
+      object.clearAllListeners = function () {
+        for (let eventName of Object.keys(event_listeners)) {
+          // if (eventName === '*') continue;
+          event_listeners[eventName] = [];
+        }
+      }
+
       /**
       * @doc function
       * @name BrainBrowser.Event Model:triggerEvent

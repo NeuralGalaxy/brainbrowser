@@ -290,6 +290,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       volume.triggerEvent("eventmodelcleanup");
     });
 
+    viewer.clearAllListeners();
     viewer.volumes = [];
     viewer.containers = [];
     viewer.active_panel = null;

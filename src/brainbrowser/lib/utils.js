@@ -270,6 +270,8 @@
     captureMouse: function(element, view) {
       var mouse = { x: 0, y: 0, left: false, middle: false, right: false};
 
+      if (!element) return mouse;
+
       document.addEventListener("mousemove", function(event) {
         var offset = BrainBrowser.utils.getOffset(element, view);
         var x, y;
@@ -342,6 +344,8 @@
     */
     captureTouch: function(element) {
       var touches = [];
+
+      if (!element) return touches;
 
       function updateTouches(event) {
         var offset = BrainBrowser.utils.getOffset(element);
