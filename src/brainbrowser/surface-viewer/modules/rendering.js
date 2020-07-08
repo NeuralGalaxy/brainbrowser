@@ -30,6 +30,11 @@
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
+  if (!viewer.dom_element) {
+    // reset dom element for rending async cause js error
+    viewer.dom_element = document.createElement('div');
+  }
+
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
   var renderer = new THREE.WebGLRenderer({
@@ -75,6 +80,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     renderFrame();
   };
+
+  viewer.clearCachedWebgl = function () {
+    viewer.clearAllListeners && viewer.clearAllListeners();
+    viewer.model_data && viewer.model_data.clear();
+    if (viewer.model && viewer.model.children) {
+      viewer.model.children = [];
+    }
+    renderer.clearCachedWebglObjects();
+  }
 
   /**
   * @doc function
