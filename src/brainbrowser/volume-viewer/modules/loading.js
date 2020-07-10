@@ -651,7 +651,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           last_touch_distance = null;
         }
 
-        canvas.addEventListener("mousedown", function(event) {
+        function canvasMousedown (event) {
           event.preventDefault();
 
           current_target = event.target;
@@ -665,9 +665,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.addEventListener("mouseup", mouseDragEnd, false);
 
           startDrag(panel.mouse, event.shiftKey, event.ctrlKey);
-        }, false);
+        }
 
-        canvas.addEventListener("touchstart", function(event) {
+        function canvasTouchstart (event) {
           event.preventDefault();
 
           current_target = event.target;
@@ -691,7 +691,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             startDrag(panel.touches[0], panel.touches.length === 3, true);
           }
 
-        }, false);
+        }
         
         function wheelHandler(event) {
           if (event.ctrlKey) {
@@ -720,9 +720,25 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
         }
 
+        canvas.addEventListener("mousedown", canvasMousedown, false);
+        canvas.addEventListener("touchstart", canvasTouchstart, false);
         canvas.addEventListener("mousewheel", wheelHandler, false);
         canvas.addEventListener("wheel", wheelHandler, false);
         canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
+        
+        canvas.clearAllListeners = function () {
+          canvas.removeEventListener('mousedown', canvasMousedown, false);
+          canvas.removeEventListener('touchstart', canvasTouchstart, false);
+          canvas.removeEventListener('mousewheel', wheelHandler, false);
+          canvas.removeEventListener('wheel', wheelHandler, false);
+          canvas.removeEventListener('DOMMouseScroll', wheelHandler, false);
+          document.removeEventListener("touchmove", touchDrag, false);
+          document.removeEventListener("touchend", touchDragEnd, false);
+          document.removeEventListener("touchmove", touchZoom, false);
+          document.removeEventListener("touchend", touchZoomEnd, false);
+          document.removeEventListener("mousemove", mouseDrag, false);
+          document.removeEventListener("mouseup", mouseDragEnd, false);
+        }
       });
     })();
 
