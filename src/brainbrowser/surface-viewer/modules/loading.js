@@ -389,7 +389,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var blend          = options.blend;
     var model_name     = options.model_name;
     var model_data     = viewer.model_data.get(model_name);
-    var intensity_data = model_data.intensity_data[0];
+    var intensity_data = model_data ? model_data.intensity_data[0] : null;
 
     var old_range = {};
 
