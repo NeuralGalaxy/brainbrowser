@@ -393,7 +393,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     var old_range = {};
 
-    model_name = model_name || model_data.name;
+    model_name = model_name || (model_data ? model_data.name : '');
 
     if (viewer.getAttribute("fix_color_range") && intensity_data) {
       old_range = {
