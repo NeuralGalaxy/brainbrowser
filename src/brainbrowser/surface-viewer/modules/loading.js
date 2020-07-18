@@ -262,8 +262,12 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-
     loader.loadFromURL(url, loadIntensityData, options);
+  };
+
+  viewer.loadIntensityDataFromText = function(text, options) {
+    options = checkBinary("intensity_data_types", options);
+    loadIntensityData(text, undefined, options);
   };
 
 
@@ -385,11 +389,11 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var blend          = options.blend;
     var model_name     = options.model_name;
     var model_data     = viewer.model_data.get(model_name);
-    var intensity_data = model_data.intensity_data[0];
+    var intensity_data = model_data ? model_data.intensity_data[0] : null;
 
     var old_range = {};
 
-    model_name = model_name || model_data.name;
+    model_name = model_name || (model_data ? model_data.name : '');
 
     if (viewer.getAttribute("fix_color_range") && intensity_data) {
       old_range = {

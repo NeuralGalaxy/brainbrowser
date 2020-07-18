@@ -380,25 +380,29 @@
         }
 
         update_timeout = setTimeout(function() {
-          var volume = panel.volume;
-          var slice;
-          
-          slice = volume.slice(panel.axis);
+          try {
+            var volume = panel.volume;
+            var slice;
+            
+            slice = volume.slice(panel.axis);
 
-          setSlice(panel, slice);
+            setSlice(panel, slice);
 
-          panel.triggerEvent("sliceupdate", {
-            volume: volume,
-            slice: slice
-          });
+            panel.triggerEvent("sliceupdate", {
+              volume: volume,
+              slice: slice
+            });
 
-          panel.updated = true;
+            panel.updated = true;
 
-          update_callbacks.forEach(function(callback) {
-            callback(slice);
-          });
-          update_callbacks.length = 0;
+            update_callbacks.forEach(function(callback) {
+              callback(slice);
+            });
+            update_callbacks.length = 0;
 
+          } catch (e) {
+            console.log('Brainbrowser updateSlice error', e);
+          }
         }, 0);
       },
 
@@ -450,7 +454,7 @@
 
         var canvas = panel.canvas;
         var context = panel.context;
-        var frame_width = 4;
+        var frame_width = 2;
         var half_frame_width = frame_width / 2;
         
         context.globalAlpha = 255;
@@ -467,18 +471,16 @@
         
         drawCursor(panel, cursor_color);
 
-        if (active) {
-          context.save();
-          context.strokeStyle = "#EC2121";
-          context.lineWidth = frame_width;
-          context.strokeRect(
-            half_frame_width,
-            half_frame_width,
-            canvas.width - frame_width,
-            canvas.height - frame_width
-          );
-          context.restore();
-        }
+        context.save();
+        context.strokeStyle = active ? "#1BACC8" : "#303030";
+        context.lineWidth = frame_width;
+        context.strokeRect(
+          half_frame_width,
+          half_frame_width,
+          canvas.width - frame_width,
+          canvas.height - frame_width
+        );
+        context.restore();
 
         panel.updated = false;
       }

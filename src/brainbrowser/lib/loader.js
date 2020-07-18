@@ -63,8 +63,8 @@
       var content_type = options.content_type;
       var status;
       var parts = url.split("/");
-      var filename = parts[parts.length-1];
-
+      var parts2 = parts[parts.length-1].split("?");
+      var filename = parts2[0];
       request.open("GET", url);
       if (result_type === "arraybuffer") {
         request.responseType = "arraybuffer";

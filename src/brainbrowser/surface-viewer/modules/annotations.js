@@ -177,6 +177,9 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
     */
     reset: function() {
       viewer.annotations.forEach(function(annotation) {
+        if (!annotation) {
+          return;
+        }
         viewer.annotations.remove(annotation.vertex);
       });
     },
@@ -215,6 +218,9 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
       }
 
       viewer.annotations.forEach(function(annotation) {
+        if (!annotation) {
+          return;
+        }
         if (annotation === active_annotation) {
           annotation.marker.material.color.setHex(marker_on_color);
         } else {

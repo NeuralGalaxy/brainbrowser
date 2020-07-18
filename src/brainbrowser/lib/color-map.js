@@ -301,29 +301,90 @@
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
 
-        context.fillStyle = "#FFA000";
+        context.fillStyle = "#BFBFBF";
+        // Min mark
+        context.fillRect(0.5 + margin, 20, 1, 10);
+        // Quarter mark
+        context.fillRect(canvas.width / 4, 20, 1, 10);
+        // Middle mark
+        context.fillRect(canvas.width / 2, 20, 1, 10);
+        // Three-quarter mark
+        context.fillRect(3 * canvas.width / 4, 20, 1, 10);
+        // Max mark
+        context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
+
+        context.fillStyle = "#595959";
+        context.font = "12px Arial";
+
+        var toFixed = 2
+        // Min mark
+        var minText = parseFloat(min.toPrecision(3)).toFixed(toFixed);
+        context.fillText(minText, 0, 40);
+        // Quarter mark
+        var quarterText = parseFloat((min + 0.25 * range).toPrecision(3)).toFixed(toFixed);
+        context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
+        // Middle mark
+        var middleText = parseFloat((min + 0.5 * range).toPrecision(3)).toFixed(toFixed);
+        context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
+        // Three-quarter mark
+        var threeQuarterText = parseFloat((min + 0.75 * range).toPrecision(3)).toFixed(toFixed);
+        context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
+        // Max mark
+        var maxText = parseFloat(max.toPrecision(3)).toFixed(toFixed);
+        context.fillText(maxText, canvas.width - context.measureText(threeQuarterText).width, 40);
+        
+        return canvas;
+      },
+
+      createPercentElement: function(min, max, width) {
+        var canvas;
+        var context;
+        var colors = color_map.colors;
+        var range = max - min;
+
+        canvas  = createCanvas(colors, 20, 40, width,flip);
+        context = canvas.getContext("2d");
+
+        context.fillStyle = "#BFBFBF";
 
         // Min mark
         context.fillRect(0.5 + margin, 20, 1, 10);
-        context.fillText(min.toPrecision(3), 0.5, 40);
 
         // Quarter mark
         context.fillRect(canvas.width / 4, 20, 1, 10);
-        context.fillText((min + 0.25 * range).toPrecision(3), 0.25 * canvas.width, 40);
 
         // Middle mark
         context.fillRect(canvas.width / 2, 20, 1, 10);
-        context.fillText((min + 0.5 * range).toPrecision(3), 0.5 * canvas.width, 40);
 
         // Three-quarter mark
         context.fillRect(3 * canvas.width / 4, 20, 1, 10);
-        context.fillText((min + 0.75 * range).toPrecision(3), 0.75 * canvas.width, 40);
-
 
         // Max mark
         context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
-        context.fillText(max.toPrecision(3), canvas.width - 20, 40);
 
+        context.fillStyle = "#595959";
+        context.font = "12px Arial";
+
+        // Min mark
+        var minText = parseFloat(min.toPrecision(3) * 100).toFixed(0) + "%";
+        context.fillText(minText, 0, 40);
+
+        // Quarter mark
+        var quarterText = parseFloat(((min + 0.25 * range)*100).toPrecision(3)).toFixed(0) + "%";
+        context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
+
+        // Middle mark
+        var middleText = parseFloat(((min + 0.5 * range)*100).toPrecision(3)).toFixed(0) + "%";
+        context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
+
+        // Three-quarter mark
+        var threeQuarterText = parseFloat(((min + 0.75 * range)*100).toPrecision(3)).toFixed(0) + "%";
+        context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
+
+        // Max mark
+        var maxText = parseFloat(max.toPrecision(3) * 100).toFixed(0) + "%";
+        context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
+        
         return canvas;
       },
       /**
@@ -338,38 +399,79 @@
       * color_map.createSymmPosNegElement(0.0, 7.0);
       * ```
       */
-     createSymmPosNegElement: function(spectrumRange, width) {
+      createSymmPosNegElement: function(spectrumRange, width) {
         var canvas;
         var context;
         var colors = color_map.colors;
         
         canvas  = createCanvas(colors, 20, 40, width,flip);
         context = canvas.getContext("2d");
-
-        context.fillStyle = "#FFA000";
-
-        var paddingWidth = 0.5;
-        var subpaddingWidth = 0.5 * (canvas.width - margin * 2) * (spectrumRange.min_value/spectrumRange.max_value);
-        // Min mark
-        context.fillRect(paddingWidth + margin, 20, 1, 10);
-        context.fillText(-(spectrumRange.max_value), paddingWidth, 40);
-
-        // Quarter mark
-        context.fillRect(canvas.width / 2 + subpaddingWidth, 20, 1, 10);
-        context.fillText(-(spectrumRange.min_value), 0.5 * canvas.width - subpaddingWidth - margin, 40);
-
-        // Middle mark
+        
+        context.fillStyle = "#BFBFBF";
+        context.strokeStyle = "#BFBFBF";
+        context.font = "12px Arial";
+        var paddingWidth = 0;
+        var subpaddingWidth = 0.5 * canvas.width * (spectrumRange.min_value/spectrumRange.max_value);
+        // Min mark tick
+        context.fillRect(paddingWidth, 20, 1, 10);
+        // Quarter mark tick
+        context.fillRect(Math.floor(canvas.width / 2 - subpaddingWidth), 20, 1, 10);
+        // Middle mark tick
         context.fillRect(canvas.width / 2, 20, 1, 10);
-        context.fillText(0, 0.5 * canvas.width - margin/4, 40);
+        // Three-quarter mark tick
+        context.fillRect(Math.floor(canvas.width / 2 + subpaddingWidth), 20, 1, 10);
+        // Max mark tick
+        context.fillRect(canvas.width - paddingWidth - 1, 20, 1, 10);
+        // colorbar box
+        context.moveTo(paddingWidth, 0);
+        context.lineTo(canvas.width - paddingWidth, 0);
+        context.stroke();
+        context.moveTo(paddingWidth, 21);
+        context.lineTo(canvas.width - paddingWidth, 21);
+        context.stroke();
 
-        // Three-quarter mark
-        context.fillRect(canvas.width / 2 - subpaddingWidth, 20, 1, 10);
-        context.fillText(spectrumRange.min_value, 0.5 * canvas.width + subpaddingWidth - margin, 40);
-
-
-        // Max mark
-        context.fillRect(canvas.width - paddingWidth - margin, 20, 1, 10);
-        context.fillText(spectrumRange.max_value, canvas.width - paddingWidth - 19.5 , 40);
+        var max_value = spectrumRange.max_value ? parseFloat(spectrumRange.max_value) : 0;
+        max_value =  max_value.toString().length <= 4 ? max_value:  max_value.toPrecision(4);
+        var min_value = spectrumRange.min_value ? parseFloat(spectrumRange.min_value) : 0;
+        min_value = min_value.toString().length <= 4  ? min_value  : min_value.toPrecision(4);
+        context.fillStyle = "#595959";
+        // Min mark text
+        var minusMaxText = '-' + max_value;
+        var minusMaxTextRightPos = context.measureText(minusMaxText).width;
+        context.fillText(minusMaxText, paddingWidth, 40);
+        // Middle mark text
+        var middleText = 0;
+        var middleTextLeftPos = 0.5 * canvas.width - context.measureText(middleText).width / 2;
+        var middleTextRightPos = middleTextLeftPos + context.measureText(middleText).width;
+        context.fillText(middleText, middleTextLeftPos, 40);
+        // Max mark text
+       
+        var plusMaxText = max_value;
+        var pluxMaxTextLeftPos = canvas.width - paddingWidth - context.measureText(plusMaxText).width;
+        context.fillText(plusMaxText, pluxMaxTextLeftPos, 40);
+        // Quarter mark text
+        var minusMinText = '-' + min_value;
+        var minusMinTextWidth = context.measureText(minusMinText).width;
+        var minusMinTextLeftPos = 0.5 * canvas.width - subpaddingWidth - minusMinTextWidth / 2;
+        if (minusMinTextLeftPos < minusMaxTextRightPos) {
+          minusMinTextLeftPos = minusMaxTextRightPos + 2;
+        }
+        if (minusMinTextLeftPos + minusMinTextWidth > middleTextLeftPos) {
+          minusMinTextLeftPos = middleTextLeftPos - minusMinTextWidth - 2;
+        }
+        context.fillText(minusMinText, minusMinTextLeftPos, 40);
+        // Three-quarter mark text
+        
+        var plusMinText = min_value;
+        var plusMinTextWidth = context.measureText(plusMinText).width;
+        var plusMinTextLeftPos = 0.5 * canvas.width + subpaddingWidth - plusMinTextWidth / 2;
+        if (plusMinTextLeftPos < middleTextRightPos) {
+          plusMinTextLeftPos = middleTextRightPos + 2;
+        }
+        if (plusMinTextLeftPos + plusMinTextWidth > pluxMaxTextLeftPos) {
+          plusMinTextLeftPos = pluxMaxTextLeftPos - plusMinTextWidth - 2;
+        }
+        context.fillText(plusMinText, plusMinTextLeftPos, 40);
 
         return canvas;
       }

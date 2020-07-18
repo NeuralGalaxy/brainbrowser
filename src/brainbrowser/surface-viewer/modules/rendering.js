@@ -30,6 +30,11 @@
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
+  if (!viewer.dom_element) {
+    // reset dom element for rending async cause js error
+    viewer.dom_element = document.createElement('div');
+  }
+
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
   var renderer = new THREE.WebGLRenderer({
@@ -75,6 +80,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     renderFrame();
   };
+
+  viewer.clearCachedWebgl = function () {
+    viewer.clearAllListeners && viewer.clearAllListeners();
+    viewer.model_data && viewer.model_data.clear();
+    if (viewer.model && viewer.model.children) {
+      viewer.model.children = [];
+    }
+    renderer.clearCachedWebglObjects();
+  }
 
   /**
   * @doc function
@@ -987,6 +1001,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var last_y = null;
     var last_touch_distance = null;
 
+    function viewerClickCallBack() {
+      if (viewer.clickCallBack) {
+        viewer.clickCallBack();
+      }
+    }
+
     function drag(pointer, multiplier) {
       var inverse = new THREE.Matrix4();
       var x       = pointer.x;
@@ -1029,7 +1049,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
       last_x = x;
       last_y = y;
-
+      viewerClickCallBack();
       viewer.updated = true;
     }
 
@@ -1050,8 +1070,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function mouseDrag(event) {
+      viewer.moveFlag = true;
       event.preventDefault();
       drag(viewer.mouse, 1.1);
+      viewerClickCallBack();
     }
 
     function touchDrag(event) {
@@ -1061,13 +1083,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       } else {
         drag(viewer.touches[0], 2);
       }
+      viewerClickCallBack();
     }
 
     function mouseDragEnd() {
+      viewer.moveFlag = false;
       document.removeEventListener("mousemove", mouseDrag, false);
       document.removeEventListener("mouseup", mouseDragEnd, false);
       last_x = null;
       last_y = null;
+      viewerClickCallBack();
     }
 
     function touchDragEnd() {
@@ -1076,6 +1101,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       last_x = null;
       last_y = null;
       last_touch_distance = null;
+      viewerClickCallBack();
     }
 
     function wheelHandler(event) {
@@ -1092,6 +1118,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
+      viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
 
