@@ -522,6 +522,7 @@
 
   // Draw the cursor at its current position on the canvas.
   function drawCursor(panel, color) {
+    
     var context = panel.context;
     var cursor = panel.getCursorPosition();
     var zoom = panel.zoom;
@@ -574,7 +575,7 @@
         context.textBaseline = "bottom";
         y = cursor.y - length;
       }
-
+      console.log(distance.toFixed(2), x, y);
       context.fillText(distance.toFixed(2), x, y);
 
       context.lineWidth = 1;

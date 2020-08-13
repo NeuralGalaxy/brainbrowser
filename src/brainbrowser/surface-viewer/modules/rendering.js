@@ -304,6 +304,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   };
 
+  viewer.customizedrawLines = function(startPoint, endPoint) {
+    var start = new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z);
+    var end = new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z);
+    viewer.drawLine(start, end, {
+      color: 0x0000ff,
+    });
+  };
+
   /**
   * @doc function
   * @name viewer.rendering:drawGrid
@@ -420,7 +428,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var geometry = new THREE.Geometry();
     var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
 
-    var grid     = Object.create( THREE.GridHelper.prototype );
+    var grid = Object.create( THREE.GridHelper.prototype );
 
     // Horizontal axes
     for ( var z = horizontal_from; z <= horizontal_to; z += step ) {
@@ -476,15 +484,21 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     // Set the material according with the dashed option
     var material = options.dashed === true ?
-                     new THREE.LineDashedMaterial({ linewidth: 3, color: color, gapSize: 3 })
-                   : new THREE.LineBasicMaterial( { linewidth: 3, color: color });
+                     new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
+                   : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
 
     var line = new THREE.Line( geometry, material, THREE.LinePieces );
-
+  
     if (options.draw === false) {return line;}
 
     if (viewer.model) {
-      viewer.model.add(line);
+      var children = [].concat(viewer.model.children);
+      for (var i = 0; i < children.length; i++){
+        if (children[i].type === 'Line') {
+          viewer.model.children.splice(i, 1);
+        }
+      }
+      viewer.model.add(line);      
     } else {
       scene.add(line);
     }
@@ -583,6 +597,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.pick = function(x, y, opacity_threshold) {
+    // console.log(viewer.mouse.x, viewer.mouse.y, 'viewer.pick');
     x = x === undefined ? viewer.mouse.x : x;
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
@@ -994,6 +1009,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   // CONTROLS
   ////////////////////////////////
 
+  viewer.mouslinesss = function(element) {
+    var mous = BrainBrowser.utils.captureMouse(renderer.domElement, 'surface-viewer');
+    console.log(mous);
+  };
+  var mouse = { x: 0, y: 0, left: false, middle: false, right: false};
+  var dStartPoint = {point:{x: 0, y: 0, z:0}};
   (function() {
     var model = viewer.model;
     var movement = "rotate";
@@ -1046,7 +1067,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           light.position.y  += dy * multiplier * 0.25;
         }
       }
-
       last_x = x;
       last_y = y;
       viewerClickCallBack();
@@ -1072,8 +1092,26 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function mouseDrag(event) {
       viewer.moveFlag = true;
       event.preventDefault();
-      drag(viewer.mouse, 1.1);
+      // drag(viewer.mouse, 1.1);
       viewerClickCallBack();
+      var obj = getaaPoint(event);
+      viewer.customizedrawLines(dStartPoint.point, obj.point);
+    //   var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
+    //     var x, y;
+    //     if (event.pageX !== undefined) {
+    //       x = event.pageX;
+    //       y = event.pageY;
+    //     } else {
+    //       x = event.clientX + window.pageXOffset;
+    //       y = event.clientY + window.pageYOffset;
+    //     }
+
+    //     mouse.x = x - offset.left;
+    //     mouse.y = y - offset.top;
+
+    //     var obj = viewer.pick(mouse.x, mouse.y);
+    //     console.log(obj.point.x, obj.point.y, obj.point.z);
+        
     }
 
     function touchDrag(event) {
@@ -1092,6 +1130,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.removeEventListener("mouseup", mouseDragEnd, false);
       last_x = null;
       last_y = null;
+      mouse = { x: 0, y: 0, left: false, middle: false, right: false};
       viewerClickCallBack();
     }
 
@@ -1120,15 +1159,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     canvas.addEventListener("mousedown", function(event) {
       viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
+      viewer.setTransparency(0.3);
+      dStartPoint = viewer.pick();
       document.addEventListener("mouseup", mouseDragEnd, false);
-
       movement = event.which === 1 ? "rotate" : "translate" ;
     }, false);
 
     canvas.addEventListener("touchstart", function(event) {
       document.addEventListener("touchmove", touchDrag, false);
       document.addEventListener("touchend", touchDragEnd, false);
-
       movement = event.touches.length === 1 ? "rotate" :
                  event.touches.length === 2 ? "zoom" :
                  "translate";
@@ -1143,6 +1182,23 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       event.preventDefault();
     }, false);
     
+    function getaaPoint(event) {
+      var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
+        var x, y;
+        if (event.pageX !== undefined) {
+          x = event.pageX;
+          y = event.pageY;
+        } else {
+          x = event.clientX + window.pageXOffset;
+          y = event.clientY + window.pageYOffset;
+        }
+
+        // mouse.x = x - offset.left;
+        // mouse.y = y - offset.top;
+
+        return viewer.pick(x - offset.left, y - offset.top);
+    }
+
   })();
 
 };

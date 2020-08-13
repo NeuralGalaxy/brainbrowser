@@ -530,7 +530,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         var last_touch_distance = null;
 
         function startDrag(pointer, shift_key, ctrl_key) {
-
+          console.log('getWorldCoordsgetWorldCoords');
           if (ctrl_key) {
             viewer.volumes.forEach(function(volume) {
               volume.display.forEach(function(panel) {
