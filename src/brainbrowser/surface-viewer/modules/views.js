@@ -118,10 +118,7 @@ BrainBrowser.SurfaceViewer.modules.views = function(viewer) {
     }
 
     shapes.forEach(function(shape) {
-      console.log(shape, 'shapeshapeshape');
       if (shape.type === 'Line') {
-        console.log('LineLineLine');
-
         return;
       }
       material = shape.material;

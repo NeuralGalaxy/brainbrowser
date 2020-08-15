@@ -66,13 +66,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * viewer.render();
   * ```
   */
+  viewer.lineMode = false;
+  viewer.polyLineMode = true;
+  viewer.polyLinePoints = [];
   viewer.render = function() {
     var dom_element = viewer.dom_element;
     renderer.setClearColor(0x000000);
     dom_element.appendChild(renderer.domElement);
-
     camera.position.z = default_camera_distance;
-
     light.position.set(0, 0, default_camera_distance);
     scene.add(light);
 
@@ -307,6 +308,26 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.customizedrawLines = function(startPoint, endPoint) {
     var start = new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z);
     var end = new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z);
+    var children = [].concat(viewer.model.children);
+    for (var i = 0; i < children.length; i++){
+      if (children[i].type === 'Line') {
+        viewer.model.children.splice(i, 1);
+      }
+    }
+    viewer.drawLine(start, end, {
+      color: 0x0000ff,
+    });
+  };
+
+  viewer.drawPolyLine = function(startPoint, endPoint) {
+    var start = new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z);
+    var end = new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z);
+    var children = [].concat(viewer.model.children);
+    for (var i = 0; i < children.length; i++){
+      if (children[i].type === 'Line' && i > viewer.polyLinePoints.length) {
+        viewer.model.children.splice(i, 1);
+      }
+    }
     viewer.drawLine(start, end, {
       color: 0x0000ff,
     });
@@ -492,12 +513,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (options.draw === false) {return line;}
 
     if (viewer.model) {
-      var children = [].concat(viewer.model.children);
-      for (var i = 0; i < children.length; i++){
-        if (children[i].type === 'Line') {
-          viewer.model.children.splice(i, 1);
-        }
-      }
       viewer.model.add(line);      
     } else {
       scene.add(line);
@@ -1013,8 +1028,8 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var mous = BrainBrowser.utils.captureMouse(renderer.domElement, 'surface-viewer');
     console.log(mous);
   };
-  var mouse = { x: 0, y: 0, left: false, middle: false, right: false};
-  var dStartPoint = {point:{x: 0, y: 0, z:0}};
+  var startVertexData = { point: { x: 0, y: 0, z:0 }, position2D: { x: 0, y: 0 }};
+  var endPoinxyz; // x y z;
   (function() {
     var model = viewer.model;
     var movement = "rotate";
@@ -1092,26 +1107,22 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function mouseDrag(event) {
       viewer.moveFlag = true;
       event.preventDefault();
-      // drag(viewer.mouse, 1.1);
+      if (viewer.lineMode) {
+        var obj = get3DPoint(event);
+        var endPosition2D = { x: obj.x, y: obj.y };
+        insertDom(startVertexData.position2D, endPosition2D);
+        viewer.customizedrawLines(startVertexData.point, obj.vertex_data.point); 
+      }
+      if (viewer.polyLineMode) {
+        var obj = get3DPoint(event);
+        endPoinxyz = obj.vertex_data.point;
+        console.log(viewer.polyLinePoints[viewer.polyLinePoints.length - 1], 'start');
+        viewer.drawPolyLine(viewer.polyLinePoints[viewer.polyLinePoints.length - 1], obj.vertex_data.point); 
+      }
+      if (!viewer.lineMode && !viewer.polyLineMode) {
+        drag(viewer.mouse, 1.1);
+      }
       viewerClickCallBack();
-      var obj = getaaPoint(event);
-      viewer.customizedrawLines(dStartPoint.point, obj.point);
-    //   var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
-    //     var x, y;
-    //     if (event.pageX !== undefined) {
-    //       x = event.pageX;
-    //       y = event.pageY;
-    //     } else {
-    //       x = event.clientX + window.pageXOffset;
-    //       y = event.clientY + window.pageYOffset;
-    //     }
-
-    //     mouse.x = x - offset.left;
-    //     mouse.y = y - offset.top;
-
-    //     var obj = viewer.pick(mouse.x, mouse.y);
-    //     console.log(obj.point.x, obj.point.y, obj.point.z);
-        
     }
 
     function touchDrag(event) {
@@ -1130,8 +1141,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.removeEventListener("mouseup", mouseDragEnd, false);
       last_x = null;
       last_y = null;
-      mouse = { x: 0, y: 0, left: false, middle: false, right: false};
       viewerClickCallBack();
+      if(viewer.polyLineMode && endPoinxyz) {
+        console.log('mouseDragEnd', endPoinxyz);
+        viewer.polyLinePoints.push(endPoinxyz);
+      }
     }
 
     function touchDragEnd() {
@@ -1146,9 +1160,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function wheelHandler(event) {
       if (event.ctrlKey) {
         var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-
         event.preventDefault();
-
         viewer.zoom *= 1.0 + 0.02 * delta;
         if (viewer.zoomCallBack) {
           viewer.zoomCallBack(viewer.zoom);
@@ -1159,10 +1171,21 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     canvas.addEventListener("mousedown", function(event) {
       viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
-      viewer.setTransparency(0.3);
-      dStartPoint = viewer.pick();
       document.addEventListener("mouseup", mouseDragEnd, false);
       movement = event.which === 1 ? "rotate" : "translate" ;
+      if (viewer.lineMode) {
+        viewer.setTransparency(0.3);
+        startVertexData.point = viewer.pick().point;
+        startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
+      }
+      if (viewer.polyLineMode) {
+        viewer.setTransparency(0.3);
+        startVertexData.point = viewer.pick().point;
+        startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
+        if (viewer.polyLinePoints.length === 0) {
+          viewer.polyLinePoints.push(startVertexData.point);
+        }
+      }
     }, false);
 
     canvas.addEventListener("touchstart", function(event) {
@@ -1182,7 +1205,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       event.preventDefault();
     }, false);
     
-    function getaaPoint(event) {
+    function get3DPoint(event) {
       var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
         var x, y;
         if (event.pageX !== undefined) {
@@ -1193,10 +1216,42 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           y = event.clientY + window.pageYOffset;
         }
 
-        // mouse.x = x - offset.left;
-        // mouse.y = y - offset.top;
+        var vertex_data = viewer.pick(x - offset.left, y - offset.top);
+        return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
+    }
 
-        return viewer.pick(x - offset.left, y - offset.top);
+    function insertDom(startPoint, endPoint) {
+      var left = 0;
+      var top = 0;
+      if (startPoint.x - endPoint.x > 0) {
+        left = startPoint.x - (startPoint.x - endPoint.x) / 2;
+      }else {
+        left = endPoint.x - (endPoint.x - startPoint.x) / 2;
+      }
+
+      if (endPoint.y - startPoint.y > 0) {
+        top = endPoint.y - (endPoint.y - startPoint.y) / 2;
+      } else {
+        top = startPoint.y - (startPoint.y - endPoint.y) / 2;
+      }
+
+     var ele = document.getElementById('line-lenght-text-view');
+     if (ele) {
+      ele.style.left = left + 'px';
+      ele.style.top = top + 'px';
+     } else {
+      var el1 = document.createElement('div');
+      el1.style.height = '5px';
+      el1.style.width = '5px';
+      el1.style.position = 'absolute';
+      el1.style.left = left + 'px';
+      el1.style.top = top + 'px';
+      el1.style.background = 'red';
+      el1.id = 'line-lenght-text-view';
+
+      viewer.dom_element.appendChild(el1);
+     }
+      
     }
 
   })();
