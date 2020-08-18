@@ -277,11 +277,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   */
   viewer.drawDot = function(x, y, z, radius, color) {
     radius = radius || 2;
-    radius = radius >= 0 ? radius : 0;
+    radius = 2; // radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
     var geometry = new THREE.SphereGeometry(radius);
-    var material = new THREE.MeshBasicMaterial({color: color});
+    var material = new THREE.MeshLambertMaterial({color: color});
 
     var sphere   = new THREE.Mesh(geometry, material);
     sphere.position.set(x, y, z);
