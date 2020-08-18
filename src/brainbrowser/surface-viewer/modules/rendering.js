@@ -281,7 +281,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     color  = color  >= 0 ? color  : 0xFF0000;
 
     var geometry = new THREE.SphereGeometry(radius);
-    var material = new THREE.MeshLambertMaterial({color: color});
+    var material = new THREE.MeshPhongMaterial({
+      color: color,
+      specular: 0xFFFFFF,
+    });
 
     var sphere   = new THREE.Mesh(geometry, material);
     sphere.position.set(x, y, z);
