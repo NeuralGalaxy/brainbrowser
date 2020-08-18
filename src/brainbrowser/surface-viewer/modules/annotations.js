@@ -28,7 +28,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
   "use strict";
 
   var annotations = BrainBrowser.createTreeStore();
-  var marker_radius = 0.5;
+  var marker_radius = 2;
   var marker_on_color = 0x00FF00;
   var marker_off_color = 0xFFFFFF;
 

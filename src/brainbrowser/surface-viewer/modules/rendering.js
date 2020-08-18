@@ -277,7 +277,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   */
   viewer.drawDot = function(x, y, z, radius, color) {
     radius = radius || 2;
-    radius = 2; // radius >= 0 ? radius : 0;
+    radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
     var geometry = new THREE.SphereGeometry(radius);
