@@ -608,16 +608,20 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          viewer.volumes.forEach(function(volume) {
+          /* viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
               // panel.anchor = null;
             });
-          });
+          }); */
           if (panel.anchor) {
-            panel.anchor.push({
-              x: panel.mouse.x, 
-              y: panel.mouse.y,
-            });
+            var lastAnchor = panel.anchor[panel.anchor.length - 1];
+            var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
+            if (!isSamePoint) {
+              panel.anchor.push({
+                x: panel.mouse.x, 
+                y: panel.mouse.y,
+              });
+            }
           }
           current_target = null;
         }

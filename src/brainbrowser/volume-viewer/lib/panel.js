@@ -588,15 +588,20 @@
     }
 
     if (panel.anchor) {
+      if (panel.anchor.length === 1) {
+        // draw point
+        var center = panel.anchor[0];
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
       panel.anchor.forEach((item, index) => {
-        var isEndItem = panel.anchor.lneght > index + 1;
         var preItem = index > 0 ? panel.anchor[index - 1] : null;
 
         if (preItem) {
           drawLine(preItem, item);
-        }
-        if (isEndItem) {
-          drawLine(item, cursor);
         }
       });
     }
