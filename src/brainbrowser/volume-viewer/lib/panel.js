@@ -603,6 +603,9 @@
         if (preItem) {
           drawLine(preItem, item);
         }
+        if (index === panel.anchor.length - 1) {
+          drawLine(item, panel.dragAnchor);
+        }
       });
     }
 

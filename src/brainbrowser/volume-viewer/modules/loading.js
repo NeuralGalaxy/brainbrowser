@@ -576,6 +576,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           } else {
             panel.updateVolumePosition(pointer.x, pointer.y);
+            panel.dragAnchor = pointer;
             volume.display.forEach(function(other_panel) {
               if (panel !== other_panel) {
                 other_panel.updateSlice();
