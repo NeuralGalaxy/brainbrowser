@@ -559,25 +559,19 @@
 
       context.font = "bold 12px arial";
 
-      if (panel.canvas.width - end.x < 50) {
-        context.textAlign = "right";
-        x = end.x - length;
-      } else {
-        context.textAlign = "left";
-        x = end.x + length;
+      if (start.x > end.x) {
+        x = end.x + (start.x - end.x) / 2; 
+      }else {
+        x = start.x + (end.x - start.x) / 2; 
       }
-
-      if (end.y < 30) {
-        context.textBaseline = "top";
-        y = end.y + length;
+      if (start.y > end.y) {
+        y = end.y + (start.y - end.y) / 2;
       } else {
-        context.textBaseline = "bottom";
-        y = end.y - length;
+        y = start.y + (end.y - start.y) / 2;
       }
-
       
       context.fillText(distance.toFixed(2), x, y);
-
+      console.log(distance.toFixed(2), 'zongchangdu');
       context.lineWidth = 1;
       context.beginPath();
       context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);

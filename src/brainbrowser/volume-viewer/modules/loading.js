@@ -31,7 +31,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   var default_color_map = null;
   var default_panel_width = 256;
   var default_panel_height = 256;
-
+  viewer.drawLine = false;
+  viewer.drawPolyline = true;
   /**
   * @doc function
   * @name viewer.loading:loadVolumes
@@ -526,6 +527,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       
       views.forEach(function(axis_name) {
         var panel = display.getPanel(axis_name);
+        panel.drawPolyline = viewer.drawPolyline;
+        panel.drawLine = viewer.drawLine;
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
@@ -609,12 +612,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          /* viewer.volumes.forEach(function(volume) {
-            volume.display.forEach(function(panel) {
-              // panel.anchor = null;
-            });
-          }); */
-          if (panel.anchor) {
+          if (viewer.drawLine) {
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                // panel.anchor = null;
+              });
+            }); 
+          }
+          if (panel.anchor && viewer.drawPolyline) {
             var lastAnchor = panel.anchor[panel.anchor.length - 1];
             var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
             if (!isSamePoint) {
