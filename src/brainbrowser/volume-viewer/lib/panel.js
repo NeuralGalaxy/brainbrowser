@@ -552,39 +552,53 @@
     context.lineTo(x + length, y);
     context.stroke();
 
-    if (panel.anchor) {
-      dx = (panel.anchor.x - cursor.x) / panel.zoom;
-      dy = (panel.anchor.y - cursor.y) / panel.zoom;
+    var drawLine = function (start, end) {
+      dx = (start.x - end.x) / panel.zoom;
+      dy = (start.y - end.y) / panel.zoom;
       distance = Math.sqrt(dx * dx + dy * dy);
 
       context.font = "bold 12px arial";
 
-      if (panel.canvas.width - cursor.x < 50) {
+      if (panel.canvas.width - end.x < 50) {
         context.textAlign = "right";
-        x = cursor.x - length;
+        x = end.x - length;
       } else {
         context.textAlign = "left";
-        x = cursor.x + length;
+        x = end.x + length;
       }
 
-      if (cursor.y < 30) {
+      if (end.y < 30) {
         context.textBaseline = "top";
-        y = cursor.y + length;
+        y = end.y + length;
       } else {
         context.textBaseline = "bottom";
-        y = cursor.y - length;
+        y = end.y - length;
       }
 
+      
       context.fillText(distance.toFixed(2), x, y);
 
       context.lineWidth = 1;
       context.beginPath();
-      context.arc(panel.anchor.x, panel.anchor.y, 2 * space, 0, 2 * Math.PI);
+      context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
       context.fill();
-      context.moveTo(panel.anchor.x, panel.anchor.y);
-      context.lineTo(cursor.x, cursor.y);
+      context.moveTo(start.x, start.y);
+      context.lineTo(end.x, end.y);
       context.stroke();
+    }
 
+    if (panel.anchor) {
+      panel.anchor.forEach((item, index) => {
+        var isEndItem = panel.anchor.lneght > index + 1;
+        var preItem = index > 0 ? panel.anchor[index - 1] : null;
+
+        if (preItem) {
+          drawLine(preItem, item);
+        }
+        if (isEndItem) {
+          drawLine(item, cursor);
+        }
+      });
     }
 
     context.restore();

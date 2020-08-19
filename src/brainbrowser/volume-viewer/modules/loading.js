@@ -538,10 +538,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               });
             });
 
-            panel.anchor = {
+            panel.anchor = [{
               x: pointer.x,
               y: pointer.y
-            };
+            }];
           }
 
           if (!shift_key) {
@@ -604,14 +604,21 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
         }
         
-        function mouseDragEnd() {
+        function mouseDragEnd(event) {
+          event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
-              panel.anchor = null;
+              // panel.anchor = null;
             });
           });
+          if (panel.anchor) {
+            panel.anchor.push({
+              x: panel.mouse.x, 
+              y: panel.mouse.y,
+            });
+          }
           current_target = null;
         }
 
@@ -620,7 +627,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("touchend", touchDragEnd, false);
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
-              panel.anchor = null;
+              // panel.anchor = null;
             });
           });
           current_target = null;
