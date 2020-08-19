@@ -571,7 +571,6 @@
       }
       
       context.fillText(distance.toFixed(2), x, y);
-      console.log(distance.toFixed(2), 'zongchangdu');
       context.lineWidth = 1;
       context.beginPath();
       context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
@@ -579,11 +578,33 @@
       context.moveTo(start.x, start.y);
       context.lineTo(end.x, end.y);
       context.stroke();
+    };
+
+    if (panel.isDrawPoints) {
+      if (panel.drawPoints && panel.drawPoints.length > 1) {
+        var center = panel.drawPoints[0];
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
+      panel.drawPoints.forEach(function(item, index) {
+        var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
+        if (preItem) {
+          drawLine(preItem, item);
+        }
+        if (index === panel.drawPoints.length - 1) {
+          drawLine(item, panel.drawPoints[0]);
+        }
+      });
+
+      context.restore();
+      return;
     }
 
     if (panel.anchor) {
       if (panel.anchor.length === 1) {
-        // draw point
         var center = panel.anchor[0];
         context.lineWidth = 1;
         context.beginPath();
@@ -593,7 +614,6 @@
       }
       panel.anchor.forEach((item, index) => {
         var preItem = index > 0 ? panel.anchor[index - 1] : null;
-
         if (preItem) {
           drawLine(preItem, item);
         }
