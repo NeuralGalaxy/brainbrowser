@@ -543,7 +543,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
           if (ctrl_key) {
             viewer.volumes.forEach(function(volume) {
-              
               volume.display.forEach(function(panel) {
                 panel.anchor = null;
               });
@@ -627,24 +626,24 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           }
 
-          if (viewer.drawPolyline) {
-            var allLength;
-            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-            for (var i = 0; i < panel.anchor.length; i++) {
-              var endpoint = i === panel.anchor.length.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
-              allLength += calculationLine(panel.anchor[i], endpoint);
-            }
-            if (panel.anchor.length === viewer.polylineWorldCoords.length) {
-              viewer.polylineWorldCoords.push(coords);
-            }else {
-              viewer.polylineWorldCoords.pop();
-              viewer.polylineWorldCoords.push(coords);
-            }
-            console.log(allLength, viewer.polylineWorldCoords);
-            if (viewer.drawLineCallBack) {
-              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
-            }
-          }
+          // if (viewer.drawPolyline && panel.anchor) {
+          //   var allLength;
+          //   var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+          //   for (var i = 0; i < panel.anchor.length; i++) {
+          //     var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+          //     allLength += calculationLine(panel.anchor[i], endpoint);
+          //   }
+          //   if (panel.anchor.length === viewer.polylineWorldCoords.length) {
+          //     viewer.polylineWorldCoords.push(coords);
+          //   }else {
+          //     viewer.polylineWorldCoords.pop();
+          //     viewer.polylineWorldCoords.push(coords);
+          //   }
+          //   console.log(allLength, viewer.polylineWorldCoords);
+          //   if (viewer.drawLineCallBack) {
+          //     viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
+          //   }
+          // }
 
           panel.updated = true;
         }
