@@ -569,6 +569,12 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             });
             panel.drawPoints = viewer.drawPoints;
             viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
+
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            viewer.pointsWorldCoords = [coords];
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, undefined);
+            }
           }
 
           if (!shift_key) {
@@ -626,24 +632,16 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           }
 
-          // if (viewer.drawPolyline && panel.anchor) {
-          //   var allLength;
-          //   var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-          //   for (var i = 0; i < panel.anchor.length; i++) {
-          //     var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
-          //     allLength += calculationLine(panel.anchor[i], endpoint);
-          //   }
-          //   if (panel.anchor.length === viewer.polylineWorldCoords.length) {
-          //     viewer.polylineWorldCoords.push(coords);
-          //   }else {
-          //     viewer.polylineWorldCoords.pop();
-          //     viewer.polylineWorldCoords.push(coords);
-          //   }
-          //   console.log(allLength, viewer.polylineWorldCoords);
-          //   if (viewer.drawLineCallBack) {
-          //     viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
-          //   }
-          // }
+          if (viewer.drawPolyline && panel.anchor) {
+            var allLength = 0;
+            for (var i = 0; i < panel.anchor.length; i++) {
+              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+              allLength += calculationLine(panel.anchor[i], endpoint, panel);
+            }
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
+            }
+          }
 
           panel.updated = true;
         }
@@ -667,11 +665,11 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
           if (viewer.drawLine) {
-            // viewer.volumes.forEach(function(volume) {
-            //   volume.display.forEach(function(panel) {
-            //     panel.anchor = null;
-            //   });
-            // }); 
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                panel.anchor = null;
+              });
+            }); 
           }
           if (panel.anchor && viewer.drawPolyline) {
             var lastAnchor = panel.anchor[panel.anchor.length - 1];
@@ -683,11 +681,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               });
             }
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-            if (viewer.polylineWorldCoords.length === panel.anchor.length) {
-              viewer.polylineWorldCoords.pop();
-              viewer.polylineWorldCoords.push(coords);
-            }else {
-              viewer.polylineWorldCoords.push(coords);
+            viewer.polylineWorldCoords.push(coords);
+            var allLength = 0;
+            for (var i = 0; i < panel.anchor.length; i++) {
+              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+              allLength += calculationLine(panel.anchor[i], endpoint, panel);
+            }
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
             }
           }
           current_target = null;
@@ -801,7 +802,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           var  dx = (start.x - end.x) / panel.zoom;
           var  dy = (start.y - end.y) / panel.zoom;
 
-          return Math.sqrt(dx * dx + dy * dy)
+          return Math.sqrt(dx * dx + dy * dy);
         }
 
         canvas.addEventListener("mousedown", canvasMousedown, false);
