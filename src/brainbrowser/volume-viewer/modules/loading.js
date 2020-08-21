@@ -539,6 +539,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
+        viewer.clearPanel = function() {
+          viewer.volumes.forEach(function(volume) {
+            volume.display.forEach(function(panel) {
+              panel.anchor = null;
+            });
+          });
+        };
+
         function startDrag(pointer, shift_key, ctrl_key) {
 
           if (ctrl_key) {
