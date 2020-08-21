@@ -31,7 +31,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   var default_color_map = null;
   var default_panel_width = 256;
   var default_panel_height = 256;
-
+  viewer.drawLine = true;
+  viewer.drawPolyline = false;
+  viewer.isDrawPoints = false;
+  viewer.drawPoints = [];
   /**
   * @doc function
   * @name viewer.loading:loadVolumes
@@ -526,6 +529,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       
       views.forEach(function(axis_name) {
         var panel = display.getPanel(axis_name);
+        panel.drawPolyline = viewer.drawPolyline;
+        panel.drawLine = viewer.drawLine;
+        panel.isDrawPoints = viewer.isDrawPoints;
+        panel.drawPoints = [];
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
@@ -538,10 +545,20 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               });
             });
 
-            panel.anchor = {
+            panel.anchor = [{
               x: pointer.x,
               y: pointer.y
-            };
+            }];
+          }
+
+          if (viewer.isDrawPoints) {
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                panel.drawPoints = [];
+              });
+            });
+            panel.drawPoints = viewer.drawPoints;
+            viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
           }
 
           if (!shift_key) {
@@ -576,6 +593,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           } else {
             panel.updateVolumePosition(pointer.x, pointer.y);
+            panel.dragAnchor = pointer;
             volume.display.forEach(function(other_panel) {
               if (panel !== other_panel) {
                 other_panel.updateSlice();
@@ -604,14 +622,27 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
         }
         
-        function mouseDragEnd() {
+        function mouseDragEnd(event) {
+          event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          viewer.volumes.forEach(function(volume) {
-            volume.display.forEach(function(panel) {
-              panel.anchor = null;
-            });
-          });
+          if (viewer.drawLine) {
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                panel.anchor = null;
+              });
+            }); 
+          }
+          if (panel.anchor && viewer.drawPolyline) {
+            var lastAnchor = panel.anchor[panel.anchor.length - 1];
+            var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
+            if (!isSamePoint) {
+              panel.anchor.push({
+                x: panel.mouse.x, 
+                y: panel.mouse.y,
+              });
+            }
+          }
           current_target = null;
         }
 
@@ -620,7 +651,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("touchend", touchDragEnd, false);
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
-              panel.anchor = null;
+              // panel.anchor = null;
             });
           });
           current_target = null;
@@ -660,7 +691,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.active_panel.updated = true;
           }
           viewer.active_panel = panel;
-
           document.addEventListener("mousemove", mouseDrag , false);
           document.addEventListener("mouseup", mouseDragEnd, false);
 
