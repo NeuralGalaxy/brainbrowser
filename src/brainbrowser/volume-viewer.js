@@ -424,12 +424,12 @@
               return;
             }
 
-            if (panel.mouse.left || panel.mouse.middle || panel.mouse.right) {
-              panel.anchor = {
+            /* if (panel.mouse.left || panel.mouse.middle || panel.mouse.right) {
+              panel.anchor = [{
                 x: panel.mouse.x,
                 y: panel.mouse.y
-              };
-            }
+              }];
+            } */
           },
           // Left
           37: function() {
@@ -515,11 +515,11 @@
         var keys = {
           // CTRL key
           17: function() {
-            viewer.volumes.forEach(function(volume) {
+            /* viewer.volumes.forEach(function(volume) {
               volume.display.forEach(function(panel) {
                 panel.anchor = null;
               });
-            });
+            }); */
           }
         };
 
