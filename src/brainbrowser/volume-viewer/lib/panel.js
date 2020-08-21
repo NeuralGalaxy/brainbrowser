@@ -552,39 +552,75 @@
     context.lineTo(x + length, y);
     context.stroke();
 
-    if (panel.anchor) {
-      dx = (panel.anchor.x - cursor.x) / panel.zoom;
-      dy = (panel.anchor.y - cursor.y) / panel.zoom;
+    var drawLine = function (start, end) {
+      dx = (start.x - end.x) / panel.zoom;
+      dy = (start.y - end.y) / panel.zoom;
       distance = Math.sqrt(dx * dx + dy * dy);
 
       context.font = "bold 12px arial";
 
-      if (panel.canvas.width - cursor.x < 50) {
-        context.textAlign = "right";
-        x = cursor.x - length;
-      } else {
-        context.textAlign = "left";
-        x = cursor.x + length;
+      if (start.x > end.x) {
+        x = end.x + (start.x - end.x) / 2; 
+      }else {
+        x = start.x + (end.x - start.x) / 2; 
       }
-
-      if (cursor.y < 30) {
-        context.textBaseline = "top";
-        y = cursor.y + length;
+      if (start.y > end.y) {
+        y = end.y + (start.y - end.y) / 2;
       } else {
-        context.textBaseline = "bottom";
-        y = cursor.y - length;
+        y = start.y + (end.y - start.y) / 2;
       }
-
+      
       context.fillText(distance.toFixed(2), x, y);
-
       context.lineWidth = 1;
       context.beginPath();
-      context.arc(panel.anchor.x, panel.anchor.y, 2 * space, 0, 2 * Math.PI);
+      context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
       context.fill();
-      context.moveTo(panel.anchor.x, panel.anchor.y);
-      context.lineTo(cursor.x, cursor.y);
+      context.moveTo(start.x, start.y);
+      context.lineTo(end.x, end.y);
       context.stroke();
+    };
 
+    if (panel.isDrawPoints) {
+      if (panel.drawPoints && panel.drawPoints.length > 1) {
+        var center = panel.drawPoints[0];
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
+      panel.drawPoints.forEach(function(item, index) {
+        var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
+        if (preItem) {
+          drawLine(preItem, item);
+        }
+        if (index === panel.drawPoints.length - 1) {
+          drawLine(item, panel.drawPoints[0]);
+        }
+      });
+
+      context.restore();
+      return;
+    }
+
+    if (panel.anchor) {
+      if (panel.anchor.length === 1) {
+        var center = panel.anchor[0];
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
+      panel.anchor.forEach((item, index) => {
+        var preItem = index > 0 ? panel.anchor[index - 1] : null;
+        if (preItem) {
+          drawLine(preItem, item);
+        }
+        if (index === panel.anchor.length - 1) {
+          drawLine(item, panel.dragAnchor);
+        }
+      });
     }
 
     context.restore();
