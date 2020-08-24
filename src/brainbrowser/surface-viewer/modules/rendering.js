@@ -67,7 +67,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.lineMode = false;
-  viewer.polyLineMode = true;
+  viewer.polyLineMode = false;
   viewer.polyLinePoints = [];
   viewer.render = function() {
     var dom_element = viewer.dom_element;
@@ -1147,10 +1147,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           var allpolyLines = [].concat(viewer.polyLinePoints);
           allpolyLines.push(obj.vertex_data);
           var allLength = 0;
-          for(var i = 0; i < allpolyLines.length; i ++) {
-            if (i !== allpolyLines.length - 1) {
-              allLength += parseFloat(calculationLineWidth(allpolyLines[i], allpolyLines[i + 1]));
-            }
+          console.log(allpolyLines, 'allpolyLines');
+          for(var i = 0; i < allpolyLines.length - 1; i ++) {
+            allLength += parseFloat(calculationLineWidth(allpolyLines[i], allpolyLines[i + 1]));
           }
           viewer.drawLineCallBack(allpolyLines, allLength);
         }
@@ -1209,12 +1208,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.addEventListener("mouseup", mouseDragEnd, false);
       movement = event.which === 1 ? "rotate" : "translate" ;
       if (viewer.lineMode) {
-        viewer.setTransparency(0.3);
         startVertexData.point = viewer.pick().point;
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
       }
       if (viewer.polyLineMode) {
-        viewer.setTransparency(0.3);
         startVertexData.point = viewer.pick().point;
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
