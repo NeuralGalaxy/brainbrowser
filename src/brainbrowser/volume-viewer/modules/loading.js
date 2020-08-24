@@ -576,7 +576,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.lineWorldCoords = [coords];
           }
-          if (viewer.drawPolyline) {
+          if (viewer.drawPolyline && viewer.polylineWorldCoords.length === 0) {
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.polylineWorldCoords = [coords];
           }
@@ -700,6 +700,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               });
             }
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            console.log(viewer.polylineWorldCoords, '------');
             viewer.polylineWorldCoords.push(coords);
             var allLength = 0;
             for (var i = 0; i < panel.anchor.length; i++) {
