@@ -590,9 +590,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
 
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-            viewer.pointsWorldCoords = [coords];
+            viewer.pointsWorldCoords.push(coords);
             if (viewer.drawLineCallBack) {
-              viewer.drawLineCallBack(viewer.polylineWorldCoords, undefined);
+              viewer.drawLineCallBack(viewer.pointsWorldCoords, undefined, viewer.drawPoints, panel.zoom);
             }
           }
 
