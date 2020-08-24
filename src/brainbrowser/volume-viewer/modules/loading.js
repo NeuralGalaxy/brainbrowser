@@ -31,9 +31,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   var default_color_map = null;
   var default_panel_width = 256;
   var default_panel_height = 256;
+  viewer.anchor = [];
   viewer.drawLine = false;
   viewer.lineWorldCoords = [];
-  viewer.drawPolyline = true;
+  viewer.drawPolyline = false;
   viewer.polylineWorldCoords = [];
   viewer.isDrawPoints = false;
   viewer.drawPoints = [];
@@ -536,30 +537,40 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         panel.drawLine = viewer.drawLine;
         panel.isDrawPoints = viewer.isDrawPoints;
         panel.drawPoints = [];
+        panel.anchor = viewer.anchor;
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
         viewer.clearPanel = function() {
+          panel.anchor = [];
+          panel.pointsWorldCoords = [];
+          panel.drawPoints = [];
+          viewer.anchor = [];
+          viewer.pointsWorldCoords = [];
+          viewer.drawPoints = [];
+
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
-              panel.anchor = null;
+              panel.anchor = [];
             });
           });
         };
 
         function startDrag(pointer, shift_key, ctrl_key) {
-
-          if (ctrl_key) {
-            viewer.volumes.forEach(function(volume) {
-              volume.display.forEach(function(panel) {
-                panel.anchor = null;
+          panel.isDrawPoints = viewer.isDrawPoints;
+          if (viewer.drawLine || viewer.drawPolyline) {
+            if(panel.anchor.length === 0) {
+              viewer.volumes.forEach(function(volume) {
+                volume.display.forEach(function(panel) {
+                  panel.anchor = [];
+                });
               });
-            });
-            
-            panel.anchor = [{
-              x: pointer.x,
-              y: pointer.y
-            }];
+              
+              panel.anchor = [{
+                x: pointer.x,
+                y: pointer.y
+              }];
+            }
           }
           if (viewer.drawLine)  {
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
@@ -675,7 +686,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           if (viewer.drawLine) {
             viewer.volumes.forEach(function(volume) {
               volume.display.forEach(function(panel) {
-                panel.anchor = null;
+                panel.anchor = [];
               });
             }); 
           }
@@ -739,6 +750,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
 
         function canvasMousedown (event) {
+          panel.isDrawPoints = viewer.isDrawPoints;
           event.preventDefault();
 
           current_target = event.target;
