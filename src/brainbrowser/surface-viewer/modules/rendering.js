@@ -313,7 +313,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
     }
     viewer.drawLine(start, end, {
-      color: 0x0000ff,
+      color: 0xffffff,
     });
   };
 
@@ -327,7 +327,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
     }
     viewer.drawLine(start, end, {
-      color: 0x0000ff,
+      color: 0xffffff,
     });
   };
 
@@ -1151,7 +1151,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           var allpolyLines = [].concat(viewer.polyLinePoints);
           allpolyLines.push(obj.vertex_data);
           var allLength = 0;
-          console.log(allpolyLines, 'allpolyLines');
           for(var i = 0; i < allpolyLines.length - 1; i ++) {
             allLength += parseFloat(calculationLineWidth(allpolyLines[i], allpolyLines[i + 1]));
           }
@@ -1280,6 +1279,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         el1.style.position = 'absolute';
         el1.style.left = left + 'px';
         el1.style.top = top + 'px';
+        el1.style.color = 'white';
         el1.className = 'polyLine-lenght-text-view';
         
         viewer.dom_element.appendChild(el1);
@@ -1288,6 +1288,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         var lastEle = eles[eles.length - 1];
         lastEle.style.left = left + 'px';
         lastEle.style.top = top + 'px';
+        lastEle.style.color = 'white';
         lastEle.textContent = lineLenght;
       }
       
@@ -1312,6 +1313,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
      if (ele) {
       ele.style.left = left + 'px';
       ele.style.top = top + 'px';
+      ele.style.color = 'white';
       ele.textContent = lineLenght;
      } else {
       var el1 = document.createElement('div');
@@ -1321,6 +1323,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       el1.style.position = 'absolute';
       el1.style.left = left + 'px';
       el1.style.top = top + 'px';
+      el1.style.color = 'white';
       el1.id = 'line-lenght-text-view';
       
       viewer.dom_element.appendChild(el1);
