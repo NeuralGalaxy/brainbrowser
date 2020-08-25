@@ -542,13 +542,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         var last_touch_distance = null;
 
         viewer.clearPanel = function() {
-          panel.anchor = [];
-          panel.pointsWorldCoords = [];
-          panel.drawPoints = [];
-          viewer.anchor = [];
-          viewer.pointsWorldCoords = [];
-          viewer.drawPoints = [];
-
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
               panel.anchor = [];
