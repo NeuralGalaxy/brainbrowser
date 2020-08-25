@@ -545,6 +545,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
               panel.anchor = [];
+              panel.drawPoints = [];
+              panel.updated = true;
             });
           });
         };
