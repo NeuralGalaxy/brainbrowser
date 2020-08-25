@@ -1137,7 +1137,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         insertDom(startVertexData.position2D, endPosition2D, lineLenght);
         viewer.customizedrawLines(startVertexData.point, obj.vertex_data.point);
         if (viewer.drawLineCallBack) {
-            viewer.drawLineCallBack([startVertexData, obj.vertex_data], lineLenght);
+          viewer.drawLineCallBack([startVertexData, obj.vertex_data], parseFloat(lineLenght));
         }
       }
       if (viewer.polyLineMode) {
