@@ -31,7 +31,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   var default_color_map = null;
   var default_panel_width = 256;
   var default_panel_height = 256;
-
+  viewer.anchor = [];
+  viewer.drawLine = false;
+  viewer.lineWorldCoords = [];
+  viewer.drawPolyline = false;
+  viewer.polylineWorldCoords = [];
+  viewer.isDrawPoints = false;
+  viewer.drawPoints = [];
+  viewer.pointsWorldCoords = [];
   /**
   * @doc function
   * @name viewer.loading:loadVolumes
@@ -526,22 +533,72 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       
       views.forEach(function(axis_name) {
         var panel = display.getPanel(axis_name);
+        panel.drawPolyline = viewer.drawPolyline;
+        panel.drawLine = viewer.drawLine;
+        panel.isDrawPoints = viewer.isDrawPoints;
+        panel.drawPoints = [];
+        panel.anchor = viewer.anchor;
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
-        function startDrag(pointer, shift_key, ctrl_key) {
+        viewer.clearPanel = function() {
+          viewer.volumes.forEach(function(volume) {
+            volume.display.forEach(function(panel) {
+              panel.anchor = [];
+              panel.drawPoints = [];
+              panel.updated = true;
+            });
+          });
+        };
 
-          if (ctrl_key) {
+        function startDrag(pointer, shift_key, ctrl_key) {
+          panel.isDrawPoints = viewer.isDrawPoints;
+          if (viewer.drawLine || viewer.drawPolyline) {
+            if(panel.anchor.length === 0) {
+              viewer.volumes.forEach(function(volume) {
+                volume.display.forEach(function(panel) {
+                  panel.anchor = [];
+                });
+              });
+              
+              panel.anchor = [{
+                x: pointer.x,
+                y: pointer.y
+              }];
+            }
+          }
+          if (viewer.drawLine)  {
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            viewer.lineWorldCoords = [coords];
+          }
+          if (viewer.drawPolyline && viewer.polylineWorldCoords.length === 0) {
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            viewer.polylineWorldCoords = [coords];
+          }
+          if (viewer.isDrawPoints) {
             viewer.volumes.forEach(function(volume) {
               volume.display.forEach(function(panel) {
-                panel.anchor = null;
+                panel.drawPoints = [];
               });
             });
+            panel.drawPoints = viewer.drawPoints;
+            viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
 
-            panel.anchor = {
-              x: pointer.x,
-              y: pointer.y
-            };
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            viewer.pointsWorldCoords.push(coords);
+            if (viewer.drawLineCallBack) {
+              var allLength = 0;
+              for (var i = 0; i < viewer.drawPoints.length; i++) {
+                if (viewer.drawPoints.length === 2) {
+                  allLength += calculationLine(viewer.drawPoints[0], viewer.drawPoints[1], panel);
+                }else if (viewer.drawPoints.length > 2){
+                  var endpoint = i === viewer.drawPoints.length - 1 ? viewer.drawPoints[0] : viewer.drawPoints[i+1];
+                  allLength += calculationLine(viewer.drawPoints[i], endpoint, panel);
+                }
+              }
+              console.log(allLength, 'allLength');
+              viewer.drawLineCallBack(viewer.pointsWorldCoords, allLength, viewer.drawPoints, panel.zoom);
+            }
           }
 
           if (!shift_key) {
@@ -576,6 +633,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           } else {
             panel.updateVolumePosition(pointer.x, pointer.y);
+            panel.dragAnchor = pointer;
             volume.display.forEach(function(other_panel) {
               if (panel !== other_panel) {
                 other_panel.updateSlice();
@@ -584,6 +642,28 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
             if (viewer.synced){
               viewer.syncPosition(panel, volume, axis_name);
+            }
+          }
+          if (viewer.drawLine)  {
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            if (viewer.lineWorldCoords.length === 2) {
+              viewer.lineWorldCoords.pop();
+            }
+            viewer.lineWorldCoords.push(coords);
+            var length = calculationLine(panel.anchor[0], {x: pointer.x, y: pointer.y}, panel);
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.lineWorldCoords, length);
+            }
+          }
+
+          if (viewer.drawPolyline && panel.anchor) {
+            var allLength = 0;
+            for (var i = 0; i < panel.anchor.length; i++) {
+              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+              allLength += calculationLine(panel.anchor[i], endpoint, panel);
+            }
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
             }
           }
 
@@ -604,14 +684,37 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
         }
         
-        function mouseDragEnd() {
+        function mouseDragEnd(event) {
+          event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          viewer.volumes.forEach(function(volume) {
-            volume.display.forEach(function(panel) {
-              panel.anchor = null;
-            });
-          });
+          if (viewer.drawLine) {
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                panel.anchor = [];
+              });
+            }); 
+          }
+          if (panel.anchor && viewer.drawPolyline) {
+            var lastAnchor = panel.anchor[panel.anchor.length - 1];
+            var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
+            if (!isSamePoint) {
+              panel.anchor.push({
+                x: panel.mouse.x, 
+                y: panel.mouse.y,
+              });
+            }
+            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            viewer.polylineWorldCoords.push(coords);
+            var allLength = 0;
+            for (var i = 0; i < panel.anchor.length; i++) {
+              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+              allLength += calculationLine(panel.anchor[i], endpoint, panel);
+            }
+            if (viewer.drawLineCallBack) {
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
+            }
+          }
           current_target = null;
         }
 
@@ -620,7 +723,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("touchend", touchDragEnd, false);
           viewer.volumes.forEach(function(volume) {
             volume.display.forEach(function(panel) {
-              panel.anchor = null;
+              // panel.anchor = null;
             });
           });
           current_target = null;
@@ -652,6 +755,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
 
         function canvasMousedown (event) {
+          panel.isDrawPoints = viewer.isDrawPoints;
           event.preventDefault();
 
           current_target = event.target;
@@ -660,7 +764,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.active_panel.updated = true;
           }
           viewer.active_panel = panel;
-
           document.addEventListener("mousemove", mouseDrag , false);
           document.addEventListener("mouseup", mouseDragEnd, false);
 
@@ -718,6 +821,13 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               }
             });
           }
+        }
+
+        function calculationLine(start, end, panel) {
+          var  dx = (start.x - end.x) / panel.zoom;
+          var  dy = (start.y - end.y) / panel.zoom;
+
+          return Math.sqrt(dx * dx + dy * dy);
         }
 
         canvas.addEventListener("mousedown", canvasMousedown, false);
