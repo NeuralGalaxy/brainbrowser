@@ -657,6 +657,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
       intersect_object = intersection.object;
       intersect_face = intersection.face;
+      if (!intersect_face) {
+        return undefined;
+      }
       intersect_indices = [
         intersect_face.a,
         intersect_face.b,
@@ -1135,6 +1138,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       event.preventDefault();
       if (viewer.lineMode) {
         var obj = get3DPoint(event);
+        if (!obj) {
+          return;
+        }
         var endPosition2D = { x: obj.x, y: obj.y };
         var lineLenght = calculationLineWidth(startVertexData, obj.vertex_data);
         insertDom(startVertexData.position2D, endPosition2D, lineLenght);
@@ -1145,6 +1151,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
       if (viewer.polyLineMode) {
         var obj = get3DPoint(event);
+        if (!obj) {
+          return;
+        }
         endPoinxyz = { point:  obj.vertex_data.point, position2D: { x: obj.x, y: obj.y }};
         var lastPolyLine = viewer.polyLinePoints[viewer.polyLinePoints.length - 1];
         viewer.drawPolyLine(lastPolyLine.point, obj.vertex_data.point); 
@@ -1239,7 +1248,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     canvas.addEventListener("wheel", wheelHandler, false);
     canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
 
-    canvas.addEventListener( 'contextmenu', function(event) {
+    canvas.addEventListener('contextmenu', function(event) {
       event.preventDefault();
     }, false);
     
@@ -1255,7 +1264,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         }
 
         var vertex_data = viewer.pick(x - offset.left, y - offset.top);
-        return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
+        if (vertex_data) {
+          return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
+        }else {
+          return undefined;
+        }
     }
 
     function polyLineInsertDom(startPoint, endPoint, lineLenght) {
