@@ -1354,7 +1354,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var x = Math.pow(start.point.x - end.point.x, 2);
       var y = Math.pow(start.point.y - end.point.y, 2);
       var z = Math.pow(start.point.z - end.point.z, 2);
-      var lineLenght = x + y + z + Math.pow(0.5, 2);
+      var lineLenght =  Math.pow(x + y + z, 0.5);
       return parseFloat(lineLenght).toFixed(2);
     }
 
