@@ -653,18 +653,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
     }
 
-    if (intersection !== null) {
+    if (intersection !== null && intersection.face) {
 
       intersect_object = intersection.object;
       intersect_face = intersection.face;
-      if (!intersect_face) {
-        return undefined;
-      }
-      intersect_indices = [
+      
+      intersect_indices = intersect_face ? [
         intersect_face.a,
         intersect_face.b,
         intersect_face.c
-      ];
+      ] : [];
 
       if (intersect_object.userData.annotation_info) {
         vertex_data = {
@@ -983,7 +981,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var position = camera.position;
     var new_z    = default_camera_distance / viewer.zoom;
 
-    window.requestAnimationFrame(renderFrame);
+    viewer.requestAnimationFrame = window.requestAnimationFrame(renderFrame);
 
     last_frame = current_frame || timestamp;
     current_frame = timestamp;
@@ -1073,6 +1071,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function drag(pointer, multiplier) {
+      if (!pointer) {
+        return;
+      }
       var inverse = new THREE.Matrix4();
       var x       = pointer.x;
       var y       = pointer.y;
@@ -1222,12 +1223,13 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
       movement = event.which === 1 ? "rotate" : "translate" ;
-      if (viewer.lineMode) {
-        startVertexData.point = viewer.pick().point;
+      var pick = viewer.pick();
+      if (viewer.lineMode && pick) {
+        startVertexData.point = pick.point;
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
       }
-      if (viewer.polyLineMode) {
-        startVertexData.point = viewer.pick().point;
+      if (viewer.polyLineMode && pick) {
+        startVertexData.point = pick.point;
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
           viewer.polyLinePoints.push(startVertexData);
@@ -1352,7 +1354,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var x = Math.pow(start.point.x - end.point.x, 2);
       var y = Math.pow(start.point.y - end.point.y, 2);
       var z = Math.pow(start.point.z - end.point.z, 2);
-      var lineLenght = x + y + z + Math.pow(0.5, 2);
+      var lineLenght =  Math.pow(x + y + z, 0.5);
       return parseFloat(lineLenght).toFixed(2);
     }
 

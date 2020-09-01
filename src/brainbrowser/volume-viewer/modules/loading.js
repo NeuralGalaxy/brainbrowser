@@ -552,6 +552,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         };
 
         function startDrag(pointer, shift_key, ctrl_key) {
+          if (!pointer) {
+            return;
+          }
           panel.isDrawPoints = viewer.isDrawPoints;
           if (viewer.drawLine || viewer.drawPolyline) {
             if(panel.anchor.length === 0) {
@@ -596,7 +599,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
                   allLength += calculationLine(viewer.drawPoints[i], endpoint, panel);
                 }
               }
-              console.log(allLength, 'allLength');
               viewer.drawLineCallBack(viewer.pointsWorldCoords, allLength, viewer.drawPoints, panel.zoom);
             }
           }
@@ -617,6 +619,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
 
         function drag(pointer, shift_key) {
+          if(!pointer) {
+            return;
+          }
           var drag_delta;
 
           if(shift_key) {
@@ -708,7 +713,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.polylineWorldCoords.push(coords);
             var allLength = 0;
             for (var i = 0; i < panel.anchor.length; i++) {
-              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.anchor[i+1];
+              var endpoint = i === panel.anchor.length - 1 ? {x: event.x, y: event.y} : panel.anchor[i+1];
               allLength += calculationLine(panel.anchor[i], endpoint, panel);
             }
             if (viewer.drawLineCallBack) {

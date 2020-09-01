@@ -553,6 +553,9 @@
     context.stroke();
 
     var drawLine = function (start, end) {
+      if(!start || !end) {
+        return;
+      }
       dx = (start.x - end.x) / panel.zoom;
       dy = (start.y - end.y) / panel.zoom;
       distance = Math.sqrt(dx * dx + dy * dy);
