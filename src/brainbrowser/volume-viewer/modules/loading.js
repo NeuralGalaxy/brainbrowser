@@ -537,6 +537,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         panel.drawLine = viewer.drawLine;
         panel.isDrawPoints = viewer.isDrawPoints;
         panel.drawPoints = [];
+        viewer.polylineWorldCoords = [];
         panel.anchor = viewer.anchor;
         var canvas = panel.canvas;
         var last_touch_distance = null;
@@ -668,6 +669,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               allLength += calculationLine(panel.anchor[i], endpoint, panel);
             }
             if (viewer.drawLineCallBack) {
+              if (viewer.polylineWorldCoords.length !== panel.anchor.length) {
+                viewer.polylineWorldCoords = viewer.polylineWorldCoords.slice(viewer.polylineWorldCoords.length -  panel.anchor.length);
+              }
               viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
             }
           }
