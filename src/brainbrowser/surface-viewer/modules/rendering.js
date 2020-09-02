@@ -1050,6 +1050,24 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         }
       }
     },100);
+    setTimeout(function() {
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (eles && eles.length > 0) {
+        for(var i = 0; i < eles.length; i++) {
+          eles[i].textContent = '';
+          viewer.dom_element.removeChild(eles[i]);
+        }
+      }
+    },500);
+    setTimeout(function() {
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (eles && eles.length > 0) {
+        for(var i = 0; i < eles.length; i++) {
+          eles[i].textContent = '';
+          viewer.dom_element.removeChild(eles[i]);
+        }
+      }
+    },1000);
 
     viewer.updated = true;
   };
