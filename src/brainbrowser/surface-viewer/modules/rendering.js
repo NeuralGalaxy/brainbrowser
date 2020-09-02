@@ -1315,7 +1315,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         el1.style.position = 'absolute';
         el1.style.left = left + 'px';
         el1.style.top = top + 'px';
-        el1.style.color = 'white';
+        el1.style.color = 'red';
         el1.className = 'polyLine-lenght-text-view';
         
         viewer.dom_element.appendChild(el1);
@@ -1324,7 +1324,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         var lastEle = eles[eles.length - 1];
         lastEle.style.left = left + 'px';
         lastEle.style.top = top + 'px';
-        lastEle.style.color = 'white';
+        lastEle.style.color = 'red';
         lastEle.textContent = lineLenght;
       }
       
@@ -1349,7 +1349,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
      if (ele) {
       ele.style.left = left + 'px';
       ele.style.top = top + 'px';
-      ele.style.color = 'white';
+      ele.style.color = 'red';
       ele.textContent = lineLenght;
      } else {
       var el1 = document.createElement('div');
@@ -1359,7 +1359,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       el1.style.position = 'absolute';
       el1.style.left = left + 'px';
       el1.style.top = top + 'px';
-      el1.style.color = 'white';
+      el1.style.color = 'red';
       el1.id = 'line-lenght-text-view';
       
       viewer.dom_element.appendChild(el1);
