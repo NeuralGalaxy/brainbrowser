@@ -580,11 +580,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.polylineWorldCoords = [coords];
           }
           if (viewer.isDrawPoints) {
-            viewer.volumes.forEach(function(volume) {
-              volume.display.forEach(function(panel) {
-                panel.drawPoints = [];
-              });
-            });
             panel.drawPoints = viewer.drawPoints;
             viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
 
@@ -715,14 +710,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.polylineWorldCoords.push(coords);
-            var allLength = 0;
-            for (var i = 0; i < panel.anchor.length; i++) {
-              var endpoint = i === panel.anchor.length - 1 ? {x: event.x, y: event.y} : panel.anchor[i+1];
-              allLength += calculationLine(panel.anchor[i], endpoint, panel);
-            }
-            if (viewer.drawLineCallBack) {
-              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
-            }
           }
           current_target = null;
         }
