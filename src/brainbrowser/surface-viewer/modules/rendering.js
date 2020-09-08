@@ -1173,13 +1173,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         if (!obj) {
           return;
         }
-        endPoinxyz = { point:  obj.vertex_data.point, position2D: { x: obj.x, y: obj.y }};
-        var lastPolyLine = viewer.polyLinePoints[viewer.polyLinePoints.length - 1];
+        endPoinxyz = { point:  {x: obj.vertex_data.point.x, y: obj.vertex_data.point.y, z: obj.vertex_data.point.z}, position2D: { x: obj.x, y: obj.y }};
+        var polyLinePoints = JSON.parse(JSON.stringify(viewer.polyLinePoints));
+        var lastPolyLine = polyLinePoints[polyLinePoints.length - 1];
         viewer.drawPolyLine(lastPolyLine.point, obj.vertex_data.point); 
         var lineLenght = calculationLineWidth(lastPolyLine, obj.vertex_data);
         polyLineInsertDom(lastPolyLine.position2D, {x: obj.x, y: obj.y}, lineLenght);
         if (viewer.drawLineCallBack) {
-          var allpolyLines = [].concat(viewer.polyLinePoints);
+          var allpolyLines = [].concat(polyLinePoints);
           allpolyLines.push(obj.vertex_data);
           var allLength = 0;
           for(var i = 0; i < allpolyLines.length - 1; i ++) {
@@ -1212,7 +1213,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       last_y = null;
       viewerClickCallBack();
       if(viewer.polyLineMode && endPoinxyz) {
-        viewer.polyLinePoints.push(endPoinxyz);
+        viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
       }
     }
 
@@ -1247,10 +1248,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
       }
       if (viewer.polyLineMode && pick) {
-        startVertexData.point = pick.point;
+        startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
-          viewer.polyLinePoints.push(startVertexData);
+          viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }
     }, false);
@@ -1315,17 +1316,19 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         el1.style.position = 'absolute';
         el1.style.left = left + 'px';
         el1.style.top = top + 'px';
-        el1.style.color = 'red';
+        el1.style.color = 'white';
         el1.className = 'polyLine-lenght-text-view';
-        
+        el1.style.fontWeight = 900;
+        el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
         viewer.dom_element.appendChild(el1);
         el1.appendChild(text);
       } else {
         var lastEle = eles[eles.length - 1];
         lastEle.style.left = left + 'px';
         lastEle.style.top = top + 'px';
-        lastEle.style.color = 'red';
+        lastEle.style.color = 'white';
         lastEle.textContent = lineLenght;
+        lastEle.style.fontWeight = 900;
       }
       
     }
@@ -1349,17 +1352,21 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
      if (ele) {
       ele.style.left = left + 'px';
       ele.style.top = top + 'px';
-      ele.style.color = 'red';
+      ele.style.color = 'white';
+      ele.style.fontWeight = 900;
+      ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
       ele.textContent = lineLenght;
      } else {
       var el1 = document.createElement('div');
       var text = document.createTextNode(lineLenght);
       el1.style.height = '5px';
       el1.style.width = '5px';
+      el1.style.fontWeight = 900;
       el1.style.position = 'absolute';
       el1.style.left = left + 'px';
       el1.style.top = top + 'px';
-      el1.style.color = 'red';
+      el1.style.color = 'white';
+      el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
       el1.id = 'line-lenght-text-view';
       
       viewer.dom_element.appendChild(el1);
