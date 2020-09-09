@@ -552,7 +552,7 @@
     context.lineTo(x + length, y);
     context.stroke();
 
-    var drawLine = function (start, end) {
+    var drawLine = function (start, end, color) {
       if(!start || !end) {
         return;
       }
@@ -561,6 +561,9 @@
       distance = Math.sqrt(dx * dx + dy * dy);
 
       context.font = "bold 12px arial";
+      color =  color || "#FF0000";
+      context.strokeStyle =  color;
+      context.fillStyle = color;
 
       if (start.x > end.x) {
         x = end.x + (start.x - end.x) / 2; 
@@ -605,30 +608,41 @@
       context.restore();
       return;
     }
-
-    if (panel.anchor) {
-      if (panel.anchor.length === 1) {
-        var center = panel.anchor[0];
-        context.lineWidth = 1;
-        context.beginPath();
-        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
-        context.fill();
-        context.stroke();
-      }
-      panel.anchor.forEach((item, index) => {
-        var preItem = index > 0 ? panel.anchor[index - 1] : null;
-        if (preItem) {
-          drawLine(preItem, item);
-        }
-        if (index === panel.anchor.length - 1) {
-          drawLine(item, panel.dragAnchor);
-        }
-      });
+    
+    if (panel.anchor.length > 0) {
+      drawAnchors(panel, context, space, drawLine);
+      setTimeout(() => {
+        drawAnchors(panel, context, space, drawLine, 'delay');
+      }, 300);
     }
-
     context.restore();
 
 
+  }
+
+  function drawAnchors(panel, context, space, drawLine, type) {
+    if (panel.anchor.length === 1) {
+      var center = panel.anchor[0];
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+      context.fill();
+      context.stroke();
+    }
+  
+    panel.anchor.forEach((item, index) => {
+      var preItem = index > 0 ? panel.anchor[index - 1] : null;
+      if (preItem) {
+        drawLine(preItem, item, '#FFFFFF');
+      }
+      if (index === panel.anchor.length - 1 && panel.dragAnchor && type != 'delay') {
+        let oEl =  $('.slice-display')[0];
+        let w = oEl.width,  h = oEl.height, x = panel.dragAnchor.x, y = panel.dragAnchor.y;
+        if(x > 0 && x < w && y > 0 && y < h ) {
+          drawLine(item, panel.dragAnchor, '#FFFFFF');
+        }
+      }
+    });
   }
 
   // Draw the current slice to the canvas.
