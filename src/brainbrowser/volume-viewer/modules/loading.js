@@ -558,15 +558,13 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
           var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
           panel.isDrawPoints = viewer.isDrawPoints;
-          if (viewer.drawLine || viewer.drawPolyline) {
-            if(panel.anchor.length === 0) {
-              viewer.volumes.forEach(function(volume) {
-                volume.display.forEach(function(panel) {
-                  panel.anchor = [];
-                });
+          if ((viewer.drawPolyline && panel.anchor.length === 0) || viewer.drawLine) {
+            viewer.volumes.forEach(function(volume) {
+              volume.display.forEach(function(panel) {
+                panel.anchor = [];
               });
-              panel.anchor = [voxel];
-            }
+            });
+            panel.anchor = [voxel];
           }
           if (viewer.drawLine)  {
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
@@ -700,13 +698,13 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          if (viewer.drawLine) {
-            viewer.volumes.forEach(function(volume) {
-              volume.display.forEach(function(panel) {
-                panel.anchor = [];
-              });
-            }); 
-          }
+          // if (viewer.drawLine) {
+          //   viewer.volumes.forEach(function(volume) {
+          //     volume.display.forEach(function(panel) {
+          //       panel.anchor = [];
+          //     });
+          //   }); 
+          // }
           if (panel.anchor && viewer.drawPolyline) {
             var lastAnchor = panel.anchor[panel.anchor.length - 1];
             var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
