@@ -536,9 +536,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         panel.drawPolyline = viewer.drawPolyline;
         panel.drawLine = viewer.drawLine;
         panel.isDrawPoints = viewer.isDrawPoints;
-        panel.drawPoints = [];
         viewer.polylineWorldCoords = [];
         panel.anchor = viewer.anchor;
+        panel.drawPoints = viewer.drawPoints;
         var canvas = panel.canvas;
         var last_touch_distance = null;
 
@@ -577,27 +577,26 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.polylineWorldCoords = [coords];
           }
           if (viewer.isDrawPoints) {
-            panel.drawPoints = viewer.drawPoints;
             var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
-            viewer.drawPoints.push(voxel);    
+            panel.drawPoints.push(voxel);    
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.pointsWorldCoords.push(coords);
             if (viewer.drawLineCallBack) {
               var allLength = 0;
               var drawPoints = [];
-              for (var i = 0; i < viewer.drawPoints.length; i++) {
+              for (var i = 0; i < panel.drawPoints.length; i++) {
                 drawPoints.push(
-                  panel.voxelToCursor(viewer.drawPoints[i].voxelX, viewer.drawPoints[i].voxelY)
+                  panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY)
                 );
-                if (viewer.drawPoints.length === 2) {
+                if (panel.drawPoints.length === 2) {
                   allLength += calculationLine(
-                    panel.voxelToCursor(viewer.drawPoints[0].voxelX, viewer.drawPoints[0].voxelY), 
-                    panel.voxelToCursor(viewer.drawPoints[1].voxelX, viewer.drawPoints[1].voxelY), 
+                    panel.voxelToCursor(panel.drawPoints[0].voxelX, panel.drawPoints[0].voxelY), 
+                    panel.voxelToCursor(panel.drawPoints[1].voxelX, panel.drawPoints[1].voxelY), 
                     panel);
-                }else if (viewer.drawPoints.length > 2){
-                  var endpoint = i === viewer.drawPoints.length - 1 ? viewer.drawPoints[0] : viewer.drawPoints[i+1];
+                }else if (panel.drawPoints.length > 2){
+                  var endpoint = i === panel.drawPoints.length - 1 ? panel.drawPoints[0] : panel.drawPoints[i+1];
                   allLength += calculationLine(
-                    panel.voxelToCursor(viewer.drawPoints[i].voxelX, viewer.drawPoints[i].voxelY), 
+                    panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY), 
                     panel.voxelToCursor(endpoint.voxelX, endpoint.voxelY), panel);
                 }
               }
