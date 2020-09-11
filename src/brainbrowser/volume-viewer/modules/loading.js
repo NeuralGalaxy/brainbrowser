@@ -556,6 +556,13 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           if (!pointer) {
             return;
           }
+            
+          panel.cursorToVoxel(pointer.x, pointer.y);        
+
+          var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+
+          console.log('coords', coords);
+
           panel.isDrawPoints = viewer.isDrawPoints;
           if (viewer.drawLine || viewer.drawPolyline) {
             if(panel.anchor.length === 0) {
@@ -581,8 +588,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
           if (viewer.isDrawPoints) {
             panel.drawPoints = viewer.drawPoints;
-            viewer.drawPoints.push({x: pointer.x ,y: pointer.y });            
-
+            viewer.drawPoints.push({x: pointer.x ,y: pointer.y });    
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.pointsWorldCoords.push(coords);
             if (viewer.drawLineCallBack) {

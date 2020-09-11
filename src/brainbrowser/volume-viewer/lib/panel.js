@@ -358,6 +358,31 @@
 
         panel.updated = true;
       },
+      // panel.cursorToVoxel(130, 165);
+      cursorToVoxel: function(x, y) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        const voxel_i = Math.round((x - origin.x) / zoom  / Math.abs(slice.width_space.step)) - 1;
+        const voxel_j = Math.round((y - origin.y) / zoom  / Math.abs(slice.height_space.step));
+        
+        console.log('voxel_i', x, voxel_i);
+        console.log('voxel_j', y, voxel_j);
+      },
+
+      // panel.voxelToCursor(100, 126);
+      voxelToCursor: function(i, j) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        const x = Math.round((i + 1) * Math.abs(slice.width_space.step) * zoom + origin.x)
+        const y = Math.round(j * Math.abs(slice.height_space.step) * zoom + origin.y)
+
+        console.log('cursor_x', i, x);
+        console.log('cursor_y', j, y);
+      },
 
       /**
       * @doc function
