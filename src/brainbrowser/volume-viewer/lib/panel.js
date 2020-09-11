@@ -358,6 +358,27 @@
 
         panel.updated = true;
       },
+      // panel.cursorToVoxel(130, 165);
+      cursorToVoxel: function(x, y) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        var voxel_i = Math.round((x - origin.x) / zoom  / Math.abs(slice.width_space.step)) - 1;
+        var voxel_j = Math.round((y - origin.y) / zoom  / Math.abs(slice.height_space.step));
+        return { voxelX: voxel_i, voxelY: voxel_j};
+      },
+
+      // panel.voxelToCursor(100, 126);
+      voxelToCursor: function(i, j) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        var x = Math.round((i + 1) * Math.abs(slice.width_space.step) * zoom + origin.x)
+        var y = Math.round(j * Math.abs(slice.height_space.step) * zoom + origin.y)
+        return { x: x, y: y };
+      },
 
       /**
       * @doc function
@@ -598,10 +619,10 @@
       panel.drawPoints.forEach(function(item, index) {
         var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
         if (preItem) {
-          drawLine(preItem, item);
+          drawLine(panel.voxelToCursor(preItem.voxelX, preItem.voxelY), panel.voxelToCursor(item.voxelX,  item.voxelY), '#FFFFFF');
         }
         if (index === panel.drawPoints.length - 1) {
-          drawLine(item, panel.drawPoints[0]);
+          drawLine(panel.voxelToCursor(item.voxelX, item.voxelY), panel.voxelToCursor(panel.drawPoints[0].voxelX,  panel.drawPoints[0].voxelY), '#FFFFFF');
         }
       });
 
@@ -633,13 +654,14 @@
     panel.anchor.forEach((item, index) => {
       var preItem = index > 0 ? panel.anchor[index - 1] : null;
       if (preItem) {
-        drawLine(preItem, item, '#FFFFFF');
+        drawLine(panel.voxelToCursor(preItem.voxelX, preItem.voxelY), panel.voxelToCursor(item.voxelX,  item.voxelY), '#FFFFFF');
       }
       if (index === panel.anchor.length - 1 && panel.dragAnchor && type != 'delay') {
-        let oEl =  $('.slice-display')[0];
-        let w = oEl.width,  h = oEl.height, x = panel.dragAnchor.x, y = panel.dragAnchor.y;
+        var oEl =  $('.slice-display')[0];
+        var dragAnchor = panel.voxelToCursor(panel.dragAnchor.voxelX, panel.dragAnchor.voxelY);
+        var w = oEl.width,  h = oEl.height, x = dragAnchor.x, y = dragAnchor.y;
         if(x > 0 && x < w && y > 0 && y < h ) {
-          drawLine(item, panel.dragAnchor, '#FFFFFF');
+          drawLine(panel.voxelToCursor(item.voxelX, item.voxelY), dragAnchor, '#FFFFFF');
         }
       }
     });
