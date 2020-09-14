@@ -547,9 +547,7 @@
     var cursor = panel.getCursorPosition();
     var zoom = panel.zoom;
     var length = 8 * (zoom / panel.default_zoom);
-    var x, y, space;
-    var distance;
-    var dx, dy;
+    var space;
     color = color || "#FF0000";
     
     context.save();
@@ -558,8 +556,8 @@
     context.fillStyle = color;
 
     space = 1;
-    x = cursor.x;
-    y = cursor.y;
+    var x = cursor.x;
+    var y = cursor.y;
 
     context.lineWidth = space * 2;
     context.beginPath();
@@ -573,31 +571,85 @@
     context.lineTo(x + length, y);
     context.stroke();
 
-    var drawLine = function (start, end, color) {
+    var distancePoint = function(start, end) {
+      var calculate = function (start, end) {
+        var dx, dy, x, y, distance;
+        dx = (start.x - end.x) / panel.zoom;
+        dy = (start.y - end.y) / panel.zoom;
+        distance = Math.sqrt(dx * dx + dy * dy);
+        if (start.x > end.x) {
+          x = end.x + (start.x - end.x) / 2; 
+        }else {
+          x = start.x + (end.x - start.x) / 2; 
+        }
+        if (start.y > end.y) {
+          y = end.y + (start.y - end.y) / 2;
+        } else {
+          y = start.y + (end.y - start.y) / 2;
+        }
+        return { x: x, y: y, distance: distance };
+      };
+      var compare = function(otherPoint, x, y) {
+        var num = 5;
+        if (otherPoint.x < x && otherPoint.x + num > x) {
+          x += num;
+        }
+        if (otherPoint.y < y && otherPoint.y + num > y) {
+          y += num;
+        }
+        if (otherPoint.x > x && otherPoint.x - num < x) {
+          x -= num;
+        }
+        if (otherPoint.y > y && otherPoint.y - num < y) {
+          y -= num;
+        }
+
+        return { x: x, y: y };
+      };
+      var point = calculate(start, end);
+      var x = point.x;
+      var y = point.y;
+      if (panel.isDrawPoints) {
+        panel.drawPoints.forEach(function(item, index) {
+          var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
+          if (preItem) {
+            var preItemStart = panel.voxelToCursor(preItem.voxelX, preItem.voxelY);
+            var preItemEnd = panel.voxelToCursor(item.voxelX,  item.voxelY);
+            if (preItemStart !== start) {
+              var preItemPoint = calculate(preItemStart, preItemEnd);
+
+              var obj = compare(preItemPoint, x, y);
+              x = obj.x;
+              y = obj.y;
+            }
+          }
+          if (index === panel.drawPoints.length - 1) {
+            var pointStart = panel.voxelToCursor(item.voxelX, item.voxelY);
+            var pointEnd = panel.voxelToCursor(panel.drawPoints[0].voxelX,  panel.drawPoints[0].voxelY);
+            if (pointStart !== start) {
+              var otherPoint =  calculate(pointStart, pointEnd);
+              var obj = compare(otherPoint, x, y);
+              x = obj.x;
+              y = obj.y;
+            }
+          }
+        });
+      }
+      
+      return { x: x, y: y, distance: point.distance };
+    };
+
+    var drawLine = function (start, end, color, allPoint) {
       if(!start || !end) {
         return;
       }
-      dx = (start.x - end.x) / panel.zoom;
-      dy = (start.y - end.y) / panel.zoom;
-      distance = Math.sqrt(dx * dx + dy * dy);
+      var point = distancePoint(start, end);
 
       context.font = "bold 12px arial";
       color =  color || "#FF0000";
       context.strokeStyle =  color;
       context.fillStyle = color;
-
-      if (start.x > end.x) {
-        x = end.x + (start.x - end.x) / 2; 
-      }else {
-        x = start.x + (end.x - start.x) / 2; 
-      }
-      if (start.y > end.y) {
-        y = end.y + (start.y - end.y) / 2;
-      } else {
-        y = start.y + (end.y - start.y) / 2;
-      }
-      
-      context.fillText(distance.toFixed(2), x, y);
+      context.fillText(point.distance.toFixed(2), point.x, point.y);
       context.lineWidth = 1;
       context.beginPath();
       context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
