@@ -987,8 +987,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var start = viewer.reverseByVertexCoordstoPoint(startVector3[0], startVector3[1], startVector3[2]);
       var end = viewer.reverseByVertexCoordstoPoint(endVector3[0], endVector3[1], endVector3[2]);
       var point = lineTextPoint(start, end);
-      element.style.top = point.top + 'px';
-      element.style.left = point.left + 'px';
+      if (point.top !== 0) {
+        element.style.top = point.top + 'px';
+      }
+      if (point.left !== 0) {
+        element.style.left = point.left + 'px';
+      }
     };
     if (ele) {
       update(ele);
@@ -1361,8 +1365,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         el1.style.height = '5px';
         el1.style.width = '5px';
         el1.style.position = 'absolute';
-        el1.style.left = left + 'px';
-        el1.style.top = top + 'px';
+        if (left !== 0) {
+          el1.style.left = left + 'px';
+        }
+        if (top !== 0) {
+          el1.style.top = top + 'px';
+        }
         el1.style.color = 'white';
         el1.className = 'polyLine-lenght-text-view';
         el1.style.fontWeight = 900;
@@ -1373,8 +1381,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         el1.appendChild(text);
       } else {
         var lastEle = eles[eles.length - 1];
-        lastEle.style.left = left + 'px';
-        lastEle.style.top = top + 'px';
+        if (left !== 0) {
+          lastEle.style.left = left + 'px';
+        }
+        if (top !== 0) {
+          lastEle.style.top = top + 'px';
+        }
         lastEle.style.color = 'white';
         lastEle.textContent = lineLenght;
         lastEle.style.fontWeight = 900;
@@ -1386,9 +1398,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     function insertDom(startPoint, endPoint, lineLenght) {
      var textPoint = lineTextPoint(startPoint, endPoint);
-     if (textPoint.top === 0 || textPoint.left === 0) {
-       return;
-     }
      var top = textPoint.top;
      var left = textPoint.left;
      var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
@@ -1396,8 +1405,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
      var ele = document.getElementById('line-lenght-text-view');
      if (ele) {
-      ele.style.left = left + 'px';
-      ele.style.top = top + 'px';
+      if (left !== 0) {
+        ele.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        ele.style.top = top + 'px';
+      }
       ele.style.color = 'white';
       ele.style.fontWeight = 900;
       ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
@@ -1410,8 +1423,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       el1.style.width = '5px';
       el1.style.fontWeight = 900;
       el1.style.position = 'absolute';
-      el1.style.left = left + 'px';
-      el1.style.top = top + 'px';
+      if (left !== 0) {
+        el1.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        el1.style.top = top + 'px';
+      }
       el1.style.color = 'white';
       el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
       el1.id = 'line-lenght-text-view';
