@@ -364,8 +364,8 @@
         var zoom = panel.zoom;
         var slice = panel.slice;
 
-        var voxel_i = Math.round((x - origin.x) / zoom  / Math.abs(slice.width_space.step)) - 1;
-        var voxel_j = Math.round((y - origin.y) / zoom  / Math.abs(slice.height_space.step));
+        var voxel_i = (x - origin.x) / zoom  / Math.abs(slice.width_space.step) - 1;
+        var voxel_j = (y - origin.y) / zoom  / Math.abs(slice.height_space.step);
         return { voxelX: voxel_i, voxelY: voxel_j};
       },
 
@@ -375,8 +375,8 @@
         var zoom = panel.zoom;
         var slice = panel.slice;
 
-        var x = Math.round((i + 1) * Math.abs(slice.width_space.step) * zoom + origin.x)
-        var y = Math.round(j * Math.abs(slice.height_space.step) * zoom + origin.y)
+        var x = (i + 1) * Math.abs(slice.width_space.step) * zoom + origin.x;
+        var y = j * Math.abs(slice.height_space.step) * zoom + origin.y;
         return { x: x, y: y };
       },
 
