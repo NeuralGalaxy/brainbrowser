@@ -662,21 +662,21 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
           }
 
-          if (viewer.drawPolyline && panel.anchor) {
-            var allLength = 0;
-            for (var i = 0; i < panel.anchor.length; i++) {
-              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.voxelToCursor(panel.anchor[i+1].voxelX, panel.anchor[i+1].voxelY);
-              var anchor = panel.voxelToCursor(panel.anchor[i].voxelX, panel.anchor[i].voxelY);
-              allLength += calculationLine(anchor, endpoint, panel);
-            }
-            if (viewer.drawLineCallBack) {
-              if (viewer.polylineWorldCoords.length !== panel.anchor.length) {
-                viewer.polylineWorldCoords = viewer.polylineWorldCoords.slice(viewer.polylineWorldCoords.length -  panel.anchor.length);
-              }
-              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
-            }
-          }
-
+          // if (viewer.drawPolyline && panel.anchor) {
+          //   var allLength = 0;
+          //   for (var i = 0; i < panel.anchor.length; i++) {
+          //     var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.voxelToCursor(panel.anchor[i+1].voxelX, panel.anchor[i+1].voxelY);
+          //     var anchor = panel.voxelToCursor(panel.anchor[i].voxelX, panel.anchor[i].voxelY);
+          //     allLength += calculationLine(anchor, endpoint, panel);
+          //   }
+          //   if (viewer.drawLineCallBack) {
+          //     if (viewer.polylineWorldCoords.length !== panel.anchor.length) {
+          //       viewer.polylineWorldCoords = viewer.polylineWorldCoords.slice(viewer.polylineWorldCoords.length -  panel.anchor.length);
+          //     }
+          //     viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
+          //   }
+          // }
+          drawPolylLineCallBack(pointer);
           panel.updated = true;
         }
 
@@ -698,13 +698,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-          // if (viewer.drawLine) {
-          //   viewer.volumes.forEach(function(volume) {
-          //     volume.display.forEach(function(panel) {
-          //       panel.anchor = [];
-          //     });
-          //   }); 
-          // }
           if (panel.anchor && viewer.drawPolyline) {
             var lastAnchor = panel.anchor[panel.anchor.length - 1];
             var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
@@ -714,6 +707,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             }
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.polylineWorldCoords.push(coords);
+            drawPolylLineCallBack({ x: panel.mouse.x, y: panel.mouse.y });
           }
           current_target = null;
         }
@@ -829,6 +823,24 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
           return Math.sqrt(dx * dx + dy * dy);
         }
+
+        function drawPolylLineCallBack(pointer) {
+          if (viewer.drawPolyline && panel.anchor) {
+            var allLength = 0;
+            for (var i = 0; i < panel.anchor.length; i++) {
+              var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.voxelToCursor(panel.anchor[i+1].voxelX, panel.anchor[i+1].voxelY);
+              var anchor = panel.voxelToCursor(panel.anchor[i].voxelX, panel.anchor[i].voxelY);
+              allLength += calculationLine(anchor, endpoint, panel);
+            }
+            if (viewer.drawLineCallBack) {
+              if (viewer.polylineWorldCoords.length !== panel.anchor.length) {
+                viewer.polylineWorldCoords = viewer.polylineWorldCoords.slice(viewer.polylineWorldCoords.length -  panel.anchor.length);
+              }
+              viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
+            }
+          }
+        }
+
 
         canvas.addEventListener("mousedown", canvasMousedown, false);
         canvas.addEventListener("touchstart", canvasTouchstart, false);
