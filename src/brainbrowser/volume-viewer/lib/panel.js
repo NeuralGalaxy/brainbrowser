@@ -681,7 +681,6 @@
       context.restore();
       return;
     }
-    
     if (panel.anchor.length > 0) {
       drawAnchors(panel, context, space, drawLine);
       setTimeout(() => {
@@ -702,7 +701,6 @@
       context.fill();
       context.stroke();
     }
-  
     panel.anchor.forEach((item, index) => {
       var preItem = index > 0 ? panel.anchor[index - 1] : null;
       if (preItem) {
@@ -711,8 +709,9 @@
       if (index === panel.anchor.length - 1 && panel.dragAnchor && type != 'delay') {
         var oEl =  $('.slice-display')[0];
         var dragAnchor = panel.voxelToCursor(panel.dragAnchor.voxelX, panel.dragAnchor.voxelY);
+        var isSamePoint= item.voxelX === panel.dragAnchor.voxelX && item.voxelY === panel.dragAnchor.voxelY;
         var w = oEl.width,  h = oEl.height, x = dragAnchor.x, y = dragAnchor.y;
-        if(x > 0 && x < w && y > 0 && y < h ) {
+        if(x > 0 && x < w && y > 0 && y < h && !isSamePoint) {
           drawLine(panel.voxelToCursor(item.voxelX, item.voxelY), dragAnchor, '#FFFFFF');
         }
       }

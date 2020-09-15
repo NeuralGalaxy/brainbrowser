@@ -558,7 +558,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
           var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
           panel.isDrawPoints = viewer.isDrawPoints;
-          if ((viewer.drawPolyline && panel.anchor.length === 0) || viewer.drawLine) {
+          if ((viewer.drawPolyline && panel.anchor.length === 0)) {
             viewer.volumes.forEach(function(volume) {
               volume.display.forEach(function(panel) {
                 panel.anchor = [];
@@ -622,7 +622,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             return;
           }
           var drag_delta;
-
           if(shift_key) {
             drag_delta = panel.followPointer(pointer);
             if (viewer.synced){
@@ -638,7 +637,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           } else {
             panel.updateVolumePosition(pointer.x, pointer.y);
             var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
-            panel.dragAnchor = voxel;
+            if (viewer.drawPolyline) {
+              panel.dragAnchor = voxel;
+            }
             volume.display.forEach(function(other_panel) {
               if (panel !== other_panel) {
                 other_panel.updateSlice();
@@ -649,33 +650,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               viewer.syncPosition(panel, volume, axis_name);
             }
           }
-          if (viewer.drawLine)  {
-            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-            if (viewer.lineWorldCoords.length === 2) {
-              viewer.lineWorldCoords.pop();
-            }
-            viewer.lineWorldCoords.push(coords);
-            var anchor = panel.voxelToCursor(panel.anchor[0].voxelX, panel.anchor[0].voxelY);
-            var length = calculationLine(anchor, {x: pointer.x, y: pointer.y}, panel);
-            if (viewer.drawLineCallBack) {
-              viewer.drawLineCallBack(viewer.lineWorldCoords, length);
-            }
-          }
 
-          // if (viewer.drawPolyline && panel.anchor) {
-          //   var allLength = 0;
-          //   for (var i = 0; i < panel.anchor.length; i++) {
-          //     var endpoint = i === panel.anchor.length - 1 ? {x: pointer.x, y: pointer.y} : panel.voxelToCursor(panel.anchor[i+1].voxelX, panel.anchor[i+1].voxelY);
-          //     var anchor = panel.voxelToCursor(panel.anchor[i].voxelX, panel.anchor[i].voxelY);
-          //     allLength += calculationLine(anchor, endpoint, panel);
-          //   }
-          //   if (viewer.drawLineCallBack) {
-          //     if (viewer.polylineWorldCoords.length !== panel.anchor.length) {
-          //       viewer.polylineWorldCoords = viewer.polylineWorldCoords.slice(viewer.polylineWorldCoords.length -  panel.anchor.length);
-          //     }
-          //     viewer.drawLineCallBack(viewer.polylineWorldCoords, allLength);
-          //   }
-          // }
           drawPolylLineCallBack(pointer);
           panel.updated = true;
         }
@@ -698,16 +673,37 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
+          var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
           if (panel.anchor && viewer.drawPolyline) {
             var lastAnchor = panel.anchor[panel.anchor.length - 1];
-            var isSamePoint = lastAnchor.x === panel.mouse.x && lastAnchor.y === panel.mouse.y;
+            var voxel = panel.cursorToVoxel(panel.mouse.x, panel.mouse.y);
+            var isSamePoint = lastAnchor.voxelX === voxel.voxelX && lastAnchor.voxelY === voxel.voxelY;
             if (!isSamePoint) {
-              var voxel = panel.cursorToVoxel(panel.mouse.x, panel.mouse.y);
               panel.anchor.push(voxel);
             }
-            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
+            panel.dragAnchor = voxel;
             viewer.polylineWorldCoords.push(coords);
             drawPolylLineCallBack({ x: panel.mouse.x, y: panel.mouse.y });
+          }
+          if(viewer.drawLine) {
+            var voxel = panel.cursorToVoxel(panel.mouse.x, panel.mouse.y);
+            panel.dragAnchor = voxel;
+            if (panel.anchor.length > 1 || panel.anchor.length === 0) {
+              viewer.volumes.forEach(function(volume) {
+                volume.display.forEach(function(panel) {
+                  panel.anchor = [];
+                });
+              });
+              panel.anchor = [voxel];
+            } else {
+              panel.anchor.push(voxel);
+              viewer.lineWorldCoords.push(coords);
+              var anchor = panel.voxelToCursor(panel.anchor[0].voxelX, panel.anchor[0].voxelY);
+              var length = calculationLine(anchor, {x: panel.mouse.x, y: panel.mouse.y}, panel);
+              if (viewer.drawLineCallBack) {
+                viewer.drawLineCallBack(viewer.lineWorldCoords, length);
+              }
+            }
           }
           current_target = null;
         }
