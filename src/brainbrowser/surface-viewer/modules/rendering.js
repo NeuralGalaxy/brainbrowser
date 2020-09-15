@@ -1349,9 +1349,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     function polyLineInsertDom(startPoint, endPoint, lineLenght) {
       var textPoint = lineTextPoint(startPoint, endPoint);
-      if (textPoint.top === 0 || textPoint.left === 0) {
-        return;
-      }
       var top = textPoint.top;
       var left = textPoint.left;
       var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
