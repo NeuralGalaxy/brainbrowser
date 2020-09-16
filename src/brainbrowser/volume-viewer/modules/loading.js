@@ -583,22 +583,23 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             if (viewer.drawLineCallBack) {
               var allLength = 0;
               var drawPoints = [];
-              for (var i = 0; i < panel.drawPoints.length; i++) {
-                drawPoints.push(
-                  panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY)
-                );
-                if (panel.drawPoints.length === 2) {
-                  allLength += calculationLine(
-                    panel.voxelToCursor(panel.drawPoints[0].voxelX, panel.drawPoints[0].voxelY), 
-                    panel.voxelToCursor(panel.drawPoints[1].voxelX, panel.drawPoints[1].voxelY), 
-                    panel);
-                }else if (panel.drawPoints.length > 2){
+              if (panel.drawPoints.length === 2) {
+                allLength += calculationLine(
+                  panel.voxelToCursor(panel.drawPoints[0].voxelX, panel.drawPoints[0].voxelY), 
+                  panel.voxelToCursor(panel.drawPoints[1].voxelX, panel.drawPoints[1].voxelY), 
+                  panel);
+              } else if (panel.drawPoints.length > 2){
+                for (var i = 0; i < panel.drawPoints.length; i++) {
+                  drawPoints.push(
+                    panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY)
+                  );
                   var endpoint = i === panel.drawPoints.length - 1 ? panel.drawPoints[0] : panel.drawPoints[i+1];
                   allLength += calculationLine(
                     panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY), 
                     panel.voxelToCursor(endpoint.voxelX, endpoint.voxelY), panel);
                 }
               }
+              
               viewer.drawLineCallBack(viewer.pointsWorldCoords, allLength, drawPoints, panel.zoom);
             }
           }
