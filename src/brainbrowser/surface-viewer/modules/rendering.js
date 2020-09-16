@@ -286,14 +286,26 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
-    sphere.position.set(x, y, z);
+    if (viewer.model.children[0]) {
+      sphere.position.set(
+        x - viewer.model.children[0].userData.centroid.x,
+        y - viewer.model.children[0].userData.centroid.y, 
+        z - viewer.model.children[0].userData.centroid.z
+      );
+    } else {
+      sphere.position.set(
+        x,
+        y,
+        z
+      );
+    }
 
     if (viewer.model) {
       var offset     = viewer.model.userData.model_center_offset;
       if (offset !== undefined) {
         sphere.translateX(-offset.x);
-        sphere.translateY(-offset.y);
-        sphere.translateZ(-offset.z);
+        sphere.translateY(-offset.y + viewer.model.userData.centroid.y);
+        sphere.translateZ(-offset.z + viewer.model.userData.centroid.z);
       }
       viewer.model.add(sphere);
     } else {
@@ -306,30 +318,42 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   };
 
+  function getDrawLinesStartEndPoint(startPoint, endPoint) {
+    var centroidX = 0;
+    var centroidY = 0;
+    var centroidZ = 0;
+    if (viewer.model.children[0]) {
+      centroidX = viewer.model.children[0].userData.centroid.x;
+      centroidY = viewer.model.children[0].userData.centroid.y;
+      centroidZ = viewer.model.children[0].userData.centroid.z;
+    }
+    var start = new THREE.Vector3(startPoint.x - centroidX, startPoint.y - centroidY, startPoint.z - centroidZ);
+    var end = new THREE.Vector3(endPoint.x - centroidX, endPoint.y - centroidY, endPoint.z - centroidZ);
+    return {start: start, end: end};
+  }
+
   viewer.customizedrawLines = function(startPoint, endPoint) {
-    var start = new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z);
-    var end = new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z);
+    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
     for (var i = 0; i < children.length; i++){
       if (children[i].type === 'Line') {
         viewer.model.children.splice(i, 1);
       }
     }
-    viewer.drawLine(start, end, {
+    viewer.drawLine(point.start, point.end, {
       color: 0xffffff,
     });
   };
 
   viewer.drawPolyLine = function(startPoint, endPoint) {
-    var start = new THREE.Vector3(startPoint.x, startPoint.y, startPoint.z);
-    var end = new THREE.Vector3(endPoint.x, endPoint.y, endPoint.z);
+    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
     for (var i = 0; i < children.length; i++){
       if (children[i].type === 'Line' && i > viewer.polyLinePoints.length) {
         viewer.model.children.splice(i, 1);
       }
     }
-    viewer.drawLine(start, end, {
+    viewer.drawLine(point.start, point.end, {
       color: 0xffffff,
     });
   };
@@ -984,8 +1008,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var update = function(element) {
       var startVector3 = element.getAttribute('startVector3').split(',');
       var endVector3 = element.getAttribute('endVector3').split(',');
-      var start = viewer.reverseByVertexCoordstoPoint(startVector3[0], startVector3[1], startVector3[2]);
-      var end = viewer.reverseByVertexCoordstoPoint(endVector3[0], endVector3[1], endVector3[2]);
+      var centroidX = 0;
+      var centroidY = 0;
+      var centroidZ = 0;
+      if (viewer.model.children[0]) {
+        centroidX = viewer.model.children[0].userData.centroid.x;
+        centroidY = viewer.model.children[0].userData.centroid.y;
+        centroidZ = viewer.model.children[0].userData.centroid.z;
+      }
+      var start = viewer.reverseByVertexCoordstoPoint(startVector3[0] - centroidX, startVector3[1] - centroidY, startVector3[2] - centroidZ);
+      var end = viewer.reverseByVertexCoordstoPoint(endVector3[0] - centroidX, endVector3[1] - centroidY, endVector3[2] - centroidZ);
       var point = lineTextPoint(start, end);
       if (point.top !== 0) {
         element.style.top = point.top + 'px';
