@@ -567,9 +567,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             });
             panel.anchor = [voxel];
           }
-          if (viewer.drawLine)  {
-            var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
-            viewer.lineWorldCoords = [coords];
+          if (viewer.drawLine && panel.anchor.length === 2)  {
+            panel.anchor = [];
           }
           if (viewer.drawPolyline && viewer.polylineWorldCoords.length === 0) {
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
@@ -697,6 +696,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
                 });
               });
               panel.anchor = [voxel];
+              viewer.lineWorldCoords = [coords];
             } else {
               panel.anchor.push(voxel);
               viewer.lineWorldCoords.push(coords);

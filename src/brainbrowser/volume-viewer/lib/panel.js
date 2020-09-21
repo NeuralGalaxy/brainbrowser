@@ -681,6 +681,7 @@
       context.restore();
       return;
     }
+    console.log(panel.anchor, 'panel.anchor');
     if (panel.anchor.length > 0) {
       drawAnchors(panel, context, space, drawLine);
       setTimeout(() => {
