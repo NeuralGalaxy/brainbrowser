@@ -575,6 +575,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             viewer.polylineWorldCoords = [coords];
           }
           if (viewer.isDrawPoints) {
+            if (panel.drawPoints.length === 0) {
+              viewer.volumes.forEach(function(volume) {
+                volume.display.forEach(function(panel) {
+                  panel.drawPoints = [];
+                  viewer.pointsWorldCoords = [];
+                });
+              });
+            }
             var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
             panel.drawPoints.push(voxel);    
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
