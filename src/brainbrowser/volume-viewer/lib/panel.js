@@ -649,7 +649,7 @@
       color =  color || "#FF0000";
       context.strokeStyle =  color;
       context.fillStyle = color;
-      context.fillText(point.distance.toFixed(2), point.x, point.y);
+      context.fillText(point.distance.toFixed(2) + '(mm)', point.x, point.y);
       context.lineWidth = 1;
       context.beginPath();
       context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
