@@ -1390,7 +1390,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var eles = document.getElementsByClassName('polyLine-lenght-text-view');
       if (viewer.polyLinePoints.length > eles.length) {
         var el1 = document.createElement('div');
-        var text = document.createTextNode(lineLenght);
+        var text = document.createTextNode(lineLenght + '(mm)');
         el1.style.height = '5px';
         el1.style.width = '5px';
         el1.style.position = 'absolute';
@@ -1417,7 +1417,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           lastEle.style.top = top + 'px';
         }
         lastEle.style.color = 'white';
-        lastEle.textContent = lineLenght;
+        lastEle.textContent = lineLenght + '(mm)';
         lastEle.style.fontWeight = 900;
         lastEle.setAttribute("startVector3", startVector3);
         lastEle.setAttribute("endVector3", endVector3);
@@ -1443,11 +1443,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       ele.style.color = 'white';
       ele.style.fontWeight = 900;
       ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
-      ele.textContent = lineLenght;
+      ele.textContent = lineLenght + '(mm)';
       ele.setAttribute("endVector3", endVector3);
      } else {
       var el1 = document.createElement('div');
-      var text = document.createTextNode(lineLenght);
+      var text = document.createTextNode(lineLenght + '(mm)');
       el1.style.height = '5px';
       el1.style.width = '5px';
       el1.style.fontWeight = 900;
