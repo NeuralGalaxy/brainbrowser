@@ -1006,6 +1006,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var ele = document.getElementById('line-lenght-text-view');
     var eles = document.getElementsByClassName('polyLine-lenght-text-view');
     var update = function(element) {
+      console.log('laigengxinle');
       var startVector3 = element.getAttribute('startVector3').split(',');
       var endVector3 = element.getAttribute('endVector3').split(',');
       var centroidX = 0;
@@ -1034,9 +1035,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         update(eles[i]);
       }
     }
-    setTimeout(function() {
-      viewer.updateLineText();
-    }, 500);
   };
 
   viewer.clearLines = function() {
