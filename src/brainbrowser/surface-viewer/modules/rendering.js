@@ -1034,9 +1034,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         update(eles[i]);
       }
     }
-    setTimeout(function() {
-      viewer.updateLineText();
-    }, 500);
   };
 
   viewer.clearLines = function() {
