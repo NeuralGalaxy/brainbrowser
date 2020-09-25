@@ -358,6 +358,27 @@
 
         panel.updated = true;
       },
+      // panel.cursorToVoxel(130, 165);
+      cursorToVoxel: function(x, y) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        var voxel_i = (x - origin.x) / zoom  / Math.abs(slice.width_space.step) - 1;
+        var voxel_j = (y - origin.y) / zoom  / Math.abs(slice.height_space.step);
+        return { voxelX: voxel_i, voxelY: voxel_j};
+      },
+
+      // panel.voxelToCursor(100, 126);
+      voxelToCursor: function(i, j) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var slice = panel.slice;
+
+        var x = (i + 1) * Math.abs(slice.width_space.step) * zoom + origin.x;
+        var y = j * Math.abs(slice.height_space.step) * zoom + origin.y;
+        return { x: x, y: y };
+      },
 
       /**
       * @doc function
@@ -526,9 +547,7 @@
     var cursor = panel.getCursorPosition();
     var zoom = panel.zoom;
     var length = 8 * (zoom / panel.default_zoom);
-    var x, y, space;
-    var distance;
-    var dx, dy;
+    var space;
     color = color || "#FF0000";
     
     context.save();
@@ -537,8 +556,8 @@
     context.fillStyle = color;
 
     space = 1;
-    x = cursor.x;
-    y = cursor.y;
+    var x = cursor.x;
+    var y = cursor.y;
 
     context.lineWidth = space * 2;
     context.beginPath();
@@ -552,44 +571,151 @@
     context.lineTo(x + length, y);
     context.stroke();
 
-    if (panel.anchor) {
-      dx = (panel.anchor.x - cursor.x) / panel.zoom;
-      dy = (panel.anchor.y - cursor.y) / panel.zoom;
-      distance = Math.sqrt(dx * dx + dy * dy);
+    var distancePoint = function(start, end) {
+      var calculate = function (start, end) {
+        var dx, dy, x, y, distance;
+        dx = (start.x - end.x) / panel.zoom;
+        dy = (start.y - end.y) / panel.zoom;
+        distance = Math.sqrt(dx * dx + dy * dy);
+        if (start.x > end.x) {
+          x = end.x + (start.x - end.x) / 2; 
+        }else {
+          x = start.x + (end.x - start.x) / 2; 
+        }
+        if (start.y > end.y) {
+          y = end.y + (start.y - end.y) / 2;
+        } else {
+          y = start.y + (end.y - start.y) / 2;
+        }
+        return { x: x, y: y, distance: distance };
+      };
+      var compare = function(otherPoint, x, y) {
+        var num = 5;
+        if (otherPoint.x < x && otherPoint.x + num > x) {
+          x += num;
+        }
+        if (otherPoint.y < y && otherPoint.y + num > y) {
+          y += num;
+        }
+        if (otherPoint.x > x && otherPoint.x - num < x) {
+          x -= num;
+        }
+        if (otherPoint.y > y && otherPoint.y - num < y) {
+          y -= num;
+        }
+
+        return { x: x, y: y };
+      };
+      var point = calculate(start, end);
+      var x = point.x;
+      var y = point.y;
+      if (panel.isDrawPoints) {
+        panel.drawPoints.forEach(function(item, index) {
+          var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
+          if (preItem) {
+            var preItemStart = panel.voxelToCursor(preItem.voxelX, preItem.voxelY);
+            var preItemEnd = panel.voxelToCursor(item.voxelX,  item.voxelY);
+            if (preItemStart !== start) {
+              var preItemPoint = calculate(preItemStart, preItemEnd);
+
+              var obj = compare(preItemPoint, x, y);
+              x = obj.x;
+              y = obj.y;
+            }
+          }
+          if (index === panel.drawPoints.length - 1) {
+            var pointStart = panel.voxelToCursor(item.voxelX, item.voxelY);
+            var pointEnd = panel.voxelToCursor(panel.drawPoints[0].voxelX,  panel.drawPoints[0].voxelY);
+            if (pointStart !== start) {
+              var otherPoint =  calculate(pointStart, pointEnd);
+              var obj = compare(otherPoint, x, y);
+              x = obj.x;
+              y = obj.y;
+            }
+          }
+        });
+      }
+      
+      return { x: x, y: y, distance: point.distance };
+    };
+
+    var drawLine = function (start, end, color, allPoint) {
+      if(!start || !end) {
+        return;
+      }
+      var point = distancePoint(start, end);
 
       context.font = "bold 12px arial";
-
-      if (panel.canvas.width - cursor.x < 50) {
-        context.textAlign = "right";
-        x = cursor.x - length;
-      } else {
-        context.textAlign = "left";
-        x = cursor.x + length;
-      }
-
-      if (cursor.y < 30) {
-        context.textBaseline = "top";
-        y = cursor.y + length;
-      } else {
-        context.textBaseline = "bottom";
-        y = cursor.y - length;
-      }
-
-      context.fillText(distance.toFixed(2), x, y);
-
+      color =  color || "#FF0000";
+      context.strokeStyle =  color;
+      context.fillStyle = color;
+      context.fillText(point.distance.toFixed(2) + '(mm)', point.x, point.y);
       context.lineWidth = 1;
       context.beginPath();
-      context.arc(panel.anchor.x, panel.anchor.y, 2 * space, 0, 2 * Math.PI);
+      context.arc(start.x, start.y, 2 * space, 0, 2 * Math.PI);
       context.fill();
-      context.moveTo(panel.anchor.x, panel.anchor.y);
-      context.lineTo(cursor.x, cursor.y);
+      context.moveTo(start.x, start.y);
+      context.lineTo(end.x, end.y);
       context.stroke();
+    };
 
+    if (panel.isDrawPoints) {
+      if (panel.drawPoints && panel.drawPoints.length > 1) {
+        var center = panel.drawPoints[0];
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
+      panel.drawPoints.forEach(function(item, index) {
+        var preItem = index > 0 ? panel.drawPoints[index - 1] : null;
+        if (preItem) {
+          drawLine(panel.voxelToCursor(preItem.voxelX, preItem.voxelY), panel.voxelToCursor(item.voxelX,  item.voxelY), '#FFFFFF');
+        }
+        if (index === panel.drawPoints.length - 1) {
+          drawLine(panel.voxelToCursor(item.voxelX, item.voxelY), panel.voxelToCursor(panel.drawPoints[0].voxelX,  panel.drawPoints[0].voxelY), '#FFFFFF');
+        }
+      });
+
+      context.restore();
+      return;
     }
-
+    if (panel.anchor.length > 0) {
+      drawAnchors(panel, context, space, drawLine);
+      setTimeout(() => {
+        drawAnchors(panel, context, space, drawLine, 'delay');
+      }, 300);
+    }
     context.restore();
 
 
+  }
+
+  function drawAnchors(panel, context, space, drawLine, type) {
+    if (panel.anchor.length === 1) {
+      var center = panel.anchor[0];
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(center.x, center.y, 2 * space, 0, 2 * Math.PI);
+      context.fill();
+      context.stroke();
+    }
+    panel.anchor.forEach((item, index) => {
+      var preItem = index > 0 ? panel.anchor[index - 1] : null;
+      if (preItem) {
+        drawLine(panel.voxelToCursor(preItem.voxelX, preItem.voxelY), panel.voxelToCursor(item.voxelX,  item.voxelY), '#FFFFFF');
+      }
+      if (index === panel.anchor.length - 1 && panel.dragAnchor && type != 'delay') {
+        var oEl =  $('.slice-display')[0];
+        var dragAnchor = panel.voxelToCursor(panel.dragAnchor.voxelX, panel.dragAnchor.voxelY);
+        var isSamePoint= item.voxelX === panel.dragAnchor.voxelX && item.voxelY === panel.dragAnchor.voxelY;
+        var w = oEl.width,  h = oEl.height, x = dragAnchor.x, y = dragAnchor.y;
+        if(x > 0 && x < w && y > 0 && y < h && !isSamePoint) {
+          drawLine(panel.voxelToCursor(item.voxelX, item.voxelY), dragAnchor, '#FFFFFF');
+        }
+      }
+    });
   }
 
   // Draw the current slice to the canvas.

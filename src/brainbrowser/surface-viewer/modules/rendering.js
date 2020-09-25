@@ -66,18 +66,17 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * viewer.render();
   * ```
   */
+  viewer.lineMode = false;
+  viewer.polyLineMode = false;
+  viewer.polyLinePoints = [];
   viewer.render = function() {
     var dom_element = viewer.dom_element;
     renderer.setClearColor(0x000000);
     dom_element.appendChild(renderer.domElement);
-
     camera.position.z = default_camera_distance;
-
     light.position.set(0, 0, default_camera_distance);
     scene.add(light);
-
     viewer.updateViewport();
-
     renderFrame();
   };
 
@@ -88,7 +87,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       viewer.model.children = [];
     }
     renderer.clearCachedWebglObjects();
-  }
+  };
 
   /**
   * @doc function
@@ -287,14 +286,26 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
-    sphere.position.set(x, y, z);
+    if (viewer.model.children[0]) {
+      sphere.position.set(
+        x - viewer.model.children[0].userData.centroid.x,
+        y - viewer.model.children[0].userData.centroid.y, 
+        z - viewer.model.children[0].userData.centroid.z
+      );
+    } else {
+      sphere.position.set(
+        x,
+        y,
+        z
+      );
+    }
 
     if (viewer.model) {
       var offset     = viewer.model.userData.model_center_offset;
       if (offset !== undefined) {
         sphere.translateX(-offset.x);
-        sphere.translateY(-offset.y);
-        sphere.translateZ(-offset.z);
+        sphere.translateY(-offset.y + viewer.model.userData.centroid.y);
+        sphere.translateZ(-offset.z + viewer.model.userData.centroid.z);
       }
       viewer.model.add(sphere);
     } else {
@@ -305,6 +316,46 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     return sphere;
 
+  };
+
+  function getDrawLinesStartEndPoint(startPoint, endPoint) {
+    var centroidX = 0;
+    var centroidY = 0;
+    var centroidZ = 0;
+    if (viewer.model.children[0]) {
+      centroidX = viewer.model.children[0].userData.centroid.x;
+      centroidY = viewer.model.children[0].userData.centroid.y;
+      centroidZ = viewer.model.children[0].userData.centroid.z;
+    }
+    var start = new THREE.Vector3(startPoint.x - centroidX, startPoint.y - centroidY, startPoint.z - centroidZ);
+    var end = new THREE.Vector3(endPoint.x - centroidX, endPoint.y - centroidY, endPoint.z - centroidZ);
+    return {start: start, end: end};
+  }
+
+  viewer.customizedrawLines = function(startPoint, endPoint) {
+    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
+    var children = [].concat(viewer.model.children);
+    for (var i = 0; i < children.length; i++){
+      if (children[i].type === 'Line') {
+        viewer.model.children.splice(i, 1);
+      }
+    }
+    viewer.drawLine(point.start, point.end, {
+      color: 0xffffff,
+    });
+  };
+
+  viewer.drawPolyLine = function(startPoint, endPoint) {
+    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
+    var children = [].concat(viewer.model.children);
+    for (var i = 0; i < children.length; i++){
+      if (children[i].type === 'Line' && i > viewer.polyLinePoints.length) {
+        viewer.model.children.splice(i, 1);
+      }
+    }
+    viewer.drawLine(point.start, point.end, {
+      color: 0xffffff,
+    });
   };
 
   /**
@@ -423,7 +474,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var geometry = new THREE.Geometry();
     var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
 
-    var grid     = Object.create( THREE.GridHelper.prototype );
+    var grid = Object.create( THREE.GridHelper.prototype );
 
     // Horizontal axes
     for ( var z = horizontal_from; z <= horizontal_to; z += step ) {
@@ -479,15 +530,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     // Set the material according with the dashed option
     var material = options.dashed === true ?
-                     new THREE.LineDashedMaterial({ linewidth: 3, color: color, gapSize: 3 })
-                   : new THREE.LineBasicMaterial( { linewidth: 3, color: color });
+                     new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
+                   : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
 
     var line = new THREE.Line( geometry, material, THREE.LinePieces );
-
+  
     if (options.draw === false) {return line;}
 
     if (viewer.model) {
-      viewer.model.add(line);
+      viewer.model.add(line);      
     } else {
       scene.add(line);
     }
@@ -586,6 +637,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.pick = function(x, y, opacity_threshold) {
+    // console.log(viewer.mouse.x, viewer.mouse.y, 'viewer.pick');
     x = x === undefined ? viewer.mouse.x : x;
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
@@ -625,15 +677,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
     }
 
-    if (intersection !== null) {
+    if (intersection !== null && intersection.face) {
 
       intersect_object = intersection.object;
       intersect_face = intersection.face;
-      intersect_indices = [
+      
+      intersect_indices = intersect_face ? [
         intersect_face.a,
         intersect_face.b,
         intersect_face.c
-      ];
+      ] : [];
 
       if (intersect_object.userData.annotation_info) {
         vertex_data = {
@@ -788,6 +841,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     return vertex_data;
   };
 
+  viewer.reverseByVertexCoordstoPoint = function(x, y, z) {
+    var p = new THREE.Vector3(x, y, z);
+    p = p.applyMatrix4(viewer.model.matrixWorld);
+    var vector = p.project(camera);
+    var x = (vector.x + 1) / 2 * viewer.dom_element.offsetWidth;
+    var y = -(vector.y - 1) / 2 * viewer.dom_element.offsetHeight;
+    return { x: x,  y:y };
+  };
+
   /**
   * @doc function
   * @name viewer.rendering:changeCenterRotation
@@ -940,6 +1002,85 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     });
   };
 
+  viewer.updateLineText = function() {
+    var ele = document.getElementById('line-lenght-text-view');
+    var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+    var update = function(element) {
+      var startVector3 = element.getAttribute('startVector3').split(',');
+      var endVector3 = element.getAttribute('endVector3').split(',');
+      var centroidX = 0;
+      var centroidY = 0;
+      var centroidZ = 0;
+      if (viewer.model.children[0]) {
+        centroidX = viewer.model.children[0].userData.centroid.x;
+        centroidY = viewer.model.children[0].userData.centroid.y;
+        centroidZ = viewer.model.children[0].userData.centroid.z;
+      }
+      var start = viewer.reverseByVertexCoordstoPoint(startVector3[0] - centroidX, startVector3[1] - centroidY, startVector3[2] - centroidZ);
+      var end = viewer.reverseByVertexCoordstoPoint(endVector3[0] - centroidX, endVector3[1] - centroidY, endVector3[2] - centroidZ);
+      var point = lineTextPoint(start, end);
+      if (point.top !== 0) {
+        element.style.top = point.top + 'px';
+      }
+      if (point.left !== 0) {
+        element.style.left = point.left + 'px';
+      }
+    };
+    if (ele) {
+      update(ele);
+    }
+    if (eles && eles.length > 0) {
+      for(var i = 0; i < eles.length; i++) {
+        update(eles[i]);
+      }
+    }
+  };
+
+  viewer.clearLines = function() {
+    var children = [].concat(viewer.model.children);
+    viewer.model.children = [];
+    viewer.model.children.push(children[0]);
+    var ele = document.getElementById('line-lenght-text-view');
+    if (ele) {
+      viewer.dom_element.removeChild(ele);
+    }
+    var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+    if (eles && eles.length > 0) {
+      for(var i = 0; i < eles.length; i++) {
+        eles[i].textContent = '';
+        viewer.dom_element.removeChild(eles[i]);
+      }
+    }
+    setTimeout(function() {
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (eles && eles.length > 0) {
+        for(var i = 0; i < eles.length; i++) {
+          eles[i].textContent = '';
+          viewer.dom_element.removeChild(eles[i]);
+        }
+      }
+    },100);
+    setTimeout(function() {
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (eles && eles.length > 0) {
+        for(var i = 0; i < eles.length; i++) {
+          eles[i].textContent = '';
+          viewer.dom_element.removeChild(eles[i]);
+        }
+      }
+    },500);
+    setTimeout(function() {
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (eles && eles.length > 0) {
+        for(var i = 0; i < eles.length; i++) {
+          eles[i].textContent = '';
+          viewer.dom_element.removeChild(eles[i]);
+        }
+      }
+    },1000);
+
+    viewer.updated = true;
+  };
   ////////////////////////////////////
   // PRIVATE FUNCTIONS
   ////////////////////////////////////
@@ -952,7 +1093,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var position = camera.position;
     var new_z    = default_camera_distance / viewer.zoom;
 
-    window.requestAnimationFrame(renderFrame);
+    viewer.requestAnimationFrame = window.requestAnimationFrame(renderFrame);
 
     last_frame = current_frame || timestamp;
     current_frame = timestamp;
@@ -997,6 +1138,27 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   // CONTROLS
   ////////////////////////////////
 
+  var lineTextPoint = function(startPoint, endPoint) {
+    var left = 0;
+    var top = 0;
+    if (startPoint.x - endPoint.x > 0) {
+      left = startPoint.x - (startPoint.x - endPoint.x) / 2;
+    }else {
+      left = endPoint.x - (endPoint.x - startPoint.x) / 2;
+    }
+
+    if (endPoint.y - startPoint.y > 0) {
+      top = endPoint.y - (endPoint.y - startPoint.y) / 2;
+    } else {
+      top = startPoint.y - (startPoint.y - endPoint.y) / 2;
+    }
+
+    return { left: left, top: top };
+  };
+  
+  var startVertexData = { point: { x: 0, y: 0, z:0 }, position2D: { x: 0, y: 0 }};
+  var endPoinxyz; // x y z;
+  var lineEndPosition2D;
   (function() {
     var model = viewer.model;
     var movement = "rotate";
@@ -1011,6 +1173,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     function drag(pointer, multiplier) {
+      if (!pointer) {
+        return;
+      }
       var inverse = new THREE.Matrix4();
       var x       = pointer.x;
       var y       = pointer.y;
@@ -1049,7 +1214,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           light.position.y  += dy * multiplier * 0.25;
         }
       }
-
       last_x = x;
       last_y = y;
       viewerClickCallBack();
@@ -1075,7 +1239,43 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function mouseDrag(event) {
       viewer.moveFlag = true;
       event.preventDefault();
-      drag(viewer.mouse, 1.1);
+      if (viewer.lineMode) {
+        var obj = get3DPoint(event);
+        if (!obj) {
+          return;
+        }
+        var endPosition = { point: obj.vertex_data.point, x: obj.x, y: obj.y };
+        var lineLenght = calculationLineWidth(startVertexData, obj.vertex_data);
+        insertDom({x: startVertexData.position2D.x, y: startVertexData.position2D.y, point: startVertexData.point}, endPosition, lineLenght);
+        viewer.customizedrawLines(startVertexData.point, obj.vertex_data.point);
+        if (viewer.drawLineCallBack) {
+          viewer.drawLineCallBack([startVertexData, obj.vertex_data], parseFloat(lineLenght));
+        }
+      }
+      if (viewer.polyLineMode) {
+        var obj = get3DPoint(event);
+        if (!obj) {
+          return;
+        }
+        endPoinxyz = { point:  {x: obj.vertex_data.point.x, y: obj.vertex_data.point.y, z: obj.vertex_data.point.z}, position2D: { x: obj.x, y: obj.y }};
+        var polyLinePoints = JSON.parse(JSON.stringify(viewer.polyLinePoints));
+        var lastPolyLine = polyLinePoints[polyLinePoints.length - 1];
+        viewer.drawPolyLine(lastPolyLine.point, obj.vertex_data.point); 
+        var lineLenght = calculationLineWidth(lastPolyLine, obj.vertex_data);
+        polyLineInsertDom({x: lastPolyLine.position2D.x, y: lastPolyLine.position2D.y, point: lastPolyLine.point}, {point: obj.vertex_data.point, x: obj.x, y: obj.y}, lineLenght);
+        if (viewer.drawLineCallBack) {
+          var allpolyLines = [].concat(polyLinePoints);
+          allpolyLines.push(obj.vertex_data);
+          var allLength = 0;
+          for(var i = 0; i < allpolyLines.length - 1; i ++) {
+            allLength += parseFloat(calculationLineWidth(allpolyLines[i], allpolyLines[i + 1]));
+          }
+          viewer.drawLineCallBack(allpolyLines, allLength);
+        }
+      }
+      if (!viewer.lineMode && !viewer.polyLineMode) {
+        drag(viewer.mouse, 1.1);
+      }
       viewerClickCallBack();
     }
 
@@ -1096,6 +1296,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       last_x = null;
       last_y = null;
       viewerClickCallBack();
+      if(viewer.polyLineMode && endPoinxyz) {
+        viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
+      }
     }
 
     function touchDragEnd() {
@@ -1110,9 +1313,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function wheelHandler(event) {
       if (event.ctrlKey) {
         var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-
         event.preventDefault();
-
         viewer.zoom *= 1.0 + 0.02 * delta;
         if (viewer.zoomCallBack) {
           viewer.zoomCallBack(viewer.zoom);
@@ -1124,14 +1325,24 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
-
       movement = event.which === 1 ? "rotate" : "translate" ;
+      var pick = viewer.pick();
+      if (viewer.lineMode && pick) {
+        startVertexData.point = pick.point;
+        startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
+      }
+      if (viewer.polyLineMode && pick) {
+        startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
+        startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
+        if (viewer.polyLinePoints.length === 0) {
+          viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
+        }
+      }
     }, false);
 
     canvas.addEventListener("touchstart", function(event) {
       document.addEventListener("touchmove", touchDrag, false);
       document.addEventListener("touchend", touchDragEnd, false);
-
       movement = event.touches.length === 1 ? "rotate" :
                  event.touches.length === 2 ? "zoom" :
                  "translate";
@@ -1142,10 +1353,127 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     canvas.addEventListener("wheel", wheelHandler, false);
     canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
 
-    canvas.addEventListener( 'contextmenu', function(event) {
+    canvas.addEventListener('contextmenu', function(event) {
       event.preventDefault();
     }, false);
     
+    function get3DPoint(event) {
+      var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
+        var x, y;
+        if (event.pageX !== undefined) {
+          x = event.pageX;
+          y = event.pageY;
+        } else {
+          x = event.clientX + window.pageXOffset;
+          y = event.clientY + window.pageYOffset;
+        }
+
+        var vertex_data = viewer.pick(x - offset.left, y - offset.top);
+        if (vertex_data) {
+          return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
+        }else {
+          return undefined;
+        }
+    }
+
+    function polyLineInsertDom(startPoint, endPoint, lineLenght) {
+      var textPoint = lineTextPoint(startPoint, endPoint);
+      var top = textPoint.top;
+      var left = textPoint.left;
+      var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
+      var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
+ 
+
+      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+      if (viewer.polyLinePoints.length > eles.length) {
+        var el1 = document.createElement('div');
+        var text = document.createTextNode(lineLenght + '(mm)');
+        el1.style.height = '5px';
+        el1.style.width = '5px';
+        el1.style.position = 'absolute';
+        if (left !== 0) {
+          el1.style.left = left + 'px';
+        }
+        if (top !== 0) {
+          el1.style.top = top + 'px';
+        }
+        el1.style.color = 'white';
+        el1.className = 'polyLine-lenght-text-view';
+        el1.style.fontWeight = 900;
+        el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+        el1.setAttribute("startVector3", startVector3);
+        el1.setAttribute("endVector3", endVector3);
+        viewer.dom_element.appendChild(el1);
+        el1.appendChild(text);
+      } else {
+        var lastEle = eles[eles.length - 1];
+        if (left !== 0) {
+          lastEle.style.left = left + 'px';
+        }
+        if (top !== 0) {
+          lastEle.style.top = top + 'px';
+        }
+        lastEle.style.color = 'white';
+        lastEle.textContent = lineLenght + '(mm)';
+        lastEle.style.fontWeight = 900;
+        lastEle.setAttribute("startVector3", startVector3);
+        lastEle.setAttribute("endVector3", endVector3);
+      }
+      
+    }
+
+    function insertDom(startPoint, endPoint, lineLenght) {
+     var textPoint = lineTextPoint(startPoint, endPoint);
+     var top = textPoint.top;
+     var left = textPoint.left;
+     var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
+     var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
+
+     var ele = document.getElementById('line-lenght-text-view');
+     if (ele) {
+      if (left !== 0) {
+        ele.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        ele.style.top = top + 'px';
+      }
+      ele.style.color = 'white';
+      ele.style.fontWeight = 900;
+      ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+      ele.textContent = lineLenght + '(mm)';
+      ele.setAttribute("endVector3", endVector3);
+     } else {
+      var el1 = document.createElement('div');
+      var text = document.createTextNode(lineLenght + '(mm)');
+      el1.style.height = '5px';
+      el1.style.width = '5px';
+      el1.style.fontWeight = 900;
+      el1.style.position = 'absolute';
+      if (left !== 0) {
+        el1.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        el1.style.top = top + 'px';
+      }
+      el1.style.color = 'white';
+      el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+      el1.id = 'line-lenght-text-view';
+      el1.setAttribute("startVector3", startVector3);
+      el1.setAttribute("endVector3", endVector3);
+      viewer.dom_element.appendChild(el1);
+      el1.appendChild(text);
+     }
+      
+    }
+
+    function calculationLineWidth(start, end) {
+      var x = Math.pow(start.point.x - end.point.x, 2);
+      var y = Math.pow(start.point.y - end.point.y, 2);
+      var z = Math.pow(start.point.z - end.point.z, 2);
+      var lineLenght =  Math.pow(x + y + z, 0.5);
+      return parseFloat(lineLenght).toFixed(2);
+    }
+
   })();
 
 };
