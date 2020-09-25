@@ -723,7 +723,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     geometry.dynamic = true;
 
-    if (recenter) {
+    if (true) {
       if (index) {
         index_array = index.array;
         // tmp_position_array used because there will be repeats in the index array.
