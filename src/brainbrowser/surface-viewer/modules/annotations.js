@@ -176,12 +176,11 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
     * ```
     */
     reset: function() {
-      viewer.annotations.forEach(function(annotation) {
-        if (!annotation) {
-          return;
-        }
-        viewer.annotations.remove(annotation.vertex);
+      var childrens = viewer.model.children.filter(function(obj) {
+        return obj.name !== 'Dot';
       });
+      viewer.model.children = childrens;
+      viewer.updated = true;
     },
 
     /**
