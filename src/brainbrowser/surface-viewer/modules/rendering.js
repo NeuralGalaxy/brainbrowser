@@ -1300,6 +1300,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if(viewer.polyLineMode && endPoinxyz) {
         viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
       }
+      viewer.dom_element.style.overflowY = 'hidden';
     }
 
     function touchDragEnd() {
@@ -1323,6 +1324,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
+      viewer.dom_element.style.overflowY = '';
       viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
