@@ -1300,6 +1300,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if(viewer.polyLineMode && endPoinxyz) {
         viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
       }
+      viewer.dom_element.style.overflowY = 'hidden';
     }
 
     function touchDragEnd() {
@@ -1323,6 +1324,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
+      viewer.dom_element.style.overflowY = '';
       viewer.moveFlag = false;
       document.addEventListener("mousemove", mouseDrag, false);
       document.addEventListener("mouseup", mouseDragEnd, false);
@@ -1384,7 +1386,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
       var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
  
-
       var eles = document.getElementsByClassName('polyLine-lenght-text-view');
       if (viewer.polyLinePoints.length > eles.length) {
         var el1 = document.createElement('div');
