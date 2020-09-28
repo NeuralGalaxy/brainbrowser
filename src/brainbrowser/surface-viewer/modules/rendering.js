@@ -337,7 +337,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
     for (var i = 0; i < children.length; i++){
-      if (children[i].type === 'Line') {
+      if (children[i].name === 'Line') {
         viewer.model.children.splice(i, 1);
       }
     }
@@ -350,7 +350,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
     for (var i = 0; i < children.length; i++){
-      if (children[i].type === 'Line' && i > viewer.polyLinePoints.length) {
+      if (children[i].name === 'Line' && i > viewer.polyLinePoints.length) {
         viewer.model.children.splice(i, 1);
       }
     }
@@ -535,7 +535,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
                    : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
 
     var line = new THREE.Line( geometry, material, THREE.LinePieces );
-  
+    line.name = 'Line';
     if (options.draw === false) {return line;}
 
     if (viewer.model) {
@@ -1039,8 +1039,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   viewer.clearLines = function() {
     var children = [].concat(viewer.model.children);
-    viewer.model.children = [];
-    viewer.model.children.push(children[0]);
+    var newChildren = children.filter(function(obj) {
+      return (obj.name !== 'Line' && obj.name !== 'Dot');
+    });
+    viewer.model.children = newChildren;
     var ele = document.getElementById('line-lenght-text-view');
     if (ele) {
       viewer.dom_element.removeChild(ele);
