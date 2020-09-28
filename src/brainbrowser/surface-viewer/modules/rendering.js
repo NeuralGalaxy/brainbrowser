@@ -1213,6 +1213,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     function mouseDrag(event) {
       viewer.moveFlag = true;
       event.preventDefault();
+      if ((viewer.lineMode || viewer.polyLineMode) && startVertexData.point.x === 0 && startVertexData.point.y === 0 && startVertexData.point.z === 0) {
+        return;
+      }
       if (viewer.lineMode) {
         var obj = get3DPoint(event);
         if (!obj) {
@@ -1298,10 +1301,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     canvas.addEventListener("mousedown", function(event) {
       viewer.dom_element.style.overflowY = '';
-      viewer.moveFlag = false;
-      document.addEventListener("mousemove", mouseDrag, false);
-      document.addEventListener("mouseup", mouseDragEnd, false);
-      movement = event.which === 1 ? "rotate" : "translate" ;
       var pick = viewer.pick();
       if (viewer.lineMode && pick) {
         startVertexData.point = pick.point;
@@ -1314,6 +1313,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }
+      viewer.moveFlag = false;
+      document.addEventListener("mousemove", mouseDrag, false);
+      document.addEventListener("mouseup", mouseDragEnd, false);
+      movement = event.which === 1 ? "rotate" : "translate" ;
     }, false);
 
     canvas.addEventListener("touchstart", function(event) {
