@@ -349,8 +349,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.drawPolyLine = function(startPoint, endPoint) {
     var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
+    var newChildren = children.filter(function(obj) {
+      return (obj.name !== 'Line' && obj.name !== 'Dot');
+    });
     for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line' && i > viewer.polyLinePoints.length) {
+      if (children[i].name === 'Line' && i > (viewer.polyLinePoints.length + newChildren.length)) {
         viewer.model.children.splice(i, 1);
       }
     }
