@@ -1384,7 +1384,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
       var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
  
-
       var eles = document.getElementsByClassName('polyLine-lenght-text-view');
       if (viewer.polyLinePoints.length > eles.length) {
         var el1 = document.createElement('div');
