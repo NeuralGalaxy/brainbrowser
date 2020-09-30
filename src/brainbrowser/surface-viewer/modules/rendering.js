@@ -1281,7 +1281,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if(viewer.polyLineMode && endPoinxyz) {
         viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
       }
-      viewer.dom_element.style.overflowY = 'hidden';
     }
 
     function touchDragEnd() {
@@ -1305,7 +1304,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
-      viewer.dom_element.style.overflowY = '';
       var pick = viewer.pick();
       if (viewer.lineMode && pick) {
         startVertexData.point = pick.point;
