@@ -140,7 +140,7 @@
       let import_url = document.location.origin;
       if (protocal === 'file:') {
         let href = document.location.href;
-        const regex = /^.*resources\/app\.asar\/dist\//;
+        const regex = /^.*resources\/app\.asar\/dist\//i;
         const matchResult = href.match(regex);
         href = matchResult && matchResult.length > 0 && matchResult[0] ? matchResult[0] : href;
         import_url = href + worker_dir;
