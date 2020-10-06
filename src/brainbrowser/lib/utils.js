@@ -51,7 +51,7 @@
 
       return !!gl.getExtension(name);
     },
-    
+
     /**
     * @doc function
     * @name BrainBrowser.utils:webGLErrorMessage
@@ -67,16 +67,16 @@
       var elem;
       var text = 'BrainBrowser requires <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br/>';
       text += window.WebGLRenderingContext ? 'Your browser seems to support it, but it is <br/> disabled or unavailable.<br/>' :
-              "Your browser does not seem to support it.<br/>";
+        "Your browser does not seem to support it.<br/>";
       text += 'Test your browser\'s WebGL support <a href="http://get.webgl.org/">here</a>.';
-      
+
       elem = document.createElement("div");
       elem.id = "webgl-error";
       elem.innerHTML = text;
-          
+
       return elem;
     },
-    
+
     /**
     * @doc function
     * @name BrainBrowser.utils:isFunction
@@ -109,7 +109,7 @@
       return !isNaN(parseFloat(n));
     },
 
-    /** 
+    /**
     * @doc function
     * @name viewer.color:createDataURL
     * @param {any} data The data to create a URL for.
@@ -123,7 +123,7 @@
         throw new Error("createDataURL requires URL.createObjectURL which does not seem to be available is this browser.");
       }
 
-      return window.URL.createObjectURL(new Blob([data], {type : mime_type || "text/plain"}));
+      return window.URL.createObjectURL(new Blob([data], { type: mime_type || "text/plain" }));
     },
 
     /**
@@ -159,12 +159,12 @@
     /**
     * @doc function
     * @name BrainBrowser.utils:min
-    * @param {array|multiple} arguments List of items to processed. Can be given 
+    * @param {array|multiple} arguments List of items to processed. Can be given
     * as an array or directly as arguments.
     * @returns {any} The smallest element of the given list.
     *
     * @description
-    * Find the smallest item in a list. List can be passed as an array or 
+    * Find the smallest item in a list. List can be passed as an array or
     * directly as arguments.
     * ```js
     * BrainBrowser.utils.min(1, 2, 17 143 12 42);
@@ -185,12 +185,12 @@
     /**
     * @doc function
     * @name BrainBrowser.utils:max
-    * @param {array|multiple} arguments List of items to processed. Can be given 
+    * @param {array|multiple} arguments List of items to processed. Can be given
     * as an array or directly as arguments.
     * @returns {any} The largenst element of the given list.
     *
     * @description
-    * Find the largest item in a list. List can be passed as an array or 
+    * Find the largest item in a list. List can be passed as an array or
     * directly as arguments.
     * ```js
     * BrainBrowser.utils.max(1, 2, 17 143 12 42);
@@ -199,7 +199,7 @@
     max: function() {
       var array = Array.prototype.slice.call(arguments);
       array = array.length === 1 && BrainBrowser.utils.isNumeric(array[0].length) ? array[0] : array;
-      
+
       var max = array[0];
       var i, count;
       for (i = 1, count = array.length; i < count; i++) {
@@ -215,7 +215,7 @@
     * @returns {object} An object containing the given element's offet info:
     *
     * * **top**: offset from the top of the window.
-    * * **left**: offset from the left side of the window. 
+    * * **left**: offset from the left side of the window.
     *
     * @description
     * Return offset information about the given element.
@@ -226,11 +226,11 @@
     getOffset: function(element, view) {
       var top = 0;
       var left = 0;
-      
+
       var scrollTop = 0;
       var scrollParent = BrainBrowser.utils.getScrollParent(element);
-      while(scrollParent && !scrollParent.isSameNode($("html")[0])) {
-        scrollTop += scrollParent.scrollTop;        
+      while (scrollParent && !scrollParent.isSameNode($("html")[0])) {
+        scrollTop += scrollParent.scrollTop;
         scrollParent = BrainBrowser.utils.getScrollParent(scrollParent.parentNode);
       }
 
@@ -240,7 +240,7 @@
 
         element = element.offsetParent;
       }
-      return {top: top - scrollTop, left: left, element: element};
+      return { top: top - scrollTop, left: left, element: element };
     },
 
     getScrollParent: function(node) {
@@ -268,7 +268,7 @@
     * ```
     */
     captureMouse: function(element, view) {
-      var mouse = { x: 0, y: 0, left: false, middle: false, right: false};
+      var mouse = { x: 0, y: 0, left: false, middle: false, right: false };
 
       if (!element) return mouse;
 
@@ -367,19 +367,19 @@
           }
 
           touches[i] = touches[i] || {};
-          
+
           touches[i].x = x - offset.left;
           touches[i].y = y - offset.top;
         }
       }
-      
+
       element.addEventListener("touchstart", updateTouches, false);
       element.addEventListener("touchmove", updateTouches, false);
       element.addEventListener("touchend", updateTouches, false);
-      
+
       return touches;
     }
-  
+
   };
 
 })();
