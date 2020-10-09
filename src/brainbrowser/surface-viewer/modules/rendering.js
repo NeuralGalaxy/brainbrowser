@@ -347,19 +347,19 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   };
 
   viewer.drawPolyLine = function(startPoint, endPoint) {
-    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
-    var newChildren = children.filter(function(obj) {
-      return (obj.name !== 'Line' && obj.name !== 'Dot');
-    });
     for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line' && i > (viewer.polyLinePoints.length + newChildren.length)) {
+      if (children[i].name === 'Line') {
         viewer.model.children.splice(i, 1);
       }
     }
-    viewer.drawLine(point.start, point.end, {
-      color: 0xffffff,
-    });
+    for (var i = 0; i < viewer.polyLinePoints.length; i++){
+      var end = i === viewer.polyLinePoints.length - 1 ? endPoint : viewer.polyLinePoints[i + 1].point;
+      var point = getDrawLinesStartEndPoint(viewer.polyLinePoints[i].point, end);
+      viewer.drawLine(point.start, point.end, {
+        color: 0xffffff,
+      });
+    }
   };
 
   /**
@@ -1281,7 +1281,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if(viewer.polyLineMode && endPoinxyz) {
         viewer.polyLinePoints.push(JSON.parse(JSON.stringify(endPoinxyz)));
       }
-      viewer.dom_element.style.overflowY = 'hidden';
     }
 
     function touchDragEnd() {
@@ -1305,7 +1304,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     canvas.addEventListener("mousedown", function(event) {
-      viewer.dom_element.style.overflowY = '';
       var pick = viewer.pick();
       if (viewer.lineMode && pick) {
         startVertexData.point = pick.point;
@@ -1315,6 +1313,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
+          console.log('mousedown === 0');
           viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }
