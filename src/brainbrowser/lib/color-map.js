@@ -336,6 +336,56 @@
         return canvas;
       },
 
+      /**
+       * createLogPElement val = Math.pow(10, -p)
+       * min and max is reverse
+       */
+      createLogPElement: function(min, max, width) {
+        const powPFun = (p) => {
+          return Number.parseFloat(Math.pow(10, -p).toFixed(4));
+        }
+        var canvas;
+        var context;
+        var colors = color_map.colors;
+        var range = max;
+
+        canvas  = createCanvas(colors, 20, 40, width,flip);
+        context = canvas.getContext("2d");
+
+        context.fillStyle = "#BFBFBF";
+        // Min mark
+        context.fillRect(0.5 + margin, 20, 1, 10);
+        // Quarter mark
+        context.fillRect(canvas.width / 4, 20, 1, 10);
+        // Middle mark
+        context.fillRect(canvas.width / 2, 20, 1, 10);
+        // Three-quarter mark
+        context.fillRect(3 * canvas.width / 4, 20, 1, 10);
+        // Max mark
+        context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
+
+        context.fillStyle = "#595959";
+        context.font = "12px Arial";
+
+        // Min mark
+        var minText = powPFun(max);
+        context.fillText(minText, 0, 40);
+        // Quarter mark
+        var quarterText = powPFun(max - 0.25 * range);
+        context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
+        // Middle mark
+        var middleText = powPFun(max - 0.5 * range);
+        context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
+        // Three-quarter mark
+        var threeQuarterText = powPFun(max - 0.75 * range);
+        context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
+        // Max mark
+        var maxText = powPFun(min);
+        context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
+        
+        return canvas;
+      },
+
       createPercentElement: function(min, max, width) {
         var canvas;
         var context;
