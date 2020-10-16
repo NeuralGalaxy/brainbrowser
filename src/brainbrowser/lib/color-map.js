@@ -298,7 +298,7 @@
         var colors = color_map.colors;
         var range = max - min;
 
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -348,8 +348,9 @@
         var context;
         var colors = color_map.colors;
         var range = max;
+        var reverse = true;
 
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width, reverse);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -392,7 +393,7 @@
         var colors = color_map.colors;
         var range = max - min;
 
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -454,7 +455,7 @@
         var context;
         var colors = color_map.colors;
         
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
         
         context.fillStyle = "#BFBFBF";
@@ -552,7 +553,7 @@
     //   colors: array of colors
     //   color_height: height of the color bar
     //   full_height: height of the canvas
-    function createCanvas(colors, color_height, full_height,full_width) {
+    function createCanvas(colors, color_height, full_height,full_width, reverse = false) {
       var canvas = document.createElement("canvas");
       var value_array  = new Array(256);
       var i;
@@ -574,9 +575,10 @@
 
       context = canvas.getContext("2d");
       for (i = 0; i < 256; i++) {
-        context.fillStyle = "rgb(" + Math.floor(colors[i*4]) + ", " +
-                                     Math.floor(colors[i*4+1]) + ", " +
-                                     Math.floor(colors[i*4+2]) + ")";
+        var index = reverse ? (255 - i) : i;
+        context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
+                                     Math.floor(colors[index*4+1]) + ", " +
+                                     Math.floor(colors[index*4+2]) + ")";
         context.fillRect(i + margin, 0, 1, color_height);
       }
 
