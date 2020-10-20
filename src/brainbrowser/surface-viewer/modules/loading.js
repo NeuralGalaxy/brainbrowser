@@ -387,7 +387,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var name           = options.name   || filename;
     var type           = options.format || "text";
     var blend          = options.blend;
-    var model_name     = options.model_name;
+    var model_name     = 'lh.pial.gii.gz';
     var model_data     = viewer.model_data.get(model_name);
     var intensity_data = model_data ? model_data.intensity_data[0] : null;
 
@@ -723,7 +723,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     geometry.dynamic = true;
 
-    if (true) {
+    if (recenter) {
       if (index) {
         index_array = index.array;
         // tmp_position_array used because there will be repeats in the index array.

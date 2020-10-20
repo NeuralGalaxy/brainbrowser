@@ -212,6 +212,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     light.position.set(0, 0, default_camera_distance);
 
     var offset = model.userData.model_center_offset || new THREE.Vector3(0,0,0);
+    console.log(model.children, 'model.children');
     model.children.forEach(function(shape) {
       var centroid   = shape.userData.centroid;
       var recentered = shape.userData.recentered;
@@ -289,9 +290,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     sphere.name = 'Dot';
     if (viewer.model.children[0]) {
       sphere.position.set(
-        x - viewer.model.children[0].userData.centroid.x,
-        y - viewer.model.children[0].userData.centroid.y, 
-        z - viewer.model.children[0].userData.centroid.z
+        x,
+        y,
+        z
       );
     } else {
       sphere.position.set(
@@ -402,7 +403,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     // Define default colors
     color_center_line = color_center_line >= 0 ? color_center_line : 0x444444;
     color_grid        = color_grid        >= 0 ? color_grid        : 0x888888;
-
+    console.log(x, y, z, '------');
     // Create the grid
     var grid  = new THREE.GridHelper(size, step);
     grid.name = name;
@@ -422,15 +423,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     return grid;
   };
 
-  viewer.drawGridXYZ = function(grid_name, is_checked) {
+  viewer.drawGridXYZ = function(grid_name, is_checked, options) {
+    var x = options ? options.x : 0;
+    var y = options ? options.y : 0;
+    var z = options ? options.z : 0;
     var rotation = new THREE.Euler();
     var color_grid;
     var grid = viewer.model.getObjectByName(grid_name);
-    if (grid !== undefined) {
-        grid.visible   = is_checked;
-        viewer.updated = true;
-      return;
-    }
+    
     if (!grid && !is_checked) {
       return;
     }
@@ -447,7 +447,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       color_grid = 0xff0000;
     }
 
-    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+    if (grid !== undefined) {
+      grid.visible   = is_checked;
+      grid.position.x = x;
+      grid.position.y = y;
+      grid.position.z = z;
+      viewer.updated = true;
+    return;
+  }
+
+    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid, x: x, y: y, z: z});
   };
   /**
   * @doc function
@@ -1079,7 +1088,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     delta = current_frame - last_frame;
     rotation = delta * 0.00015 * viewer.rotate_speed;
-
     if (viewer.autorotate.x) {
       model.rotation.x += rotation;
       viewer.updated = true;
