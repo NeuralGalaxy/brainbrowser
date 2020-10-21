@@ -140,18 +140,18 @@
       * color_map.mapColors(data, {
       *   min: 0,
       *   max: 7.0
-      * });
+      * }, filterColorCb);
       * ```
       */
-      mapColors: function(intensity_values, options) {
+      mapColors: function(intensity_values, options, filterColorCb) {
         options = options || {};
         var min = options.min === undefined ? 0 : options.min;
         var max = options.max === undefined ? 255 : options.max;
         var default_colors = options.default_colors || [0, 0, 0, 1];
         var destination = options.destination || new Float32Array(intensity_values.length * 4);
 
-        var color_map_colors = color_map.colors;
-        var color_map_length = color_map.colors.length / 4;
+        var color_map_colors = filterColorCb ? filterColorCb(color_map.colors) : color_map.colors;
+        var color_map_length = color_map_colors.length / 4;
 
         var scale = options.scale === undefined ? color_map.scale : options.scale;
         var clamp = options.clamp === undefined ? color_map.clamp : options.clamp;
@@ -347,7 +347,7 @@
         var canvas;
         var context;
         var colors = color_map.colors;
-        var range = max;
+        var range = max - min;
         var reverse = true;
 
         canvas  = createCanvas(colors, 20, 40, width, reverse);
@@ -570,7 +570,17 @@
 
       old_scale = color_map.scale;
       color_map.scale = 255;
-      colors = color_map.mapColors(value_array);
+      colors = color_map.mapColors(value_array, undefined, (colors) => {
+        if (!reverse) return colors;
+        while(true) {
+          const [color1, color2, color3, color4] = colors;
+          if (color1 === 1 && color2 === 1 && color3 === 1 && color4 === 1) {
+            colors = colors.slice(4);
+          } else break;
+        }
+        
+        return colors;
+      });
       color_map.scale = old_scale;
 
       context = canvas.getContext("2d");
