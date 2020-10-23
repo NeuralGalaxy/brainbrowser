@@ -341,14 +341,14 @@
        * min and max is reverse
        */
       createLogPElement: function(min, max, width) {
-        const powPFun = (p) => {
-          return Number.parseFloat(Math.pow(10, -p).toFixed(4));
-        }
+        // const powPFun = (p) => {
+        //   return Number.parseFloat(Math.pow(10, -p).toFixed(4));
+        // }
         var canvas;
         var context;
         var colors = color_map.colors;
         var range = max - min;
-        var reverse = true;
+        var reverse = false;
 
         canvas  = createCanvas(colors, 20, 40, width, reverse);
         context = canvas.getContext("2d");
@@ -369,19 +369,24 @@
         context.font = "12px Arial";
 
         // Min mark
-        var minText = powPFun(max);
+        // var minText = powPFun(max);
+        var minText = min;
         context.fillText(minText, 0, 40);
         // Quarter mark
-        var quarterText = powPFun(max - 0.25 * range);
+        // var quarterText = powPFun(max - 0.25 * range);
+        var quarterText = min + 0.25 * range;
         context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
         // Middle mark
-        var middleText = powPFun(max - 0.5 * range);
+        // var middleText = powPFun(max - 0.5 * range);
+        var middleText = min + 0.5 * range;
         context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
         // Three-quarter mark
-        var threeQuarterText = powPFun(max - 0.75 * range);
+        // var threeQuarterText = powPFun(max - 0.75 * range);
+        var threeQuarterText = min + 0.75 * range;
         context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
         // Max mark
-        var maxText = powPFun(min);
+        // var maxText = powPFun(min);
+        var maxText = max;
         context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
         
         return canvas;
