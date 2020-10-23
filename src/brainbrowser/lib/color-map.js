@@ -341,16 +341,22 @@
        * min and max is reverse
        */
       createLogPElement: function(min, max, width) {
-        const powPFun = (p) => {
+        /* const powPFun = (p) => {
           return Number.parseFloat(Math.pow(10, -p).toFixed(4));
-        }
+        } */
+        const fixedNumber = (num) => {
+          if (!num) return num;
+
+          return Number.parseFloat(num.toFixed(4));
+        };
+
         var canvas;
         var context;
         var colors = color_map.colors;
         var range = max - min;
-        var reverse = true;
+        var cutPrevColor = true;
 
-        canvas  = createCanvas(colors, 20, 40, width, reverse);
+        canvas  = createCanvas(colors, 20, 40, width, cutPrevColor);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -369,19 +375,24 @@
         context.font = "12px Arial";
 
         // Min mark
-        var minText = powPFun(max);
+        // var minText = powPFun(max);
+        var minText = fixedNumber(min);
         context.fillText(minText, 0, 40);
         // Quarter mark
-        var quarterText = powPFun(max - 0.25 * range);
+        // var quarterText = powPFun(max - 0.25 * range);
+        var quarterText = fixedNumber(min + 0.25 * range);
         context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
         // Middle mark
-        var middleText = powPFun(max - 0.5 * range);
+        // var middleText = powPFun(max - 0.5 * range);
+        var middleText = fixedNumber(min + 0.5 * range);
         context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
         // Three-quarter mark
-        var threeQuarterText = powPFun(max - 0.75 * range);
+        // var threeQuarterText = powPFun(max - 0.75 * range);
+        var threeQuarterText = fixedNumber(min + 0.75 * range);
         context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
         // Max mark
-        var maxText = powPFun(min);
+        // var maxText = powPFun(min);
+        var maxText = fixedNumber(max);
         context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
         
         return canvas;
@@ -553,7 +564,7 @@
     //   colors: array of colors
     //   color_height: height of the color bar
     //   full_height: height of the canvas
-    function createCanvas(colors, color_height, full_height,full_width, reverse = false) {
+    function createCanvas(colors, color_height, full_height,full_width, cutPrevColor = false) {
       var canvas = document.createElement("canvas");
       var value_array  = new Array(256);
       var i;
@@ -571,7 +582,7 @@
       old_scale = color_map.scale;
       color_map.scale = 255;
       colors = color_map.mapColors(value_array, undefined, (colors) => {
-        if (!reverse) return colors;
+        if (!cutPrevColor) return colors;
         while(true) {
           const [color1, color2, color3, color4] = colors;
           if (color1 === 1 && color2 === 1 && color3 === 1 && color4 === 1) {
@@ -585,7 +596,8 @@
 
       context = canvas.getContext("2d");
       for (i = 0; i < 256; i++) {
-        var index = reverse ? (255 - i) : i;
+        // var index = reverse ? (255 - i) : i;
+        var index = i;
         context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
                                      Math.floor(colors[index*4+1]) + ", " +
                                      Math.floor(colors[index*4+2]) + ")";
