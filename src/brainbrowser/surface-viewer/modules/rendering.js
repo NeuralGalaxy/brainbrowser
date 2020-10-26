@@ -529,7 +529,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var geometry = new THREE.Geometry();
     geometry.vertices.push( start.clone() );
     geometry.vertices.push( end.clone() );
-    geometry.computeLineDistances();
 
     // Set the material according with the dashed option
     var material = options.dashed === true ?
@@ -538,6 +537,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     var line = new THREE.Line( geometry, material, THREE.LineSegments );
     line.name = 'Line';
+    line.computeLineDistances();
     if (options.draw === false) {return line;}
 
     if (viewer.model) {
@@ -640,7 +640,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.pick = function(x, y, opacity_threshold) {
-    // console.log(viewer.mouse.x, viewer.mouse.y, 'viewer.pick');
     x = x === undefined ? viewer.mouse.x : x;
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
@@ -661,27 +660,23 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var index, coords, distance;
     var i, count;
     var centroid, cx, cy, cz;
-
     // Because we're comparing against
     // the vertices in their original positions,
     // we have move everything to place the model at its
     // original position.
     var inv_matrix = new THREE.Matrix4();
-
     vector.unproject(camera);
     raycaster.set(camera.position, vector.sub(camera.position).normalize());
     intersects = raycaster.intersectObject(model, true);
-
     for (i = 0; i < intersects.length; i++) {
       intersects[i].object.userData.pick_ignore = (intersects[i].object.material.opacity < opacity_threshold);
-      if (!intersects[i].object.userData.pick_ignore) {
+      if (!intersects[i].object.userData.pick_ignore && intersects[i].face) {
         intersection = intersects[i];
         break;
       }
     }
 
     if (intersection !== null && intersection.face) {
-
       intersect_object = intersection.object;
       intersect_face = intersection.face;
       
@@ -1312,7 +1307,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
-          console.log('mousedown === 0');
           viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }
