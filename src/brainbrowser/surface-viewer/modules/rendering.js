@@ -27,6 +27,12 @@
 * Author: Natacha Beck <natabeck@gmail.com>
 */
 
+import {
+  MeshLine,
+  MeshLineMaterial,
+  MeshLineRaycast
+} from '../lib/THREE.MeshLine';
+
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
@@ -38,6 +44,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
   var renderer = new THREE.WebGLRenderer({
+    antialias: true,
     preserveDrawingBuffer: true,
     alpha: true,
     autoClear: false,
@@ -279,10 +286,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
-    var geometry = new THREE.SphereGeometry(2);
+    var geometry = new THREE.SphereGeometry(2, 32, 32);
     var material = new THREE.MeshPhongMaterial({
       color: color,
       specular: 0xFFFFFF,
+      shininess: 10,
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
@@ -530,25 +538,28 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     geometry.vertices.push( start.clone() );
     geometry.vertices.push( end.clone() );
 
-    // Set the material according with the dashed option
-    var material = options.dashed === true ?
-                     new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
-                   : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
+    var meshLine = new MeshLine();
 
-    var line = new THREE.Line( geometry, material, THREE.LineSegments );
-    line.name = 'Line';
-    line.computeLineDistances();
-    if (options.draw === false) {return line;}
+    var material = new MeshLineMaterial({
+      lineWidth: 0.6,
+      // dashArray: options.dashed ? 0.01 : 0,
+      color,
+    });
+    meshLine.setGeometry(geometry, p => 1);
+    const mesh = new THREE.Mesh(meshLine, material);
+    mesh.name = 'Line';
+    mesh.raycast = MeshLineRaycast;
+    if (options.draw === false) {return mesh;}
 
     if (viewer.model) {
-      viewer.model.add(line);      
+      viewer.model.add(mesh);      
     } else {
-      scene.add(line);
+      scene.add(mesh);
     }
 
     viewer.updated = true;
 
-    return line;
+    return mesh;
   };
 
   /**
