@@ -743,27 +743,27 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       }
     }
 
-    geometry.addAttribute("position", position);
+    geometry.setAttribute("position", position);
 
     if (index) {
-      geometry.addAttribute("index", index);
+      geometry.setIndex(index);
     }
 
     if (normal) {
-      geometry.addAttribute("normal", normal);
+      geometry.setAttribute("normal", normal);
     } else {
       geometry.computeVertexNormals();
     }
 
     if(color) {
-      geometry.addAttribute("color", color);
+      geometry.setAttribute("color", color);
     }
 
     if (is_line) {
       material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
-      shape    = new THREE.Line(geometry, material, THREE.LinePieces);
+      shape    = new THREE.Line(geometry, material, THREE.LineSegments);
     } else {
-      material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, ambient: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
+      material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
       shape    = new THREE.Mesh(geometry, material);
       shape.userData.has_wireframe = true;
     }

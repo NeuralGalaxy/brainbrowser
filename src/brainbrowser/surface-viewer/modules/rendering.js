@@ -86,7 +86,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
-    renderer.clearCachedWebglObjects();
+    // renderer.clearCachedWebglObjects();
   };
 
   /**
@@ -207,7 +207,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var inv   = new THREE.Matrix4();
     inv.getInverse(model.matrix);
 
-    model.applyMatrix(inv);
+    model.applyMatrix4(inv);
     camera.position.set(0, 0, default_camera_distance);
     light.position.set(0, 0, default_camera_distance);
 
@@ -396,17 +396,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var euler_rotation    = options.euler_rotation;
 
     // Define default size and step
-    if (size === undefined || size <= 0) { size = 100; }
-    if (step === undefined || step <= 0) { step = 10; }
+    if (size === undefined || size <= 0) { size = 200; }
+    if (step === undefined || step <= 0) { step = 20; }
 
     // Define default colors
     color_center_line = color_center_line >= 0 ? color_center_line : 0x444444;
     color_grid        = color_grid        >= 0 ? color_grid        : 0x888888;
 
     // Create the grid
-    var grid  = new THREE.GridHelper(size, step);
+    var grid  = new THREE.GridHelper(size, step, color_center_line, color_grid);
     grid.name = name;
-    grid.setColors(color_center_line, color_grid);
     grid.position.set(x,y,z);
     // Used euler_rotation only if present
     if ( euler_rotation !== undefined ) { grid.setRotationFromEuler(euler_rotation); }
@@ -447,7 +446,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       color_grid = 0xff0000;
     }
 
-    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+    viewer.drawGrid(200, 20, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
   };
   /**
   * @doc function
@@ -498,7 +497,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       geometry.colors.push( vertical_color, vertical_color );
     }
 
-    THREE.Line.call( grid, geometry, material, THREE.LinePieces );
+    THREE.Line.call( grid, geometry, material, THREE.LineSegments );
     return grid;
   };
 
@@ -537,7 +536,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
                      new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
                    : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
 
-    var line = new THREE.Line( geometry, material, THREE.LinePieces );
+    var line = new THREE.Line( geometry, material, THREE.LineSegments );
     line.name = 'Line';
     if (options.draw === false) {return line;}
 
