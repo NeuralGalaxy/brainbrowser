@@ -446,19 +446,23 @@
           old_cursor_position.x = cursor.x;
           old_cursor_position.y = cursor.y;
           panel.updated = true;
-          panel.triggerEvent("cursorupdate", {
-            volume: panel.volume,
-            cursor: cursor
-          });
+          setTimeout(() => {
+            panel.triggerEvent("cursorupdate", {
+              volume: panel.volume,
+              cursor: cursor
+            });
+          }, 0);
         }
 
         if (old_zoom_level !== panel.zoom) {
           old_zoom_level = panel.zoom;
           panel.updated = true;
-          panel.triggerEvent("zoom", {
-            volume: panel.volume,
-            zoom: panel.zoom
-          });
+          setTimeout(() => {
+            panel.triggerEvent("zoom", {
+              volume: panel.volume,
+              zoom: panel.zoom
+            });
+          }, 0);
         }
 
         if (panel.touches[0]) {
