@@ -27,6 +27,12 @@
 * Author: Natacha Beck <natabeck@gmail.com>
 */
 
+import {
+  MeshLine,
+  MeshLineMaterial,
+  MeshLineRaycast
+} from '../lib/THREE.MeshLine';
+
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
@@ -38,6 +44,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
   var renderer = new THREE.WebGLRenderer({
+    antialias: true,
     preserveDrawingBuffer: true,
     alpha: true,
     autoClear: false,
@@ -86,7 +93,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
-    renderer.clearCachedWebglObjects();
+    // renderer.clearCachedWebglObjects();
   };
 
   /**
@@ -207,7 +214,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var inv   = new THREE.Matrix4();
     inv.getInverse(model.matrix);
 
-    model.applyMatrix(inv);
+    model.applyMatrix4(inv);
     camera.position.set(0, 0, default_camera_distance);
     light.position.set(0, 0, default_camera_distance);
 
@@ -279,10 +286,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
-    var geometry = new THREE.SphereGeometry(2);
+    var geometry = new THREE.SphereGeometry(2, 32, 32);
     var material = new THREE.MeshPhongMaterial({
       color: color,
       specular: 0xFFFFFF,
+      shininess: 10,
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
@@ -396,17 +404,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var euler_rotation    = options.euler_rotation;
 
     // Define default size and step
-    if (size === undefined || size <= 0) { size = 100; }
-    if (step === undefined || step <= 0) { step = 10; }
+    if (size === undefined || size <= 0) { size = 200; }
+    if (step === undefined || step <= 0) { step = 20; }
 
     // Define default colors
     color_center_line = color_center_line >= 0 ? color_center_line : 0x444444;
     color_grid        = color_grid        >= 0 ? color_grid        : 0x888888;
 
     // Create the grid
-    var grid  = new THREE.GridHelper(size, step);
+    var grid  = new THREE.GridHelper(size, step, color_center_line, color_grid);
     grid.name = name;
-    grid.setColors(color_center_line, color_grid);
     grid.position.set(x,y,z);
     // Used euler_rotation only if present
     if ( euler_rotation !== undefined ) { grid.setRotationFromEuler(euler_rotation); }
@@ -447,7 +454,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       color_grid = 0xff0000;
     }
 
-    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+    viewer.drawGrid(200, 20, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
   };
   /**
   * @doc function
@@ -498,7 +505,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       geometry.colors.push( vertical_color, vertical_color );
     }
 
-    THREE.Line.call( grid, geometry, material, THREE.LinePieces );
+    THREE.Line.call( grid, geometry, material, THREE.LineSegments );
     return grid;
   };
 
@@ -530,26 +537,29 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var geometry = new THREE.Geometry();
     geometry.vertices.push( start.clone() );
     geometry.vertices.push( end.clone() );
-    geometry.computeLineDistances();
 
-    // Set the material according with the dashed option
-    var material = options.dashed === true ?
-                     new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
-                   : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
+    var meshLine = new MeshLine();
 
-    var line = new THREE.Line( geometry, material, THREE.LinePieces );
-    line.name = 'Line';
-    if (options.draw === false) {return line;}
+    var material = new MeshLineMaterial({
+      lineWidth: 0.6,
+      // dashArray: options.dashed ? 0.01 : 0,
+      color,
+    });
+    meshLine.setGeometry(geometry, p => 1);
+    const mesh = new THREE.Mesh(meshLine, material);
+    mesh.name = 'Line';
+    mesh.raycast = MeshLineRaycast;
+    if (options.draw === false) {return mesh;}
 
     if (viewer.model) {
-      viewer.model.add(line);      
+      viewer.model.add(mesh);      
     } else {
-      scene.add(line);
+      scene.add(mesh);
     }
 
     viewer.updated = true;
 
-    return line;
+    return mesh;
   };
 
   /**
@@ -641,7 +651,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.pick = function(x, y, opacity_threshold) {
-    // console.log(viewer.mouse.x, viewer.mouse.y, 'viewer.pick');
     x = x === undefined ? viewer.mouse.x : x;
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
@@ -662,27 +671,23 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var index, coords, distance;
     var i, count;
     var centroid, cx, cy, cz;
-
     // Because we're comparing against
     // the vertices in their original positions,
     // we have move everything to place the model at its
     // original position.
     var inv_matrix = new THREE.Matrix4();
-
     vector.unproject(camera);
     raycaster.set(camera.position, vector.sub(camera.position).normalize());
     intersects = raycaster.intersectObject(model, true);
-
     for (i = 0; i < intersects.length; i++) {
       intersects[i].object.userData.pick_ignore = (intersects[i].object.material.opacity < opacity_threshold);
-      if (!intersects[i].object.userData.pick_ignore) {
+      if (!intersects[i].object.userData.pick_ignore && intersects[i].face) {
         intersection = intersects[i];
         break;
       }
     }
 
     if (intersection !== null && intersection.face) {
-
       intersect_object = intersection.object;
       intersect_face = intersection.face;
       
@@ -1313,7 +1318,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
-          console.log('mousedown === 0');
           viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }
