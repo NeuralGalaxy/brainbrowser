@@ -140,18 +140,18 @@
       * color_map.mapColors(data, {
       *   min: 0,
       *   max: 7.0
-      * });
+      * }, filterColorCb);
       * ```
       */
-      mapColors: function(intensity_values, options) {
+      mapColors: function(intensity_values, options, filterColorCb) {
         options = options || {};
         var min = options.min === undefined ? 0 : options.min;
         var max = options.max === undefined ? 255 : options.max;
         var default_colors = options.default_colors || [0, 0, 0, 1];
         var destination = options.destination || new Float32Array(intensity_values.length * 4);
 
-        var color_map_colors = color_map.colors;
-        var color_map_length = color_map.colors.length / 4;
+        var color_map_colors = filterColorCb ? filterColorCb(color_map.colors) : color_map.colors;
+        var color_map_length = color_map_colors.length / 4;
 
         var scale = options.scale === undefined ? color_map.scale : options.scale;
         var clamp = options.clamp === undefined ? color_map.clamp : options.clamp;
@@ -298,7 +298,7 @@
         var colors = color_map.colors;
         var range = max - min;
 
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -336,13 +336,75 @@
         return canvas;
       },
 
+      /**
+       * createLogPElement val = Math.pow(10, -p)
+       * min and max is reverse
+       */
+      createLogPElement: function(min, max, width) {
+        /* const powPFun = (p) => {
+          return Number.parseFloat(Math.pow(10, -p).toFixed(4));
+        } */
+        const fixedNumber = (num) => {
+          if (!num) return num;
+
+          return Number.parseFloat(num.toFixed(4));
+        };
+
+        var canvas;
+        var context;
+        var colors = color_map.colors;
+        var range = max - min;
+        var cutPrevColor = true;
+
+        canvas  = createCanvas(colors, 20, 40, width, cutPrevColor);
+        context = canvas.getContext("2d");
+
+        context.fillStyle = "#BFBFBF";
+        // Min mark
+        context.fillRect(0.5 + margin, 20, 1, 10);
+        // Quarter mark
+        context.fillRect(canvas.width / 4, 20, 1, 10);
+        // Middle mark
+        context.fillRect(canvas.width / 2, 20, 1, 10);
+        // Three-quarter mark
+        context.fillRect(3 * canvas.width / 4, 20, 1, 10);
+        // Max mark
+        context.fillRect(canvas.width - 0.5 - margin, 20, 1, 10);
+
+        context.fillStyle = "#595959";
+        context.font = "12px Arial";
+
+        // Min mark
+        // var minText = powPFun(max);
+        var minText = fixedNumber(min);
+        context.fillText(minText, 0, 40);
+        // Quarter mark
+        // var quarterText = powPFun(max - 0.25 * range);
+        var quarterText = fixedNumber(min + 0.25 * range);
+        context.fillText(quarterText, 0.25 * canvas.width - context.measureText(quarterText).width / 2, 40);
+        // Middle mark
+        // var middleText = powPFun(max - 0.5 * range);
+        var middleText = fixedNumber(min + 0.5 * range);
+        context.fillText(middleText, 0.5 * canvas.width - context.measureText(middleText).width / 2, 40);
+        // Three-quarter mark
+        // var threeQuarterText = powPFun(max - 0.75 * range);
+        var threeQuarterText = fixedNumber(min + 0.75 * range);
+        context.fillText(threeQuarterText, 0.75 * canvas.width - context.measureText(threeQuarterText).width / 2, 40);
+        // Max mark
+        // var maxText = powPFun(min);
+        var maxText = fixedNumber(max);
+        context.fillText(maxText, canvas.width - context.measureText(maxText).width, 40);
+        
+        return canvas;
+      },
+
       createPercentElement: function(min, max, width) {
         var canvas;
         var context;
         var colors = color_map.colors;
         var range = max - min;
 
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -404,7 +466,7 @@
         var context;
         var colors = color_map.colors;
         
-        canvas  = createCanvas(colors, 20, 40, width,flip);
+        canvas  = createCanvas(colors, 20, 40, width);
         context = canvas.getContext("2d");
         
         context.fillStyle = "#BFBFBF";
@@ -502,7 +564,7 @@
     //   colors: array of colors
     //   color_height: height of the color bar
     //   full_height: height of the canvas
-    function createCanvas(colors, color_height, full_height,full_width) {
+    function createCanvas(colors, color_height, full_height,full_width, cutPrevColor = false) {
       var canvas = document.createElement("canvas");
       var value_array  = new Array(256);
       var i;
@@ -519,14 +581,26 @@
 
       old_scale = color_map.scale;
       color_map.scale = 255;
-      colors = color_map.mapColors(value_array);
+      colors = color_map.mapColors(value_array, undefined, (colors) => {
+        if (!cutPrevColor) return colors;
+        while(true) {
+          const [color1, color2, color3, color4] = colors;
+          if (color1 === 1 && color2 === 1 && color3 === 1 && color4 === 1) {
+            colors = colors.slice(4);
+          } else break;
+        }
+        
+        return colors;
+      });
       color_map.scale = old_scale;
 
       context = canvas.getContext("2d");
       for (i = 0; i < 256; i++) {
-        context.fillStyle = "rgb(" + Math.floor(colors[i*4]) + ", " +
-                                     Math.floor(colors[i*4+1]) + ", " +
-                                     Math.floor(colors[i*4+2]) + ")";
+        // var index = reverse ? (255 - i) : i;
+        var index = i;
+        context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
+                                     Math.floor(colors[index*4+1]) + ", " +
+                                     Math.floor(colors[index*4+2]) + ")";
         context.fillRect(i + margin, 0, 1, color_height);
       }
 
