@@ -38,7 +38,6 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.draw = function() {
-
     viewer.volumes.forEach(function(volume) {
       volume.display.forEach(function(panel) {
         panel.draw(

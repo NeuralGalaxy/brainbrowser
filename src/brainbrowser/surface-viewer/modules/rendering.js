@@ -344,11 +344,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.customizedrawLines = function(startPoint, endPoint) {
     var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
-    for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line') {
-        viewer.model.children.splice(i, 1);
-      }
-    }
+    viewer.model.children = children.filter(child => child.name !== 'Line');
     viewer.drawLine(point.start, point.end, {
       color: 0xffffff,
     });
@@ -356,11 +352,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   viewer.drawPolyLine = function(startPoint, endPoint) {
     var children = [].concat(viewer.model.children);
-    for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line') {
-        viewer.model.children.splice(i, 1);
-      }
-    }
+    viewer.model.children = children.filter(child => child.name !== 'Line');
     for (var i = 0; i < viewer.polyLinePoints.length; i++){
       var end = i === viewer.polyLinePoints.length - 1 ? endPoint : viewer.polyLinePoints[i + 1].point;
       var point = getDrawLinesStartEndPoint(viewer.polyLinePoints[i].point, end);
@@ -541,7 +533,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var meshLine = new MeshLine();
 
     var material = new MeshLineMaterial({
-      lineWidth: 0.6,
+      lineWidth: 1,
       // dashArray: options.dashed ? 0.01 : 0,
       color,
     });
@@ -557,9 +549,71 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       scene.add(mesh);
     }
 
+    [start, end].forEach(point => {
+      var sphereGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+      var sphereMaterial = new THREE.LineBasicMaterial({ 
+        color
+      });
+      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+      sphere.position.set(point.x, point.y, point.z);
+      sphere.name = 'Line';
+
+      if (viewer.model) {
+        viewer.model.add(sphere);
+      } else {
+        scene.add(sphere);
+      }
+    })
+
     viewer.updated = true;
 
     return mesh;
+  };
+
+  viewer.drawSticksLine = function( start, end, options ) {
+    options      = options || {};
+
+    const lineLength = Math.sqrt(
+      Math.pow(start.x - end.x, 2) +
+      Math.pow(start.y - end.y, 2) +
+      Math.pow(start.z - end.z, 2)
+    );
+    const lineMulti = 4 / (lineLength - 4);
+    const verticePoint = {
+      x: (end.x - start.x) * lineMulti,
+      y: (end.y - start.y) * lineMulti,
+      z: (end.z - start.z) * lineMulti,
+    };
+    const points = [start];
+    while (true) {
+      if (points.length - 1 >= (1 / lineMulti)) break;
+      const prevPoint = points[points.length - 1];
+      const nextPoint = {
+        x: prevPoint.x + verticePoint.x,
+        y: prevPoint.y + verticePoint.y,
+        z: prevPoint.z + verticePoint.z,
+      };
+      points.push(nextPoint);
+      
+    }
+    points.push(end);
+    points.forEach(point => {
+      var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+      var sphereMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff6666
+      });
+      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+      sphere.position.set(point.x, point.y, point.z);
+      sphere.name = 'SticksLine';
+
+      if (viewer.model) {
+        viewer.model.add(sphere);      
+      } else {
+        scene.add(sphere);
+      }
+    })
+
+    viewer.updated = true;
   };
 
   /**
@@ -679,9 +733,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     vector.unproject(camera);
     raycaster.set(camera.position, vector.sub(camera.position).normalize());
     intersects = raycaster.intersectObject(model, true);
+
     for (i = 0; i < intersects.length; i++) {
       intersects[i].object.userData.pick_ignore = (intersects[i].object.material.opacity < opacity_threshold);
-      if (!intersects[i].object.userData.pick_ignore && intersects[i].face) {
+      if (
+        !intersects[i].object.userData.pick_ignore && 
+        intersects[i].face && 
+        intersects[i].object.userData.original_data
+      ) {
         intersection = intersects[i];
         break;
       }
