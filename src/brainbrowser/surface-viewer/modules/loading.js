@@ -270,6 +270,15 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     loadIntensityData(text, undefined, options);
   };
 
+  viewer.loadIntensityDataFromUrlAndFormat = function(url, options, formatCb) {
+    options = checkBinary("intensity_data_types", options);
+    var cb = function (text, filename, options) {
+      text = formatCb ? formatCb(text) : text;
+      loadIntensityData(text, filename, options);
+    }
+    loader.loadFromURL(url, cb, options);
+  };
+
 
   /**
   * @doc function
