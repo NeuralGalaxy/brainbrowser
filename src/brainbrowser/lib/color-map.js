@@ -595,14 +595,22 @@
       color_map.scale = old_scale;
 
       context = canvas.getContext("2d");
+      let tempColor = '';
       for (i = 0; i < 256; i++) {
         // var index = reverse ? (255 - i) : i;
         var index = i;
         context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
                                      Math.floor(colors[index*4+1]) + ", " +
                                      Math.floor(colors[index*4+2]) + ")";
-        context.fillRect(i + margin, 0, 1, color_height);
-      }
+                                     console.log(111,context.fillStyle)
+                                     console.log(i + margin, 0, 1, color_height)
+        if(context.fillStyle !== '#ffffff') {
+          tempColor = context.fillStyle;
+          context.fillRect(i + margin, 0, 1, color_height);
+        } else {
+          context.fillStyle = tempColor;
+          context.fillRect(i + margin, 0, 1, color_height);
+        }
 
       return canvas;
     }
