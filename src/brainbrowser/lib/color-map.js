@@ -602,8 +602,6 @@
         context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
                                      Math.floor(colors[index*4+1]) + ", " +
                                      Math.floor(colors[index*4+2]) + ")";
-                                     console.log(111,context.fillStyle)
-                                     console.log(i + margin, 0, 1, color_height)
         if(context.fillStyle !== '#ffffff') {
           tempColor = context.fillStyle;
           context.fillRect(i + margin, 0, 1, color_height);
@@ -611,6 +609,7 @@
           context.fillStyle = tempColor;
           context.fillRect(i + margin, 0, 1, color_height);
         }
+      }
 
       return canvas;
     }
