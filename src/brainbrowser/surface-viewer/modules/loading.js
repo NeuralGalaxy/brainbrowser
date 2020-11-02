@@ -370,8 +370,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.triggerEvent("clearscreen");
   };
 
-  viewer.updateColorMap = function(data) {
-    loadColorMap(BrainBrowser.createColorMap(data));
+  viewer.updateColorMap = function(data, clamp = true) {
+    loadColorMap(BrainBrowser.createColorMap(data), clamp);
   };
 
   ////////////////////////////////////
@@ -397,6 +397,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var type           = options.format || "text";
     var blend          = options.blend;
     var model_name     = options.model_name;
+    var clamp          = typeof options.clamp === 'undefined' ? true : options.clamp;
     var model_data     = viewer.model_data.get(model_name);
     var intensity_data = model_data ? model_data.intensity_data[0] : null;
 
@@ -416,7 +417,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       var max;
 
       if (intensity_data.colors) {
-        loadColorMap(BrainBrowser.createColorMap(intensity_data.colors));
+        loadColorMap(BrainBrowser.createColorMap(intensity_data.colors), clamp);
       }
 
       if (viewer.getAttribute("fix_color_range") &&
@@ -445,7 +446,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       } else {
         viewer.updateColors({
           model_name: model_name,
-          complete: options.complete
+          complete: options.complete,
+          clamp,
         });
       }
 
@@ -456,7 +458,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     });
   }
 
-  function loadColorMap(color_map) {
+  function loadColorMap(color_map, clamp = true) {
     viewer.color_map = color_map;
 
     viewer.triggerEvent("loadcolormap", {
@@ -466,7 +468,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.model_data.forEach(function(model_data) {
       if (model_data.intensity_data[0]) {
         viewer.updateColors({
-          model_name: model_data.name
+          model_name: model_data.name,
+          clamp,
         });
       }
     });
