@@ -238,6 +238,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * ```
   */
   viewer.setVolumeColorMap = function(vol_id, color_map) {
+    if (!viewer.volumes[vol_id]) return;
     viewer.volumes[vol_id].color_map = color_map;
   };
 
