@@ -363,6 +363,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     while (children.length > 0) {
       viewer.model.remove(children[0]);
     }
+    console.log(viewer.model.children.length, '-------');
 
     viewer.model_data.clear();
 
@@ -633,8 +634,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       }
     }
 
-    model_data.name = model_data.name || filename;
-
+    model_data.name = model_data.name || options.model_name || filename;
+    console.log(model_data.name, 'model_data.name');
     viewer.model_data.add(model_data.name, model_data);
 
     if (shapes) {
@@ -681,8 +682,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
         object_description.centroid = shape_data.centroid;
         object_description.recenter = recenter;
 
-        shape      = createShape(object_description);
-        shape.name = shape_data.name || filename + "_" + (i + 1);
+        shape      = createShape(object_description, options);
+        shape.name = shape_data.name || options.model_name + "_" + (i + 1);
 
         shape.userData.model_name = model_data.name;
 
@@ -715,7 +716,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   // Create a three.js object to represent
   // a shape from the model data 'shapes'
   // array.
-  function createShape(object_description) {
+  function createShape(object_description, options) {
     var position       = object_description.position;
     var position_array = position.array;
     var normal         = object_description.normal;
@@ -732,7 +733,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     geometry.dynamic = true;
 
-    if (true) {
+    if (recenter || options.recenter) {
       if (index) {
         index_array = index.array;
         // tmp_position_array used because there will be repeats in the index array.
@@ -782,6 +783,9 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     if (recenter) {
       shape.userData.recentered = true;
       shape.position.set(centroid.x, centroid.y, centroid.z);
+    }
+    if (options.recenter) {
+      shape.userData.recentered = true;
     }
 
     return shape;
