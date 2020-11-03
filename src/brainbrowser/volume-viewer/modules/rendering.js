@@ -38,7 +38,9 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.draw = function() {
+    if (!viewer.volumes) return;
     viewer.volumes.forEach(function(volume) {
+      if (!volume.display) return;
       volume.display.forEach(function(panel) {
         panel.draw(
           volume.color_map.cursor_color,
@@ -82,6 +84,8 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   viewer.redrawVolume = function(vol_id) {
     var volume = viewer.volumes[vol_id];
 
+    if (!volume || !volume.display) return;
+
     volume.display.forEach(function(panel) {
       panel.updateSlice();
     });
@@ -98,6 +102,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.redrawVolumes = function() {
+    if (!viewer.volumes) return;
     viewer.volumes.forEach(function(volume, vol_id) {
       viewer.redrawVolume(vol_id);
     });
@@ -114,8 +119,9 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.resetDisplays = function() {
-
+    if (!viewer.volumes) return;
     viewer.volumes.forEach(function(volume) {
+      if (!volume.display) return;
       volume.display.forEach(function(panel) {
         panel.reset();
       });
@@ -142,7 +148,9 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.setPanelSize = function(width, height, options) {
+    if (!viewer.volumes) return;
     viewer.volumes.forEach(function(volume) {
+      if (!volume.display) return;
       volume.display.forEach(function(panel) {
         panel.setSize(width, height, options);
       });
