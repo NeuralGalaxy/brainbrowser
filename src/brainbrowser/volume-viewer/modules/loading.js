@@ -407,6 +407,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       viewer.volumes[vol_id] = volume;
       volume.color_map = default_color_map;
       volume.display = createVolumeDisplay(viewer.dom_element, vol_id, volume_description);
+      volume.opacity = typeof volume_description.opacity === 'undefined' ? 1 : volume_description.opacity;
       volume.propagateEventTo("*", viewer);
 
       ["xspace", "yspace", "zspace"].forEach(function(axis) {
