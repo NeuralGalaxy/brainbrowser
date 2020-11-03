@@ -295,7 +295,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     var sphere   = new THREE.Mesh(geometry, material);
     sphere.name = 'Dot';
-    if (viewer.model.children[0]) {
+    if (viewer.model.children[0] && viewer.model.children[0].userData.recentered) {
       sphere.position.set(
         x - viewer.model.children[0].userData.centroid.x,
         y - viewer.model.children[0].userData.centroid.y, 
