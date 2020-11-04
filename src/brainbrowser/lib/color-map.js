@@ -602,7 +602,7 @@
         context.fillStyle = "rgb(" + Math.floor(colors[index*4]) + ", " +
                                      Math.floor(colors[index*4+1]) + ", " +
                                      Math.floor(colors[index*4+2]) + ")";
-        if(context.fillStyle !== '#ffffff') {
+        if(context.fillStyle !== '#ffffff' || !cutPrevColor) {
           tempColor = context.fillStyle;
           context.fillRect(i + margin, 0, 1, color_height);
         } else {
