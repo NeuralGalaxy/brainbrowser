@@ -60,6 +60,7 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
     var complete = options.complete;
     var model_name = options.model_name;
     var shape_name = options.shape_name || model_name + "_1";
+    var clamp = typeof options.clamp === 'undefined' ? true : options.clamp;
     var model_data = viewer.model_data.get(model_name);
     var intensity_data, blend;
 
@@ -118,6 +119,7 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
         applyColorArray(viewer.color_map.mapColors(intensity_data.values, {
           min: intensity_data.range_min,
           max: intensity_data.range_max,
+          clamp,
           default_colors: viewer.model_data.get(options.model_name).colors
         }));
       }
@@ -215,7 +217,8 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
 
     viewer.updateColors({
       model_name: model_data.name,
-      complete: options.complete
+      complete: options.complete,
+      clamp: options.clamp,
     });
 
     viewer.triggerEvent("changeintensityrange", {
