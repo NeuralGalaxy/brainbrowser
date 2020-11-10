@@ -120,6 +120,7 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
           min: intensity_data.range_min,
           max: intensity_data.range_max,
           clamp,
+          colorOptions: options.colorOptions,
           default_colors: viewer.model_data.get(options.model_name).colors
         }));
       }
