@@ -421,12 +421,17 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     return grid;
   };
 
-  viewer.drawGridXYZ = function(grid_name, is_checked) {
+  viewer.drawGridXYZ = function(grid_name, is_checked, options) {
+    options               = options || {};
+    var x                 = options.x || 0;
+    var y                 = options.y || 0;
+    var z                 = options.z || 0;
     var rotation = new THREE.Euler();
     var color_grid;
     var grid = viewer.model.getObjectByName(grid_name);
     if (grid !== undefined) {
         grid.visible   = is_checked;
+        grid.position.set(x,y,z);
         viewer.updated = true;
       return;
     }
@@ -446,7 +451,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       color_grid = 0xff0000;
     }
 
-    viewer.drawGrid(200, 20, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+    viewer.drawGrid(200, 20, {
+      euler_rotation: rotation, name: grid_name, color_grid: color_grid,
+      x:x,
+      y:y,
+      z:z,
+    });
   };
   /**
   * @doc function
