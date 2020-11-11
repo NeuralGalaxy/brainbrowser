@@ -159,6 +159,8 @@
         var brightness = options.brightness === undefined ? color_map.brightness : options.brightness;
         var contrast = options.contrast === undefined ? color_map.contrast : options.contrast;
 
+        const colorOptions = options.colorOptions;
+
         // This is used so that when the model color is used in a model
         // that was just given a single color to apply to the whole model,
         // the indexes will be set properly (i.e. from 0-4, not 0-no. of
@@ -178,7 +180,6 @@
         for (i = 0, count = intensity_values.length; i < count; i++) {
           value = intensity_values[i];
           ic = i * 4;
-
           color_map_index = getColorMapIndex(value, min, max, increment, clamp, flip, color_map_length);
 
           //This inserts the RGBA values (R,G,B,A) independently
@@ -190,9 +191,30 @@
             destination[ic + 1] = contrast * default_colors[idc + 1] + brightness;
             destination[ic + 2] = contrast * default_colors[idc + 2] + brightness;
             destination[ic + 3] = scale    * default_colors[idc + 3];
+          } else if (colorOptions) {
+            const { colors, defaultColor, leftCount} = colorOptions;
+            const findColor = colors.find((color) => {
+              const isLeft = color[1] === 'left';
+              const isAll = color[1] === 'all';
+              return color[0] === value && 
+                (isAll || (isLeft ? i <= leftCount : i > leftCount));
+            })
+            if (findColor) {
+              // contrast includes scaling factor
+              destination[ic]     = contrast * color_map_colors[color_map_index] + brightness;
+              destination[ic + 1] = contrast * color_map_colors[color_map_index + 1] + brightness;
+              destination[ic + 2] = contrast * color_map_colors[color_map_index + 2] + brightness;
+              destination[ic + 3] = scale    * color_map_colors[color_map_index + 3];
+            } else {
+              // contrast includes scaling factor
+              destination[ic]     = contrast * defaultColor[0] + brightness;
+              destination[ic + 1] = contrast * defaultColor[1] + brightness;
+              destination[ic + 2] = contrast * defaultColor[2] + brightness;
+              destination[ic + 3] = scale    * defaultColor[3];
+            }
           } else {
             // contrast includes scaling factor
-            destination[ic]     = contrast * color_map_colors[color_map_index]     + brightness;
+            destination[ic]     = contrast * color_map_colors[color_map_index] + brightness;
             destination[ic + 1] = contrast * color_map_colors[color_map_index + 1] + brightness;
             destination[ic + 2] = contrast * color_map_colors[color_map_index + 2] + brightness;
             destination[ic + 3] = scale    * color_map_colors[color_map_index + 3];

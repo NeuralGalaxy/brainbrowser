@@ -371,8 +371,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.triggerEvent("clearscreen");
   };
 
-  viewer.updateColorMap = function(data, clamp = true) {
-    loadColorMap(BrainBrowser.createColorMap(data), clamp);
+  viewer.updateColorMap = function(data, clamp = true, options) {
+    loadColorMap(BrainBrowser.createColorMap(data), clamp, options);
   };
 
   ////////////////////////////////////
@@ -459,7 +459,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     });
   }
 
-  function loadColorMap(color_map, clamp = true) {
+  function loadColorMap(color_map, clamp = true, options) {
+    options = options || {};
     viewer.color_map = color_map;
 
     viewer.triggerEvent("loadcolormap", {
@@ -471,6 +472,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
         viewer.updateColors({
           model_name: model_data.name,
           clamp,
+          colorOptions: options.colorOptions,
         });
       }
     });
