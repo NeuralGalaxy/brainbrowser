@@ -883,14 +883,22 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     for (next_id = vol_id + 1; next_id < containers.length; next_id++) {
       if (next_id in containers) {
         if (volume_description.show_volume !== false) {
-          dom_element.insertBefore(container, containers[next_id]);
+          try {
+            dom_element.insertBefore(container, containers[next_id]);
+          } catch (e) {
+            console.error('Volume Viewer Loading.js insertBefore Error', e);
+          }
         }
         break;
       }
     }
     if (next_id === containers.length) {
       if (volume_description.show_volume !== false) {
-        dom_element.appendChild(container);
+        try {
+          dom_element.appendChild(container);
+        } catch (e) {
+          console.error('Volume Viewer Loading.js appendChild Error', e);
+        }
       }
     }
     viewer.triggerEvent("volumeuiloaded", {
