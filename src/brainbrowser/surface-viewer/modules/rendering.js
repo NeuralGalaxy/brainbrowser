@@ -534,21 +534,20 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.drawLine = function( start, end, options ) {
     options      = options || {};
     var color    = options.color >= 0 ? options.color : 0x444444;
-
     // Create the geometry
     var geometry = new THREE.Geometry();
     geometry.vertices.push( start.clone() );
     geometry.vertices.push( end.clone() );
-
     var meshLine = new MeshLine();
 
     var material = new MeshLineMaterial({
       lineWidth: 1,
-      // dashArray: options.dashed ? 0.01 : 0,
-      color,
+      color: color,
     });
+
     meshLine.setGeometry(geometry, p => 1);
-    const mesh = new THREE.Mesh(meshLine, material);
+    meshLine.name = options.geometryName;
+    var mesh = new THREE.Mesh(meshLine, material);
     mesh.name = 'Line';
     mesh.raycast = MeshLineRaycast;
     if (options.draw === false) {return mesh;}
@@ -559,25 +558,31 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       scene.add(mesh);
     }
 
-    [start, end].forEach(point => {
-      var sphereGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
-      var sphereMaterial = new THREE.LineBasicMaterial({ 
-        color
-      });
-      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-      sphere.position.set(point.x, point.y, point.z);
-      sphere.name = 'Line';
+    // [start, end].forEach(point => {
+    //   var sphereGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+    //   var sphereMaterial = new THREE.LineBasicMaterial({ 
+    //     color
+    //   });
+    //   var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+    //   sphere.position.set(point.x, point.y, point.z);
+    //   sphere.name = 'Line';
 
-      if (viewer.model) {
-        viewer.model.add(sphere);
-      } else {
-        scene.add(sphere);
-      }
-    })
+    //   if (viewer.model) {
+    //     viewer.model.add(sphere);
+    //   } else {
+    //     scene.add(sphere);
+    //   }
+    // });
 
     viewer.updated = true;
 
     return mesh;
+  };
+
+  viewer.drawTrajectory = function(start, end, options) {
+    var startVector = new THREE.Vector3(start.x,start.y,start.z);
+    var endVector = new THREE.Vector3(end.x,end.y,end.z);
+    viewer.drawLine(startVector, endVector, options);
   };
 
   viewer.drawSticksLine = function( start, end, options ) {
@@ -623,6 +628,22 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       }
     })
 
+    viewer.updated = true;
+  };
+
+  viewer.highlightTrajectorys = function(geometryName) {
+    viewer.model.children.forEach(function(obj) {
+      if (obj.name === 'Line') {
+        console.log(geometryName, obj.geometry.name, 'obj.geometry.name');
+        if (geometryName === obj.geometry.name){
+          obj.material.color = new THREE.Color(0xffffff);
+          obj.material.needsUpdate = true;
+        }else {
+          obj.material.color = new THREE.Color(0x444444);
+          obj.material.needsUpdate = true;
+        }
+      }
+    });
     viewer.updated = true;
   };
 

@@ -363,8 +363,6 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     while (children.length > 0) {
       viewer.model.remove(children[0]);
     }
-    console.log(viewer.model.children.length, '-------');
-
     viewer.model_data.clear();
 
     viewer.resetView();
