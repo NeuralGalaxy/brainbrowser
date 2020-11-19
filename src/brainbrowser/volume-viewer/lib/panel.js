@@ -394,12 +394,10 @@
       * ```
       */
       updateSlice: function(callback) {
-        
         clearTimeout(update_timeout);
         if (BrainBrowser.utils.isFunction(callback)) {
           update_callbacks.push(callback);
         }
-
         update_timeout = setTimeout(function() {
           try {
             var volume = panel.volume;
@@ -408,7 +406,6 @@
             slice = volume.slice(panel.axis);
 
             setSlice(panel, slice);
-
             panel.triggerEvent("sliceupdate", {
               volume: volume,
               slice: slice
@@ -496,6 +493,8 @@
         
         drawCursor(panel, cursor_color);
 
+        drawTargets(panel);
+
         context.save();
         context.strokeStyle = active ? "#1BACC8" : "#303030";
         context.lineWidth = frame_width;
@@ -543,6 +542,58 @@
   function setSlice(panel, slice) {
     panel.slice = slice;
     panel.slice_image = panel.volume.getSliceImage(panel.slice, panel.zoom, panel.contrast, panel.brightness);
+  }
+
+  function drawTargets(panel) {
+    var { targets = [] } = panel;
+    var context = panel.context;
+    var zoom = panel.zoom;
+    var length = 8 * (zoom / panel.default_zoom);
+    var space;
+    
+    space = 1;
+
+    targets.forEach((target) => {
+    
+      context.save();
+      var { i, j, k } = panel.volume.worldToVoxel(target.x, target.y, target.z);
+      var { i: i1, j: j1, k: k1 } = panel.volume.getVoxelCoords();
+      let x;
+      let y;
+
+      if (panel.axis === 'xspace' && i === i1) {
+        x = j * zoom;
+        y = k * zoom;
+      } else if (panel.axis === 'yspace' && j === j1) {
+        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
+        y = k * zoom;
+      } else if (panel.axis === 'zspace' && k === k1) {
+        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
+        y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
+      } else return;
+      var color =  "#66FF66";
+      context.strokeStyle =  color;
+      context.fillStyle = color;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(x, y, 2 * space, 0, 2 * Math.PI);
+      context.fill();
+
+      context.lineWidth = space * 2;
+      context.beginPath();
+      context.moveTo(x, y - length);
+      context.lineTo(x, y - space);
+      context.moveTo(x, y + space);
+      context.lineTo(x, y + length);
+      context.moveTo(x - length, y);
+      context.lineTo(x - space, y);
+      context.moveTo(x + space, y);
+      context.lineTo(x + length, y);
+
+      context.stroke();
+    })
+
+    context.restore();
   }
 
   // Draw the cursor at its current position on the canvas.
