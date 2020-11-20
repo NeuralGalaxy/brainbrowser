@@ -83,13 +83,27 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   */
   viewer.redrawVolume = function(vol_id) {
     var volume = viewer.volumes[vol_id];
-
     if (!volume || !volume.display) return;
-
     volume.display.forEach(function(panel) {
       panel.updateSlice();
     });
   };
+
+  viewer.updateTargets = function(targets = []) {
+    viewer.volumes.forEach(function(volume, vol_id) {
+      if (!volume || !volume.display) return;
+
+      volume.display.forEach(function(panel) {
+        panel.targets = targets;
+      });
+    });
+    
+    viewer.redrawVolumes();
+  }
+
+  viewer.clearTargets = function() {
+    viewer.setTargets([]);
+  }
 
   /**
   * @doc function
