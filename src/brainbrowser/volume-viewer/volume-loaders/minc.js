@@ -283,7 +283,7 @@
 
         return target_image;
       },
-
+      
       getIntensityValue: function(i, j, k, time) {
         var header = volume.header;
         var vc = volume.getVoxelCoords();

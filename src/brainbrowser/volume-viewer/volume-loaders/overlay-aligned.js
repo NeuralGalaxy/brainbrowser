@@ -37,6 +37,22 @@
   var VolumeViewer = BrainBrowser.VolumeViewer;
   var image_creation_context = document.createElement("canvas").getContext("2d");
 
+  const checkIsRiskHeatMap = (volume) => {
+    return !!volume && !!volume.isRiskHeatMap;
+  }
+
+  const getRiskMaskSlice = (slices = [], volumes = []) => {
+    let riskMaskSlice;
+    slices.forEach((slice, index) => {
+      const volume = volumes[index];
+      if (volume && volume.isRiskMask) {
+        riskMaskSlice = slice;
+      }
+    })
+
+    return riskMaskSlice;
+  }
+
   VolumeViewer.volume_loaders.overlayaligned = function(options, callback) {
     options = options || {};
     var volumes = options.volumes || [];
@@ -145,7 +161,19 @@
           source_image.data.set(tmp, 0);
         }
         else {
-          color_map.mapColors(slice.data, {
+          let mergedData = slice.data;
+
+          const isRiskHeatMap = checkIsRiskHeatMap(volume);
+          const riskMaskSlice = getRiskMaskSlice(slices, overlay_volume.volumes);
+
+          if (isRiskHeatMap && riskMaskSlice) {
+            mergedData = slice.data.map((val, sliceIndex) => {
+              const maskVal = riskMaskSlice.data[sliceIndex];
+              return volume.riskId && maskVal === volume.riskId ? slice.data[sliceIndex]: 0;
+            });
+          }
+
+          color_map.mapColors(mergedData, {
             min: volume.intensity_min,
             max: volume.intensity_max,
             contrast: contrast,
