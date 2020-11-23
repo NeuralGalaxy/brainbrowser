@@ -495,6 +495,8 @@
 
         drawTargets(panel);
 
+        drawTrajectory(panel);
+
         context.save();
         context.strokeStyle = active ? "#1BACC8" : "#303030";
         context.lineWidth = frame_width;
@@ -542,6 +544,78 @@
   function setSlice(panel, slice) {
     panel.slice = slice;
     panel.slice_image = panel.volume.getSliceImage(panel.slice, panel.zoom, panel.contrast, panel.brightness);
+  }
+
+  function drawTrajectory(panel) {
+    var { paths = [] } = panel;
+    /* const paths = [
+      [[30.34, 23.66, 20.73], [-7.663, -26.34, -27.27]],
+    ]; */
+    const context = panel.context;
+
+    paths.forEach((path) => {
+      context.save();
+      var color =  "#66FF66";
+      context.strokeStyle =  color;
+      context.fillStyle = color;
+      context.lineWidth = 1;
+      context.beginPath();
+
+      const widthSpace = Math.abs(panel.slice.width_space.space_length);
+      const heightSpace = Math.abs(panel.slice.height_space.space_length);
+      let revertX = false;
+      let revertY = false;
+
+      var xName = 'j';
+      var yName = 'k';
+      var curName = 'i';
+      if (panel.axis === 'yspace') {
+        xName = 'i';
+        yName = 'k';
+        curName = 'j';
+        revertX = true;
+      } else if (panel.axis === 'zspace') {
+        xName = 'i';
+        yName = 'j';
+        curName = 'k';
+        revertX = true;
+        revertY = true;
+      }
+      var curVoxel = panel.volume.getVoxelCoords();
+      let [start, end] = path;
+      const startVoxel = panel.volume.worldToVoxel(start[0], start[1], start[2]);
+      const endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
+      const startX = revertX ? widthSpace - startVoxel[xName] : startVoxel[xName];
+      const startY = revertY ? heightSpace - startVoxel[yName] : startVoxel[yName];
+      const endX = revertX ? widthSpace - endVoxel[xName] : endVoxel[xName];
+      const endY = revertY ? heightSpace - endVoxel[yName] : endVoxel[yName];
+      start = panel.voxelToCursor(startX, startY);
+      end = panel.voxelToCursor(endX, endY);
+      context.moveTo(start.x, start.y);
+      context.lineTo(end.x, end.y);
+      context.stroke();
+
+      const kv = (curVoxel[curName] - startVoxel[curName]) / (endVoxel[curName] - startVoxel[curName]);
+
+      const jt = kv * (endX - startX) + startX;
+      const kt = kv * (endY - startY) + startY;
+      const target = panel.voxelToCursor(jt, kt);
+
+      if (
+        target.x >= (start.x > end.x ? end.x : start.x) && 
+        target.x <= (start.x < end.x ? end.x : start.x) &&
+        target.y >= (start.y > end.y ? end.y : start.y) &&
+        target.y <= (start.y < end.y ? end.y : start.y)
+      ) {
+        context.fillStyle = '#FF6666';
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(target.x, target.y, 2, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+      }
+    })
+    context.restore();
   }
 
   function drawTargets(panel) {
