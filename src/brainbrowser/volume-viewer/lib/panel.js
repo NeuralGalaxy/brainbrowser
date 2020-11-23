@@ -44,6 +44,34 @@
 (function() {
   "use strict";
 
+
+  const pathColors = [
+    [0x0074D9, '#0074D9'],
+    [0xFF851B, '#FF851B'],
+    [0x999E10, '#999E10'],
+    [0xA11665, '#A11665'],
+    [0x86B67C, '#86B67C'],
+    [0xFF4136, '#FF4136'],
+    [0x3D9970, '#3D9970'],
+    [0xF2BEEF, '#F2BEEF'],
+    [0xF7D777, '#F7D777'],
+    [0x00009C, '#00009C'],
+    [0xA9A9F0, '#A9A9F0'],
+    [0xB10DC9, '#B10DC9'],
+    [0x8D001E, '#8D001E'],
+    [0x39CCCC, '#39CCCC'],
+    [0xC79B8A, '#C79B8A'],
+    [0xCA8911, '#CA8911'],
+    [0x48878A, '#48878A'],
+    [0x460078, '#460078'],
+    [0x29CAA8, '#29CAA8'],
+    [0xC4E1E5, '#C4E1E5'],
+    [0x714A67, '#714A67'],
+    [0xE7C077, '#E7C077'],
+    [0xFCB543, '#FCB543'],
+    [0x738223, '#738223'],
+  ];
+
   /**
   * @doc function
   * @name VolumeViewer.static methods:createPanel
@@ -547,18 +575,18 @@
   }
 
   function drawTrajectory(panel) {
-    var { paths = [] } = panel;
-    /* const paths = [
+    var { trajectories = [] } = panel;
+    /* var trajectories = [
       [[30.34, 23.66, 20.73], [-7.663, -26.34, -27.27]],
     ]; */
     const context = panel.context;
 
-    paths.forEach((path) => {
+    trajectories.forEach((trajectory, index) => {
       context.save();
-      var color =  "#66FF66";
-      context.strokeStyle =  color;
+      var color = pathColors[index % pathColors.length][1];
+      context.strokeStyle = color;
       context.fillStyle = color;
-      context.lineWidth = 1;
+      context.lineWidth = 2;
       context.beginPath();
 
       const widthSpace = Math.abs(panel.slice.width_space.space_length);
@@ -582,7 +610,7 @@
         revertY = true;
       }
       var curVoxel = panel.volume.getVoxelCoords();
-      let [start, end] = path;
+      let [start, end] = trajectory;
       const startVoxel = panel.volume.worldToVoxel(start[0], start[1], start[2]);
       const endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
       const startX = revertX ? widthSpace - startVoxel[xName] : startVoxel[xName];
@@ -607,8 +635,8 @@
         target.y >= (start.y > end.y ? end.y : start.y) &&
         target.y <= (start.y < end.y ? end.y : start.y)
       ) {
-        context.fillStyle = '#FF6666';
-        context.lineWidth = 1;
+        context.fillStyle = color;
+        context.lineWidth = 2;
         context.beginPath();
         context.arc(target.x, target.y, 2, 0, 2 * Math.PI);
         context.fill();
@@ -627,7 +655,7 @@
     
     space = 1;
 
-    targets.forEach((target) => {
+    targets.forEach((target, index) => {
     
       context.save();
       var { i, j, k } = panel.volume.worldToVoxel(target.x, target.y, target.z);
@@ -645,7 +673,7 @@
         x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
         y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
       } else return;
-      var color =  "#66FF66";
+      var color =  pathColors[index % pathColors.length][1];
       context.strokeStyle =  color;
       context.fillStyle = color;
       context.lineWidth = 1;
