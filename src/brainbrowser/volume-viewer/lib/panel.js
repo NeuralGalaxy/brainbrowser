@@ -575,7 +575,8 @@
   }
 
   function drawTrajectory(panel) {
-    var { trajectories = [] } = panel;
+    var { trajectories = [], showTrajectory = false } = panel;
+    if (!showTrajectory) return;
     /* var trajectories = [
       [[30.34, 23.66, 20.73], [-7.663, -26.34, -27.27]],
     ]; */
@@ -623,6 +624,7 @@
       context.moveTo(start.x, start.y);
       context.lineTo(end.x, end.y);
       context.stroke();
+      context.setLineDash([]);
 
       const kv = (curVoxel[curName] - startVoxel[curName]) / (endVoxel[curName] - startVoxel[curName]);
 
@@ -649,7 +651,8 @@
   }
 
   function drawTargets(panel) {
-    var { targets = [] } = panel;
+    var { targets = [], showTarget = false } = panel;
+    if (!showTarget) return;
     var context = panel.context;
     var zoom = panel.zoom;
     var length = 8 * (zoom / panel.default_zoom);
