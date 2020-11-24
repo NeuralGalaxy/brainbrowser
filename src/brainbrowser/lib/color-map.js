@@ -196,6 +196,11 @@
             const findColor = colors.find((color) => {
               const isLeft = color[1] === 'left';
               const isAll = color[1] === 'all';
+              if (color[0] === 1) {
+                return (value > 0 && value <= 1) && 
+                (isAll || (isLeft ? i <= leftCount : i > leftCount));
+              }
+
               return color[0] === value && 
                 (isAll || (isLeft ? i <= leftCount : i > leftCount));
             })
