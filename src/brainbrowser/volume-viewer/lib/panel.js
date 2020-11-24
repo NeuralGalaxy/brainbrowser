@@ -587,6 +587,7 @@
       context.strokeStyle = color;
       context.fillStyle = color;
       context.lineWidth = 2;
+      context.setLineDash([4]);
       context.beginPath();
 
       const widthSpace = Math.abs(panel.slice.width_space.space_length);
@@ -637,6 +638,7 @@
       ) {
         context.fillStyle = color;
         context.lineWidth = 2;
+        context.setLineDash([]);
         context.beginPath();
         context.arc(target.x, target.y, 2, 0, 2 * Math.PI);
         context.fill();
