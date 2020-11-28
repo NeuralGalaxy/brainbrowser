@@ -224,6 +224,7 @@
       contrast: 1,
       brightness: 0,
       updated: true,
+      hideBorder: options.hideBorder,
       /**
       * @doc function
       * @name panel.panel:setSize
@@ -526,7 +527,9 @@
         drawTrajectory(panel);
 
         context.save();
-        context.strokeStyle = active ? "#1BACC8" : "#303030";
+        context.strokeStyle = panel.hideBorder ? 
+          '#000000' :
+          (active ? "#1BACC8" : "#303030");
         context.lineWidth = frame_width;
         context.strokeRect(
           half_frame_width,

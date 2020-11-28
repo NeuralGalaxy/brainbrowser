@@ -97,19 +97,23 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     var overlay_options = options.overlay && typeof options.overlay === "object" ? options.overlay : {};
           
     var volume_descriptions = options.volumes;
+    var hideBorder = !!volume_descriptions.find(des => des.hideBorder);
     var num_descriptions = options.volumes.length;
     var complete = options.complete;
     var num_loaded = 0;
     var i;
         
     function loadVolume(i) {
-      setVolume(i, volume_descriptions[i], function() {
+      setVolume(i, {
+        ...volume_descriptions[i],
+        hideBorder,
+      }, function() {
         if (++num_loaded < num_descriptions) {
           return;
         }
 
         if (options.overlay && num_descriptions > 1) {
-          viewer.createOverlay(overlay_options, function() {
+          viewer.createOverlay(overlay_options, hideBorder, function() {
             if (BrainBrowser.utils.isFunction(complete)) {
               complete();
             }
@@ -323,13 +327,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * });
   * ```
   */
-  viewer.createOverlay = function(description, callback) {
+  viewer.createOverlay = function(description, hideBorder, callback) {
 
     description = description || {};
     var overlay_type = description.type || 'overlay';
     var views = description.views;
 
     viewer.loadVolume({
+        hideBorder,
         volumes: viewer.volumes,
         type: overlay_type,
         views: views,
@@ -480,7 +485,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   function createVolumeDisplay(dom_element, vol_id, volume_description) {
     var container = document.createElement("div");
     var volume = viewer.volumes[vol_id];
-          
+
     var display = VolumeViewer.createDisplay();
     var template_options = volume_description.template || {};
     var views = volume_description.views || ["xspace", "yspace", "zspace"];
@@ -504,6 +509,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           volume_id: vol_id,
           axis: axis_name,
           canvas: canvas,
+          hideBorder: volume_description.hideBorder,
           image_center: {
             x: canvas.width / 2,
             y: canvas.height / 2
