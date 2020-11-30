@@ -616,7 +616,25 @@
       }
       var curVoxel = panel.volume.getVoxelCoords();
       let [start, end] = trajectory;
-      const startVoxel = panel.volume.worldToVoxel(start[0], start[1], start[2]);
+
+      const [start_x, start_y, start_z] = start;
+      const [end_x, end_y, end_z] = end;
+      const gapX = start_x - end_x;
+      const gapY = start_y - end_y;
+      const gapZ = start_z - end_z;
+      
+      const m = Math.sqrt(
+        Math.pow(end_x - start_x, 2) + 
+        Math.pow(end_y - start_y, 2) +
+        Math.pow(end_z - start_z, 2))
+      
+      const k = 10 / m;
+      const x = start_x + gapX * k;
+      const y = start_y + gapY * k;
+      const z = start_z + gapZ * k;
+
+
+      const startVoxel = panel.volume.worldToVoxel(x, y, z);
       const endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
       const startX = revertX ? widthSpace - startVoxel[xName] : startVoxel[xName];
       const startY = revertY ? heightSpace - startVoxel[yName] : startVoxel[yName];
