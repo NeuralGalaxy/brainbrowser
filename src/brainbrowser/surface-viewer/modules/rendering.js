@@ -580,8 +580,24 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   };
 
   viewer.drawTrajectory = function(start, end, options) {
-    var startVector = new THREE.Vector3(start.x,start.y,start.z);
-    var endVector = new THREE.Vector3(end.x,end.y,end.z);
+    const { x: startX, y: startY, z: startZ } = start;
+    const { x: endX, y: endY, z: endZ } = end;
+    const gapX = endX - startX;
+    const gapY = endY - startY;
+    const gapZ = endZ - startZ;
+    
+    const m = Math.sqrt(
+      Math.pow(endX - startX, 2) + 
+      Math.pow(endY - startY, 2) +
+      Math.pow(endZ - startZ, 2))
+    
+      const k = 10 / m;
+    const x = endX + gapX * k;
+    const y = endY + gapY * k;
+    const z = endZ + gapZ * k;
+    
+    var startVector = new THREE.Vector3(start.x, start.y, start.z);
+    var endVector = new THREE.Vector3(x, y, z);
     viewer.drawLine(startVector, endVector, options);
   };
 
