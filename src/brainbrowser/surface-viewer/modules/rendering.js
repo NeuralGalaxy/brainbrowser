@@ -591,7 +591,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       Math.pow(endY - startY, 2) +
       Math.pow(endZ - startZ, 2))
     
-      const k = 10 / m;
+    const k = 10 / m;
     const x = endX + gapX * k;
     const y = endY + gapY * k;
     const z = endZ + gapZ * k;
