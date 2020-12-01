@@ -24,6 +24,8 @@
 * Author: Tarek Sherif <tsherif@gmail.com> (http://tareksherif.ca/)
 */
 
+import * as math from 'mathjs'
+
 BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   "use strict";
 
@@ -396,11 +398,134 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     }
   }
 
+  function flyVolume(volume) {
+    const { data } = volume;
+    const start = { x: 127, y: 127, z: 127 };
+    const end = { x: 157, y: 157, z: 157 };
+    const inter = 120;
+
+    // 构造轨迹的坐标路径
+    const xList = math.range(start.x, end.x, (end.x - start.x) / inter)._data;
+    const yList = math.range(start.y, end.y, (end.y - start.y) / inter)._data;
+    const zList = math.range(start.z, end.z, (end.z - start.z) / inter)._data;
+    // console.log('xList', xList);
+
+    // x y z 方向的尺寸
+    const xSize = xList[xList.length - 1] - xList[0];
+    const ySize = yList[yList.length - 1] - yList[0];
+    const zSize = zList[zList.length - 1] - zList[0];
+    // console.log('xSize', xSize);
+
+    // x y z 与路径尺寸的比例
+    const size = Math.sqrt(Math.pow(xSize, 2) + Math.pow(ySize, 2) + Math.pow(zSize, 2));
+    // console.log('size', size);
+    const xRotio = xSize / size;
+    const yRotio = ySize / size;
+    const zRotio = zSize / size;
+
+    const vector1Norm = [xRotio, yRotio, zRotio];
+    // console.log('xRotio', xRotio);
+
+    // 矩阵转换
+    let a = math.matrix([
+      [xRotio, yRotio, zRotio], 
+      [1, 0, 0],
+      [0, 1, 0],
+    ]);
+
+    let b = math.matrix([[0], [1], [0]]);
+
+    const vector2 = math.lusolve(a, b)._data;
+    // console.log('vector2', vector2);
+
+    const vector2Size = Math.sqrt(
+      Math.pow(vector2[0][0], 2) + 
+      Math.pow(vector2[1][0], 2) +
+      Math.pow(vector2[2][0], 2));
+    const vector2x = vector2[0][0] / vector2Size;
+    const vector2y = vector2[1][0] / vector2Size;
+    const vector2z = vector2[2][0] / vector2Size;
+    const vector2Norm = [vector2x, vector2y, vector2z];
+    // console.log('vector2Norm', vector2Norm);
+
+    // 另一个矩阵转换
+    a = math.matrix([
+      [vector1Norm[0], vector1Norm[1], vector1Norm[2]],
+      [vector2Norm[0], vector2Norm[1], vector2Norm[2]],
+      [0, 1, 0],
+    ]);
+
+    b = math.matrix([[0], [0], [1]]);
+
+    const vector3 = math.lusolve(a, b)._data;
+    // console.log('vector3', vector3);
+
+    const vector3Size = Math.sqrt(
+      Math.pow(vector3[0][0], 2) +
+      Math.pow(vector3[1][0], 2) +
+      Math.pow(vector3[2][0], 2));
+    const vector3x = vector3[0][0] / vector3Size;
+    const vector3y = vector3[1][0] / vector3Size;
+    const vector3z = vector3[2][0] / vector3Size;
+    const vector3Norm = [vector3x, vector3y, vector3z];
+    // console.log('vector3Norm', vector3Norm);
+
+    // pointx, pointy, pointz = data.shape
+    // pic_center = [data.shape[0] / 2, data.shape[1] / 2, data.shape[2] / 2]
+    const pointX = 256;
+    const pointY = 256;
+    const pointZ = 256;
+    const picCenter = { x: pointX / 2, y: pointY / 2, z: pointZ / 2 };
+
+    let nextData = [];
+    for(let index = 0; index < xList.length; index++) {
+      const newX = xList[index];
+      const newY = yList[index];
+      const newZ = zList[index];
+
+      const newData = math.zeros(pointX, pointY)._data;
+      // console.log('newData', newData);
+      const newCenter = { x: newX, y: newY, z: newZ };
+
+      const startX = Math.floor(-pointX / 2);
+      const endX = Math.floor(pointX / 2);
+      for (let i = startX; i < endX; i++) {
+        const startY = Math.floor(-pointY / 2);
+        const endY = Math.floor(pointY / 2);
+
+        for (let j = startY; j < endY; j++) {
+
+          const nextX = i * vector2Norm[0] + j * vector3Norm[0];
+          const nextY = i * vector2Norm[1] + j * vector3Norm[1];
+          const nextZ = i * vector2Norm[2] + j * vector3Norm[2];
+
+          const nextI = Math.floor(nextX + Math.floor(pointX / 2) + newCenter.x - picCenter.x);
+          const nextJ = Math.floor(nextY + Math.floor(pointY / 2) + newCenter.y - picCenter.y);
+          const nextK = Math.floor(nextZ + Math.floor(pointZ / 2) + newCenter.z - picCenter.z);
+
+          if (!(nextI >= 0 && nextJ >= 0 && nextK >= 0)) continue;
+          
+          const dataIndex = Math.pow(pointX, 2) * nextI + pointY * nextJ + nextK;
+
+          newData[j + Math.floor(pointY / 2)][i + Math.floor(pointX / 2)] = data[dataIndex];
+        }
+      }
+
+      nextData = [...nextData, ...math.flatten(newData)];
+    }
+    
+    // console.log('nextData', nextData.filter(n => !!n));
+    volume.data = nextData;
+
+    return volume;
+  }
+
   // Place a volume at a certain position in the volumes array.
   // This function should be used with care as empty places in the volumes
   // array will cause problems with rendering.
   function setVolume(vol_id, volume_description, callback) {
     openVolume(volume_description, function(volume) {
+      // volume = flyVolume(volume);
       var slices_loaded = 0;
       var views = volume_description.views || ["xspace","yspace","zspace"];
 
