@@ -398,16 +398,39 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     }
   }
 
-  function flyVolume(volume) {
-    const { data } = volume;
-    const start = { x: 127, y: 127, z: 127 };
-    const end = { x: 157, y: 157, z: 157 };
-    const inter = 120;
+  function flyVolume(volume, flyPoints) {
+    // console.log('volume', volume);
+    const { data, type } = volume;
+    const { entry, target } = flyPoints;
+    let start = volume.worldToVoxel(entry.x, entry.y, entry.z);
+    let end = volume.worldToVoxel(target.x, target.y, target.z);
+    if (type === 'nifti') {
+      start = { i: start.j, j: start.i, k: start.k };
+      end = { i: end.j, j: end.i, k: end.k };
+    }
+    // const start = { i: 127, j: 127, k: 30 };
+    // const end = { i: 127, j: 127, k: 127 };
+
+    const inter = Math.ceil(Math.sqrt(
+      Math.pow(start.i - end.i, 2) + 
+      Math.pow(start.j - end.j, 2) +
+      Math.pow(start.k - end.k, 2)));
+
+    // console.log('inter', inter);
 
     // 构造轨迹的坐标路径
-    const xList = math.range(start.x, end.x, (end.x - start.x) / inter)._data;
-    const yList = math.range(start.y, end.y, (end.y - start.y) / inter)._data;
-    const zList = math.range(start.z, end.z, (end.z - start.z) / inter)._data;
+    let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
+    let yList = math.range(start.j, end.j, (end.j - start.j) / inter)._data;
+    let zList = math.range(start.k, end.k, (end.k - start.k) / inter)._data;
+    if (!xList.length) {
+      xList = Array.apply(undefined, Array(inter)).map(item => start.i);
+    }
+    if (!yList.length) {
+      yList = Array.apply(undefined, Array(inter)).map(item => start.j);
+    }
+    if (!zList.length) {
+      zList = Array.apply(undefined, Array(inter)).map(item => start.k);
+    }
     // console.log('xList', xList);
 
     // x y z 方向的尺寸
@@ -472,47 +495,59 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     // pointx, pointy, pointz = data.shape
     // pic_center = [data.shape[0] / 2, data.shape[1] / 2, data.shape[2] / 2]
-    const pointX = 256;
-    const pointY = 256;
-    const pointZ = 256;
-    const picCenter = { x: pointX / 2, y: pointY / 2, z: pointZ / 2 };
+    const width = 256;
+    const half = width >> 1;
+    const floorHalf = ~~half;
+    const picCenter = { x: half, y: half, z: half };
 
     let nextData = [];
+    const s = Date.now();
     for(let index = 0; index < xList.length; index++) {
       const newX = xList[index];
       const newY = yList[index];
       const newZ = zList[index];
 
-      const newData = math.zeros(pointX, pointY)._data;
+      const newData = math.zeros(width * width)._data;
       // console.log('newData', newData);
       const newCenter = { x: newX, y: newY, z: newZ };
 
-      const startX = Math.floor(-pointX / 2);
-      const endX = Math.floor(pointX / 2);
+      const startX = -(floorHalf >> 1);
+      const endX = floorHalf >> 1;
       for (let i = startX; i < endX; i++) {
-        const startY = Math.floor(-pointY / 2);
-        const endY = Math.floor(pointY / 2);
+        const startY = -(floorHalf >> 1);
+        const endY = floorHalf >> 1;
 
         for (let j = startY; j < endY; j++) {
 
-          const nextX = i * vector2Norm[0] + j * vector3Norm[0];
-          const nextY = i * vector2Norm[1] + j * vector3Norm[1];
-          const nextZ = i * vector2Norm[2] + j * vector3Norm[2];
+          // const nextX = i * vector2Norm[0] + j * vector3Norm[0];
+          // const nextY = i * vector2Norm[1] + j * vector3Norm[1];
+          // const nextZ = i * vector2Norm[2] + j * vector3Norm[2];
 
-          const nextI = Math.floor(nextX + Math.floor(pointX / 2) + newCenter.x - picCenter.x);
-          const nextJ = Math.floor(nextY + Math.floor(pointY / 2) + newCenter.y - picCenter.y);
-          const nextK = Math.floor(nextZ + Math.floor(pointZ / 2) + newCenter.z - picCenter.z);
+          const nextI = ~~((i * vector2Norm[0] + j * vector3Norm[0]) + floorHalf + newCenter.x - picCenter.x);
+          const nextJ = ~~((i * vector2Norm[1] + j * vector3Norm[1]) + floorHalf + newCenter.y - picCenter.y);
+          const nextK = ~~(i * vector2Norm[2] + j * vector3Norm[2] + floorHalf + newCenter.z - picCenter.z);
 
-          if (!(nextI >= 0 && nextJ >= 0 && nextK >= 0)) continue;
+          if (nextI < 0 || nextJ < 0 || nextK < 0) continue;
           
-          const dataIndex = Math.pow(pointX, 2) * nextI + pointY * nextJ + nextK;
+          const dataIndex = Math.pow(width, 2) * nextI + width * nextJ + nextK;
 
-          newData[j + Math.floor(pointY / 2)][i + Math.floor(pointX / 2)] = data[dataIndex];
+          const newDataIndex = width * (j + floorHalf) + (i + floorHalf);
+
+          // newData[j + floorHalf][i + floorHalf] = data[dataIndex];
+
+          newData[newDataIndex] = data[dataIndex];
         }
       }
 
-      nextData = [...nextData, ...math.flatten(newData)];
+      nextData = nextData.concat(newData);
+      /* nextData = [
+        ...nextData,
+        ...newData,
+        // ...(newData.reduce((pre, ret) => [...ret, ...pre], []))
+      ]; */
     }
+
+    // console.log('waste 2', Date.now() - s);
     
     // console.log('nextData', nextData.filter(n => !!n));
     volume.data = nextData;
@@ -524,8 +559,19 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   // This function should be used with care as empty places in the volumes
   // array will cause problems with rendering.
   function setVolume(vol_id, volume_description, callback) {
+    const { flyPoints } = volume_description;
+    const isFly = !!flyPoints;
+
     openVolume(volume_description, function(volume) {
-      // volume = flyVolume(volume);
+      if (isFly && volume.type !== 'overlay') {
+        const start = Date.now();
+        volume = flyVolume(volume, flyPoints);
+        // console.log('waste time', Date.now() - start);
+      }
+
+      if (isFly) {
+        volume.flyPoints = flyPoints;
+      }
       var slices_loaded = 0;
       var views = volume_description.views || ["xspace","yspace","zspace"];
 
@@ -544,6 +590,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       ["xspace", "yspace", "zspace"].forEach(function(axis) {
         volume.position[axis] = Math.floor(volume.header[axis].space_length / 2);
       });
+
+      if (isFly) {
+        volume.position['yspace'] = 0;
+      }
 
       volume.display.forEach(function(panel) {
         panel.updateSlice(function() {
