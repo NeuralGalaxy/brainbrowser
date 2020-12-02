@@ -724,8 +724,22 @@
     context.restore();
   }
 
+  function getFlyPointsByPanel(panel) {
+    let flyPoints;
+    const { volumes } = panel.volume;
+    if (!volumes) return flyPoints;
+    volumes.forEach((volume) => {
+      if (volume.flyPoints) {
+        flyPoints = volume.flyPoints;
+      }
+    })
+
+    return flyPoints;
+  }
+
   // Draw the cursor at its current position on the canvas.
   function drawCursor(panel, color) {
+    const flyPoints = getFlyPointsByPanel(panel);
     var context = panel.context;
     var cursor = panel.getCursorPosition();
     var zoom = panel.zoom;
@@ -742,17 +756,37 @@
     var x = cursor.x;
     var y = cursor.y;
 
-    context.lineWidth = space * 2;
-    context.beginPath();
-    context.moveTo(x, y - length);
-    context.lineTo(x, y - space);
-    context.moveTo(x, y + space);
-    context.lineTo(x, y + length);
-    context.moveTo(x - length, y);
-    context.lineTo(x - space, y);
-    context.moveTo(x + space, y);
-    context.lineTo(x + length, y);
-    context.stroke();
+    if (flyPoints) {
+      color = flyPoints.color;
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      length = 4;
+      space = 1;
+
+      context.lineWidth = space;
+      context.beginPath();
+      context.moveTo(x, y - length);
+      context.lineTo(x, y);
+      context.moveTo(x, y);
+      context.lineTo(x, y + length);
+      context.moveTo(x - length, y);
+      context.lineTo(x, y);
+      context.moveTo(x, y);
+      context.lineTo(x + length, y);
+      context.stroke();
+    } else {
+      context.lineWidth = space * 2;
+      context.beginPath();
+      context.moveTo(x, y - length);
+      context.lineTo(x, y - space);
+      context.moveTo(x, y + space);
+      context.lineTo(x, y + length);
+      context.moveTo(x - length, y);
+      context.lineTo(x - space, y);
+      context.moveTo(x + space, y);
+      context.lineTo(x + length, y);
+      context.stroke();
+    }
 
     var distancePoint = function(start, end) {
       var calculate = function (start, end) {
