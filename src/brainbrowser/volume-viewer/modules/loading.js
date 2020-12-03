@@ -24,7 +24,7 @@
 * Author: Tarek Sherif <tsherif@gmail.com> (http://tareksherif.ca/)
 */
 
-import * as math from 'mathjs'
+import * as math from '../../lib/math/7.1.0/math'
 
 BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   "use strict";
