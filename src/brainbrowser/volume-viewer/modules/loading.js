@@ -24,7 +24,7 @@
 * Author: Tarek Sherif <tsherif@gmail.com> (http://tareksherif.ca/)
 */
 
-import * as math from '../../lib/math/7.1.0/math'
+import * as math from '../../lib/math/7.1.0/math';
 
 BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   "use strict";
@@ -402,16 +402,17 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     // console.log('volume', volume);
     const { data, type } = volume;
     const { entry, target } = flyPoints;
+    const isVessel = type === 'nifti';
     let start = volume.worldToVoxel(entry.x, entry.y, entry.z);
     let end = volume.worldToVoxel(target.x, target.y, target.z);
-    if (type === 'nifti') {
+    if (isVessel) {
       start = { i: start.j, j: start.i, k: start.k };
       end = { i: end.j, j: end.i, k: end.k };
     }
     // const start = { i: 127, j: 127, k: 30 };
     // const end = { i: 127, j: 127, k: 127 };
 
-    const inter = Math.ceil(Math.sqrt(
+    const inter = Math.floor(Math.sqrt(
       Math.pow(start.i - end.i, 2) + 
       Math.pow(start.j - end.j, 2) +
       Math.pow(start.k - end.k, 2)));
@@ -501,6 +502,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const picCenter = { x: half, y: half, z: half };
 
     let nextData = [];
+    const vesselDistance = [];
     const s = Date.now();
     for(let index = 0; index < xList.length; index++) {
       const newX = xList[index];
@@ -539,6 +541,11 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
       }
 
+      if (isVessel) {
+        const dis = countVesselDistance(newData);
+        vesselDistance.push(dis);
+      }
+
       nextData = nextData.concat(newData);
       /* nextData = [
         ...nextData,
@@ -551,8 +558,32 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     
     // console.log('nextData', nextData.filter(n => !!n));
     volume.data = nextData;
+    if (isVessel) {
+      // console.log('vesselDistance', vesselDistance);
+      volume.vesselDistance = vesselDistance;
+    }
 
     return volume;
+  }
+
+  function countVesselDistance(data) {
+    const center = 127;
+    const width = 256;
+    // const centerIndex = center * width + center;
+    const maxDis = Number.MAX_VALUE;
+    const nextData = data.map((val, index) => {
+      if (!val) return maxDis;
+      
+      const x = index % width - center;
+      const y = ~~(index / width) - center;
+
+      return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    });
+
+    const minDis = Math.min(...nextData);
+
+    // console.log('waste time', Date.now() - start);
+    return minDis;
   }
 
   // Place a volume at a certain position in the volumes array.
