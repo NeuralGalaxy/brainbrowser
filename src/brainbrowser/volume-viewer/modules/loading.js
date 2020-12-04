@@ -513,11 +513,11 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       // console.log('newData', newData);
       const newCenter = { x: newX, y: newY, z: newZ };
 
-      const startX = -(floorHalf >> 1);
-      const endX = floorHalf >> 1;
+      const startX = -floorHalf;
+      const endX = floorHalf;
       for (let i = startX; i < endX; i++) {
-        const startY = -(floorHalf >> 1);
-        const endY = floorHalf >> 1;
+        const startY = -floorHalf;
+        const endY = floorHalf;
 
         for (let j = startY; j < endY; j++) {
 
@@ -530,8 +530,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           const nextK = ~~(i * vector2Norm[2] + j * vector3Norm[2] + floorHalf + newCenter.z - picCenter.z);
 
           if (nextI < 0 || nextJ < 0 || nextK < 0) continue;
-          
-          const dataIndex = Math.pow(width, 2) * nextI + width * nextJ + nextK;
+
+          const dataIndex = Math.pow(width, 2) * nextK + width * nextJ + nextI;
 
           const newDataIndex = width * (j + floorHalf) + (i + floorHalf);
 
