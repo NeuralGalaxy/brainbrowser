@@ -513,11 +513,11 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       // console.log('newData', newData);
       const newCenter = { x: newX, y: newY, z: newZ };
 
-      const startX = -floorHalf;
-      const endX = floorHalf;
+      const startX = -floorHalf >> 1;
+      const endX = floorHalf >> 1;
       for (let i = startX; i < endX; i++) {
-        const startY = -floorHalf;
-        const endY = floorHalf;
+        const startY = -floorHalf >> 1;
+        const endY = floorHalf >> 1;
 
         for (let j = startY; j < endY; j++) {
 

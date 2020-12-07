@@ -259,10 +259,10 @@
           panel.image_center.x = width / 2;
           panel.image_center.y = height / 2;
           panel.updateVolumePosition();
-          panel.updateSlice();
+          panel.updateSlice(options.init);
+        } else {
+          panel.updated = true;
         }
-
-        panel.updated = true;
       },
 
       /**
@@ -427,30 +427,38 @@
         if (BrainBrowser.utils.isFunction(callback)) {
           update_callbacks.push(callback);
         }
-        update_timeout = setTimeout(function() {
-          try {
-            var volume = panel.volume;
-            var slice;
-            
-            slice = volume.slice(panel.axis);
+        if (callback === true) {
+          panel.updateSliceSimple(update_callbacks);
+        } else {
+          update_timeout = setTimeout(function() {
+            panel.updateSliceSimple(update_callbacks);
+          }, 0);
+        }
+      },
 
-            setSlice(panel, slice);
-            panel.triggerEvent("sliceupdate", {
-              volume: volume,
-              slice: slice
-            });
+      updateSliceSimple: function() {
+        try {
+          var volume = panel.volume;
+          var slice;
+          
+          slice = volume.slice(panel.axis);
 
-            panel.updated = true;
+          setSlice(panel, slice);
+          panel.triggerEvent("sliceupdate", {
+            volume: volume,
+            slice: slice
+          });
 
-            update_callbacks.forEach(function(callback) {
-              callback(slice);
-            });
-            update_callbacks.length = 0;
+          panel.updated = true;
 
-          } catch (e) {
-            console.log('Brainbrowser updateSlice error', e);
-          }
-        }, 0);
+          update_callbacks.forEach(function(callback) {
+            callback(slice);
+          });
+          update_callbacks.length = 0;
+
+        } catch (e) {
+          console.log('Brainbrowser updateSlice error', e);
+        }
       },
 
       /**
