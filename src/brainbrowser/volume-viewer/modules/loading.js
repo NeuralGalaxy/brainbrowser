@@ -399,7 +399,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   }
 
   function flyVolume(volume, flyPoints) {
-    // console.log('volume', volume);
     const { data, type } = volume;
     const { entry, target } = flyPoints;
     const isVessel = type === 'nifti';
@@ -417,8 +416,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       Math.pow(start.j - end.j, 2) +
       Math.pow(start.k - end.k, 2)));
 
-    // console.log('inter', inter);
-
     // 构造轨迹的坐标路径
     let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
     let yList = math.range(start.j, end.j, (end.j - start.j) / inter)._data;
@@ -432,23 +429,19 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     if (!zList.length) {
       zList = Array.apply(undefined, Array(inter)).map(item => start.k);
     }
-    // console.log('xList', xList);
 
     // x y z 方向的尺寸
     const xSize = xList[xList.length - 1] - xList[0];
     const ySize = yList[yList.length - 1] - yList[0];
     const zSize = zList[zList.length - 1] - zList[0];
-    // console.log('xSize', xSize);
 
     // x y z 与路径尺寸的比例
     const size = Math.sqrt(Math.pow(xSize, 2) + Math.pow(ySize, 2) + Math.pow(zSize, 2));
-    // console.log('size', size);
     const xRotio = xSize / size;
     const yRotio = ySize / size;
     const zRotio = zSize / size;
 
     const vector1Norm = [xRotio, yRotio, zRotio];
-    // console.log('xRotio', xRotio);
 
     // 矩阵转换
     let a = math.matrix([
@@ -460,7 +453,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     let b = math.matrix([[0], [1], [0]]);
 
     const vector2 = math.lusolve(a, b)._data;
-    // console.log('vector2', vector2);
 
     const vector2Size = Math.sqrt(
       Math.pow(vector2[0][0], 2) + 
@@ -470,7 +462,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const vector2y = vector2[1][0] / vector2Size;
     const vector2z = vector2[2][0] / vector2Size;
     const vector2Norm = [vector2x, vector2y, vector2z];
-    // console.log('vector2Norm', vector2Norm);
 
     // 另一个矩阵转换
     a = math.matrix([
@@ -482,7 +473,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     b = math.matrix([[0], [0], [1]]);
 
     const vector3 = math.lusolve(a, b)._data;
-    // console.log('vector3', vector3);
 
     const vector3Size = Math.sqrt(
       Math.pow(vector3[0][0], 2) +
@@ -492,7 +482,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const vector3y = vector3[1][0] / vector3Size;
     const vector3z = vector3[2][0] / vector3Size;
     const vector3Norm = [vector3x, vector3y, vector3z];
-    // console.log('vector3Norm', vector3Norm);
 
     // pointx, pointy, pointz = data.shape
     // pic_center = [data.shape[0] / 2, data.shape[1] / 2, data.shape[2] / 2]
@@ -503,14 +492,12 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     let nextData = [];
     const vesselDistance = [];
-    const s = Date.now();
     for(let index = 0; index < xList.length; index++) {
       const newX = xList[index];
       const newY = yList[index];
       const newZ = zList[index];
 
       const newData = math.zeros(width * width)._data;
-      // console.log('newData', newData);
       const newCenter = { x: newX, y: newY, z: newZ };
 
       const startX = -floorHalf >> 1;
@@ -520,11 +507,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         const endY = floorHalf >> 1;
 
         for (let j = startY; j < endY; j++) {
-
-          // const nextX = i * vector2Norm[0] + j * vector3Norm[0];
-          // const nextY = i * vector2Norm[1] + j * vector3Norm[1];
-          // const nextZ = i * vector2Norm[2] + j * vector3Norm[2];
-
           const nextI = ~~((i * vector2Norm[0] + j * vector3Norm[0]) + floorHalf + newCenter.x - picCenter.x);
           const nextJ = ~~((i * vector2Norm[1] + j * vector3Norm[1]) + floorHalf + newCenter.y - picCenter.y);
           const nextK = ~~(i * vector2Norm[2] + j * vector3Norm[2] + floorHalf + newCenter.z - picCenter.z);
@@ -534,8 +516,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           const dataIndex = Math.pow(width, 2) * nextK + width * nextJ + nextI;
 
           const newDataIndex = width * (j + floorHalf) + (i + floorHalf);
-
-          // newData[j + floorHalf][i + floorHalf] = data[dataIndex];
 
           newData[newDataIndex] = data[dataIndex];
         }
@@ -547,19 +527,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       }
 
       nextData = nextData.concat(newData);
-      /* nextData = [
-        ...nextData,
-        ...newData,
-        // ...(newData.reduce((pre, ret) => [...ret, ...pre], []))
-      ]; */
     }
 
-    // console.log('waste 2', Date.now() - s);
-    
-    // console.log('nextData', nextData.filter(n => !!n));
     volume.data = nextData;
     if (isVessel) {
-      // console.log('vesselDistance', vesselDistance);
       volume.vesselDistance = vesselDistance;
     }
 
@@ -582,7 +553,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     const minDis = Math.min(...nextData);
 
-    // console.log('waste time', Date.now() - start);
     return minDis;
   }
 
@@ -595,9 +565,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     openVolume(volume_description, function(volume) {
       if (isFly && volume.type !== 'overlay') {
-        const start = Date.now();
         volume = flyVolume(volume, flyPoints);
-        // console.log('waste time', Date.now() - start);
       }
 
       if (isFly) {
