@@ -596,6 +596,10 @@
     trajectories.forEach((trajectory, index) => {
       context.save();
       var color = pathColors[index % pathColors.length][1];
+      const { color: trajectoryColor } = trajectory;
+      if (trajectoryColor && trajectoryColor.length >= 2) {
+        color = trajectoryColor[1];
+      }
       context.strokeStyle = color;
       context.fillStyle = color;
       context.lineWidth = 2;
@@ -623,7 +627,7 @@
         revertY = true;
       }
       var curVoxel = panel.volume.getVoxelCoords();
-      let [start, end] = trajectory;
+      let { start, end } = trajectory;
 
       const [start_x, start_y, start_z] = start;
       const [end_x, end_y, end_z] = end;
