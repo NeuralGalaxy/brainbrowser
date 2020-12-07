@@ -225,6 +225,7 @@
       brightness: 0,
       updated: true,
       hideBorder: options.hideBorder,
+      hideCursor: options.hideCursor,
       /**
       * @doc function
       * @name panel.panel:setSize
@@ -427,7 +428,8 @@
         if (BrainBrowser.utils.isFunction(callback)) {
           update_callbacks.push(callback);
         }
-        if (callback === true) {
+        if (callback === true) { // callback === true mean isInit
+          panel.hideCursor = true;
           panel.updateSliceSimple(update_callbacks);
         } else {
           update_timeout = setTimeout(function() {
@@ -481,6 +483,7 @@
           old_cursor_position.y = cursor.y;
           panel.updated = true;
           setTimeout(() => {
+            if (panel.hideCursor) return;
             panel.triggerEvent("cursorupdate", {
               volume: panel.volume,
               cursor: cursor
@@ -527,8 +530,10 @@
           canvas: canvas,
           context: context
         });
-        
-        drawCursor(panel, cursor_color);
+
+        if (!panel.hideCursor) {
+          drawCursor(panel, cursor_color);
+        }
 
         drawTargets(panel);
 

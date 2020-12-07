@@ -97,6 +97,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     options = options || {};
     var overlay_options = options.overlay && typeof options.overlay === "object" ? options.overlay : {};
+    var hideCursor = !!options.hideCursor;
           
     var volume_descriptions = options.volumes;
     var hideBorder = !!volume_descriptions.find(des => des.hideBorder);
@@ -109,13 +110,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       setVolume(i, {
         ...volume_descriptions[i],
         hideBorder,
+        hideCursor,
       }, function() {
         if (++num_loaded < num_descriptions) {
           return;
         }
 
         if (options.overlay && num_descriptions > 1) {
-          viewer.createOverlay(overlay_options, hideBorder, function() {
+          viewer.createOverlay(overlay_options, hideBorder, hideCursor, function() {
             if (BrainBrowser.utils.isFunction(complete)) {
               complete();
             }
@@ -329,7 +331,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * });
   * ```
   */
-  viewer.createOverlay = function(description, hideBorder, callback) {
+  viewer.createOverlay = function(description, hideBorder, hideCursor, callback) {
 
     description = description || {};
     var overlay_type = description.type || 'overlay';
@@ -337,6 +339,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     viewer.loadVolume({
         hideBorder,
+        hideCursor,
         volumes: viewer.volumes,
         type: overlay_type,
         views: views,
@@ -560,7 +563,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   // This function should be used with care as empty places in the volumes
   // array will cause problems with rendering.
   function setVolume(vol_id, volume_description, callback) {
-    const { flyPoints } = volume_description;
+    const { flyPoints, hideCursor } = volume_description;
     const isFly = !!flyPoints;
 
     openVolume(volume_description, function(volume) {
@@ -595,6 +598,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       }
 
       volume.display.forEach(function(panel) {
+        panel.hideCursor = hideCursor;
         panel.updateSlice(function() {
           if (++slices_loaded === views.length) {
             viewer.triggerEvent("volumeloaded", {
@@ -684,6 +688,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           axis: axis_name,
           canvas: canvas,
           hideBorder: volume_description.hideBorder,
+          hideCursor: volume_description.hideCursor,
           image_center: {
             x: canvas.width / 2,
             y: canvas.height / 2
@@ -945,6 +950,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           if (viewer.active_panel) {
             viewer.active_panel.updated = true;
           }
+          panel.volume.display.forEach(function(other_panel) {
+            other_panel.hideCursor = false;
+          });
           viewer.active_panel = panel;
           document.addEventListener("mousemove", mouseDrag , false);
           document.addEventListener("mouseup", mouseDragEnd, false);
