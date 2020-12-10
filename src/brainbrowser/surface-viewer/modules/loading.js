@@ -466,7 +466,6 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     });
 
     viewer.model_data.forEach(function(model_data) {
-      console.log(model_data.name, 'model_data.name');
       if (model_data.intensity_data[0]) {
         viewer.updateColors({
           model_name: options.modelName || model_data.name,
