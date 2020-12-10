@@ -468,7 +468,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.model_data.forEach(function(model_data) {
       if (model_data.intensity_data[0]) {
         viewer.updateColors({
-          model_name: model_data.name,
+          model_name: options.modelName || model_data.name,
           clamp,
           colorOptions: options.colorOptions,
         });
