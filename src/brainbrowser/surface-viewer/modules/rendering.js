@@ -533,7 +533,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var meshLine = new MeshLine();
 
     var material = new MeshLineMaterial({
-      lineWidth: 2,
+      lineWidth: 1,
       color: color,
     });
 
