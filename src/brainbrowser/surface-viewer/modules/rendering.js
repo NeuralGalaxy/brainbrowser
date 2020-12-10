@@ -227,15 +227,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       // this is a loaded model, rather than
       // an annotation, etc.
       if (shape.userData.original_data) {
-        if (centroid && recentered) {
-          shape.position.set(
-            centroid.x + offset.x,
-            centroid.y + offset.y,
-            centroid.z + offset.z
-          );
-        } else {
-          shape.position.set(offset.x, offset.y, offset.z);
-        }
+        shape.position.set(offset.x, offset.y, offset.z);
         shape.rotation.set(0, 0, 0);
         shape.material.opacity = 1;
       }
@@ -541,7 +533,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var meshLine = new MeshLine();
 
     var material = new MeshLineMaterial({
-      lineWidth: 2,
+      lineWidth: 1,
       color: color,
     });
 

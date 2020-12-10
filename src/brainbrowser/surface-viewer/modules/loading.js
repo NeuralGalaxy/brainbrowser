@@ -736,7 +736,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     geometry.dynamic = true;
 
-    if (recenter || options.recenter) {
+    if (options.recenter) {
       if (index) {
         index_array = index.array;
         // tmp_position_array used because there will be repeats in the index array.
@@ -782,11 +782,11 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }
 
     shape.userData.centroid = centroid;
-
-    if (recenter) {
-      shape.userData.recentered = true;
-      shape.position.set(centroid.x, centroid.y, centroid.z);
-    }
+    // if (recenter) {
+    //   console.log(recenter, 'recenterifff');
+    //   shape.userData.recentered = true;
+    //   shape.position.set(centroid.x, centroid.y, centroid.z);
+    // }
     if (options.recenter) {
       shape.userData.recentered = true;
     }
