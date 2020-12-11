@@ -442,7 +442,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const size = Math.sqrt(Math.pow(xSize, 2) + Math.pow(ySize, 2) + Math.pow(zSize, 2));
     const xRotio = xSize / size;
     const yRotio = ySize / size;
-    const zRotio = zSize / size;
+    let zRotio = zSize / size;
+    if (!zRotio) zRotio += 0.0001;
 
     const vector1Norm = [xRotio, yRotio, zRotio];
 
@@ -466,11 +467,12 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const vector2z = vector2[2][0] / vector2Size;
     const vector2Norm = [vector2x, vector2y, vector2z];
 
-    [vector1Norm, vector2Norm].forEach(norm => {
+    [vector1Norm, vector2Norm].forEach((norm, index) => {
+      const symbolVal = (index % 2 ? 1 : -1);
       if (`${norm}` === `${[0, 1, 0]}`) {
-        norm[0] += 0.0001;
-        norm[1] += 0.0001;
-        norm[2] += 0.0001;
+        norm[0] = norm[0] + symbolVal * 0.0001;
+        norm[1] = norm[1] + symbolVal * 0.0001;
+        norm[2] = norm[2] + symbolVal * 0.0001;
       }
     })
 
@@ -590,7 +592,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       BrainBrowser.events.addEventModel(volume);
 
       volume.addEventListener("eventmodelcleanup", function() {
-        volume.display.triggerEvent("eventmodelcleanup");
+        if (volume.display) {
+          volume.display.triggerEvent("eventmodelcleanup");
+        }
       });
 
       viewer.volumes[vol_id] = volume;
