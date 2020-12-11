@@ -141,6 +141,7 @@
       var max_height = Math.round(slices[0].height * zoom);
 
       slices.forEach(function (slice, i) {
+        if (slice.width === undefined || slice.height === undefined) return;
         var volume = overlay_volume.volumes[i];
         var color_map = volume.color_map;
         var error_message;
