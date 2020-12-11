@@ -466,12 +466,22 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const vector2z = vector2[2][0] / vector2Size;
     const vector2Norm = [vector2x, vector2y, vector2z];
 
+    [vector1Norm, vector2Norm].forEach(norm => {
+      if (`${norm}` === `${[0, 1, 0]}`) {
+        norm[0] += 0.0001;
+        norm[1] += 0.0001;
+        norm[2] += 0.0001;
+      }
+    })
+
     // 另一个矩阵转换
     a = math.matrix([
       [vector1Norm[0], vector1Norm[1], vector1Norm[2]],
       [vector2Norm[0], vector2Norm[1], vector2Norm[2]],
       [0, 1, 0],
     ]);
+
+    
 
     b = math.matrix([[0], [0], [1]]);
 
