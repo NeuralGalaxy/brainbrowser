@@ -151,6 +151,9 @@
         var destination = options.destination || new Float32Array(intensity_values.length * 4);
 
         var color_map_colors = filterColorCb ? filterColorCb(color_map.colors) : color_map.colors;
+
+        if (!color_map_colors) return;
+        
         var color_map_length = color_map_colors.length / 4;
 
         var scale = options.scale === undefined ? color_map.scale : options.scale;

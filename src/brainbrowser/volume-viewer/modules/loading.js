@@ -592,7 +592,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       BrainBrowser.events.addEventModel(volume);
 
       volume.addEventListener("eventmodelcleanup", function() {
-        volume.display.triggerEvent("eventmodelcleanup");
+        if (volume.display) {
+          volume.display.triggerEvent("eventmodelcleanup");
+        }
       });
 
       viewer.volumes[vol_id] = volume;
