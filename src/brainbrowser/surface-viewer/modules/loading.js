@@ -202,7 +202,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   viewer.loadModelFromURL = function(url, options) {
     options = checkBinary("model_types", options);
 
-    loader.loadFromURL(url, loadModel, options);
+    loader.loadFromURL(url, loadModel, { ...options, isSurface: true });
   };
 
   /**
@@ -262,7 +262,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-    loader.loadFromURL(url, loadIntensityData, options);
+    loader.loadFromURL(url, loadIntensityData, { ...options, isSurface: true });
   };
 
   viewer.loadIntensityDataFromText = function(text, options) {
@@ -276,7 +276,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       text = formatCb ? formatCb(text) : text;
       loadIntensityData(text, filename, options);
     }
-    loader.loadFromURL(url, cb, options);
+    loader.loadFromURL(url, cb, { ...options, isSurface: true });
   };
 
 
