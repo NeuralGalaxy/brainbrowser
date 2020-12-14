@@ -95,6 +95,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   */
   viewer.loadVolumes = function(options) {
 
+    BrainBrowser.loader.abortCacheVolumeXHRs();
+
     options = options || {};
     var overlay_options = options.overlay && typeof options.overlay === "object" ? options.overlay : {};
     var hideCursor = !!options.hideCursor;

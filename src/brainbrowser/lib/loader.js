@@ -31,6 +31,20 @@
     window.pako = require('./pako');
   }
   var loader = BrainBrowser.loader = {
+
+    cacheSurfaceXHRs: [],
+    abortCacheSurfaceXHRs: () => {
+      loader.cacheSurfaceXHRs.forEach(xhr => {
+        xhr && xhr.abort && xhr.abort();
+      })
+    },
+
+    cacheVolumeXHRs: [],
+    abortCacheVolumeXHRs: () => {
+      loader.cacheVolumeXHRs.forEach(xhr => {
+        xhr && xhr.abort && xhr.abort();
+      })
+    },
     
     /**
     * @doc function
@@ -59,6 +73,15 @@
       options = options || {};
       var result;
       var request = new XMLHttpRequest();
+      
+      if (options.isVolume) {
+        loader.cacheVolumeXHRs.push(request);
+      }
+      
+      if (options.isSurface) {
+        loader.cacheSurfaceXHRs.push(request);
+      }
+
       var result_type = options.result_type;
       var content_type = options.content_type;
       var status;
@@ -66,6 +89,10 @@
       var parts2 = parts[parts.length-1].split("?");
       var filename = parts2[0];
       request.open("GET", url);
+
+      // const cacheTime = 60 * 60 * 30;
+      // request.setRequestHeader("Cache-Control", `max-age=${cacheTime}`);
+
       if (result_type === "arraybuffer") {
         request.responseType = "arraybuffer";
       }

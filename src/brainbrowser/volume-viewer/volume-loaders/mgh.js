@@ -52,7 +52,7 @@
         parseMGHHeader(data, description.display_zindex, function(header) {
           createMGHVolume(header, data, callback);
         });
-      }, {result_type: "arraybuffer" });
+      }, {result_type: "arraybuffer", isVolume: true });
 
     } else if (description.file) {
       BrainBrowser.loader.loadFromFile(description.file, function(data) {

@@ -41,7 +41,7 @@
         parseNifti1Header(nii_data, description.display_zindex, function(header) {
           createNifti1Volume(header, nii_data, callback);
         });
-      }, {result_type: "arraybuffer" });
+      }, {result_type: "arraybuffer", isVolume: true });
 
     } else if (description.nii_file) {
       BrainBrowser.loader.loadFromFile(description.nii_file, function(nii_data) {
