@@ -92,7 +92,9 @@
                 /* pako probably didn't recognize this as gzip.
                 */
               } finally {
-                callback(result, filename, options);
+                try {
+                  callback(result, filename, options);
+                } catch (e) {}
               }
             }
           } else {
