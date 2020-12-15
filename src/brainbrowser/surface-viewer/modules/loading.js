@@ -764,6 +764,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var centroid       = object_description.centroid;
     var is_line        = object_description.is_line;
     var recenter       = object_description.recenter;
+    var opacity        = options.opacity === undefined ? 100 : options.opacity;
 
     var geometry = new THREE.BufferGeometry();
     var index_array, tmp_position_array, position_index;
@@ -813,6 +814,13 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       shape    = new THREE.Line(geometry, material, THREE.LineSegments);
     } else {
       material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
+      
+      // set opacity
+      if (opacity !== 100) {
+        material.opacity = opacity / 100;
+        material.transparent = true;
+      }
+      
       shape    = new THREE.Mesh(geometry, material);
       shape.userData.has_wireframe = true;
     }
