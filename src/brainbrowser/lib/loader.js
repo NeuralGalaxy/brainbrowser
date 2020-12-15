@@ -125,13 +125,15 @@
               }
             }
           } else {
-            var error_message = "error loading URL: " + url + "\n" +
-              "HTTP Response: " + request.status + "\n" +
-              "HTTP Status: " + request.statusText + "\n" +
-              "Response was: \n" + request.response;
+            if (request.status !== 0) {
+              var error_message = "error loading URL: " + url + "\n" +
+                "HTTP Response: " + request.status + "\n" +
+                "HTTP Status: " + request.statusText + "\n" +
+                "Response was: \n" + request.response;
 
-            BrainBrowser.events.triggerEvent("error", { message: error_message });
-            throw new Error(error_message);
+              BrainBrowser.events.triggerEvent("error", { message: error_message });
+              throw new Error(error_message);
+            }
           }
         }
       };
