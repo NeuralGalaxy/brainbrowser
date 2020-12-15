@@ -202,7 +202,25 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   viewer.loadModelFromURL = function(url, options) {
     options = checkBinary("model_types", options);
 
-    loader.loadFromURL(url, loadModel, { ...options, isSurface: true });
+    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
+    const cachedData = SurfaceViewer.cachedLoader[url];
+    
+    if (SurfaceViewer.canCached && cachedData) {
+      var parts = url.split("/");
+      var parts2 = parts[parts.length-1].split("?");
+      var filename = parts2[0];
+      loadModel(cachedData.data, filename, options);
+    } else {
+      loader.loadFromURL(url, (data, filename, options) => {
+        loadModel(data, filename, options);
+        if (SurfaceViewer.canCached) {
+          SurfaceViewer.cachedLoader[url] = {
+            data,
+          };
+        }
+      }, { ...options, isSurface: true });
+    }
+    
   };
 
   /**
@@ -262,7 +280,25 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-    loader.loadFromURL(url, loadIntensityData, { ...options, isSurface: true });
+    
+    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
+    const cachedData = SurfaceViewer.cachedLoader[url];
+
+    if (SurfaceViewer.canCached && cachedData) {
+      var parts = url.split("/");
+      var parts2 = parts[parts.length-1].split("?");
+      var filename = parts2[0];
+      loadIntensityData(cachedData.data, filename, options);
+    } else {
+      loader.loadFromURL(url, (text, filename, options) => {
+        loadModel(text, filename, options);
+        if (SurfaceViewer.canCached) {
+          SurfaceViewer.cachedLoader[url] = {
+            data: text,
+          };
+        }
+      }, { ...options, isSurface: true });
+    }
   };
 
   viewer.loadIntensityDataFromText = function(text, options) {
