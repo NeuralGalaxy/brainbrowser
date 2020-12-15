@@ -45,8 +45,6 @@
       } else {
         BrainBrowser.loader.loadFromURL(description.nii_url, function(nii_data) {
           parseNifti1Header(nii_data, description.display_zindex, function(header) {
-            createNifti1Volume(header, nii_data, callback);
-
             const formatedData = createNifti1Volume(header, nii_data, callback);
             if (VolumeViewer.canCached) {
               VolumeViewer.cachedLoader[description.nii_url] = {
