@@ -303,7 +303,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * viewer.clearVolumes();
   * ```
   */
-  viewer.clearVolumes = function() {
+  viewer.clearVolumes = function(cacheDom = false) {
     viewer.volumes.forEach(function(volume) {
       volume.triggerEvent("eventmodelcleanup");
     });
@@ -311,7 +311,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     viewer.volumes = [];
     viewer.containers = [];
     viewer.active_panel = null;
-    viewer.dom_element.innerHTML = "";
+    if (!cacheDom) {
+      viewer.dom_element.innerHTML = "";
+    }
   };
 
   /**
@@ -677,10 +679,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
   // Create canvases and add mouse interface.
   function createVolumeDisplay(dom_element, vol_id, volume_description) {
-    const prevDom = dom_element.querySelector('.volume-container');
-    if (prevDom && prevDom.childNodes && prevDom.childNodes.length) {
-      prevDom.parentNode.removeChild(prevDom);
-    }
     var container = document.createElement("div");
     var volume = viewer.volumes[vol_id];
 
@@ -1082,6 +1080,11 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     viewer.containers[vol_id] = container;
 
+    /* const prevDom = dom_element.querySelector('.volume-container');
+    if (prevDom && prevDom.childNodes && prevDom.childNodes.length) {
+      prevDom.parentNode.removeChild(prevDom);
+    } */
+
     /* See if a subsequent volume has already been loaded. If so we want
      * to be sure that this container is inserted before the subsequent
      * container. This guarantees the ordering of elements.
@@ -1103,7 +1106,10 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     if (next_id === containers.length) {
       if (volume_description.show_volume !== false) {
         try {
-          dom_element.appendChild(container);
+          setTimeout(() => {
+            viewer.dom_element.innerHTML = "";
+            dom_element.appendChild(container);
+          }, 60);
         } catch (e) {
           console.error('Volume Viewer Loading.js appendChild Error', e);
         }
