@@ -678,7 +678,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   // Create canvases and add mouse interface.
   function createVolumeDisplay(dom_element, vol_id, volume_description) {
     const prevDom = dom_element.querySelector('.volume-container');
-    if (prevDom) {
+    if (prevDom && prevDom.childNodes && prevDom.childNodes.length) {
       prevDom.parentNode.removeChild(prevDom);
     }
     var container = document.createElement("div");
