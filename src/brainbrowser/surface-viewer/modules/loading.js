@@ -662,22 +662,25 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     if (BrainBrowser.WEBGL_UINT_INDEX_ENABLED) {
 
-      console.log('model_data.vertices', model_data.vertices);
-      position_buffer = new THREE.BufferAttribute(new Float32Array(model_data.vertices), 3);
+      try {
+        position_buffer = new THREE.BufferAttribute(new Float32Array(model_data.vertices), 3);
 
-      if (model_data.normals) {
+        if (model_data.normals) {
+          normal_buffer = new THREE.BufferAttribute(new Float32Array(model_data.normals), 3);
+        }
+
+        if (model_data.colors) {
+          color_buffer = new THREE.BufferAttribute(new Float32Array(model_data.colors), 4);
+        }
+      } catch (e) {
+        console.log('model_data.vertices', model_data.vertices);
         console.log('model_data.normals', model_data.normals);
-        normal_buffer = new THREE.BufferAttribute(new Float32Array(model_data.normals), 3);
-      }
-
-      if (model_data.colors) {
         console.log('model_data.colors', model_data.colors);
-        color_buffer = new THREE.BufferAttribute(new Float32Array(model_data.colors), 4);
       }
     }
 
     model_data.name = model_data.name || options.model_name || filename;
-    console.log(model_data.name, 'model_data.name');
+    // console.log(model_data.name, 'model_data.name');
     viewer.model_data.add(model_data.name, model_data);
 
     if (shapes) {
