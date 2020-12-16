@@ -417,6 +417,8 @@
   };
 
   function createNifti1Data(header, raw_data) {
+    console.log('createNifti1Data data', row_data);
+    console.log('header', header);
     var native_data = null;
 
     if (header.must_swap_data) {
