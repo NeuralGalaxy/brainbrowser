@@ -680,7 +680,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }
 
     model_data.name = model_data.name || options.model_name || filename;
-    // console.log(model_data.name, 'model_data.name');
+    console.log(model_data.name, 'model_data.name');
     viewer.model_data.add(model_data.name, model_data);
 
     if (shapes) {
