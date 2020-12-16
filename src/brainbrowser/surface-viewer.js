@@ -639,12 +639,15 @@
         request.onreadystatechange = function() {
           if (request.readyState === 4){
             status = request.status;
-
-            // Based on jQuery's "success" codes.
-            if(status >= 200 && status < 300 || status === 304) {
-              SurfaceViewer.worker_urls[name] = BrainBrowser.utils.createDataURL(request.response, "application/javascript");
-            } else {
-              SurfaceViewer.worker_urls[name] = url;
+            try {
+              // Based on jQuery's "success" codes.
+              if(status >= 200 && status < 300 || status === 304) {
+                SurfaceViewer.worker_urls[name] = BrainBrowser.utils.createDataURL(request.response, "application/javascript");
+              } else {
+                SurfaceViewer.worker_urls[name] = url;
+              }
+            } catch (e) {
+              console.info('Surface-viewer Get URL Error', e);
             }
 
             if (++workers_loaded === worker_names.length) {
