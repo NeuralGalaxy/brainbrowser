@@ -662,20 +662,14 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     if (BrainBrowser.WEBGL_UINT_INDEX_ENABLED) {
 
-      try {
-        position_buffer = new THREE.BufferAttribute(new Float32Array(model_data.vertices), 3);
+      position_buffer = new THREE.BufferAttribute(new Float32Array(model_data.vertices), 3);
 
-        if (model_data.normals) {
-          normal_buffer = new THREE.BufferAttribute(new Float32Array(model_data.normals), 3);
-        }
+      if (model_data.normals) {
+        normal_buffer = new THREE.BufferAttribute(new Float32Array(model_data.normals), 3);
+      }
 
-        if (model_data.colors) {
-          color_buffer = new THREE.BufferAttribute(new Float32Array(model_data.colors), 4);
-        }
-      } catch (e) {
-        console.log('model_data.vertices', model_data.vertices);
-        console.log('model_data.normals', model_data.normals);
-        console.log('model_data.colors', model_data.colors);
+      if (model_data.colors) {
+        color_buffer = new THREE.BufferAttribute(new Float32Array(model_data.colors), 4);
       }
     }
 
