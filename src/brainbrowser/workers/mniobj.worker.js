@@ -32,12 +32,18 @@
   var stack_index;
   
   self.addEventListener("message", function(e) {
-    var input = e.data || {};
+    var input = e.data;
 
-    var result = parse(input.data, input.options) || {
+    var errorObj = {
       error: true,
       error_message: "Error parsing data."
     };
+
+    var result = errorObj;
+    
+    if (input) {
+      result = parse(input.data, input.options) || errorObj;
+    }
 
     var data = {
       type: result.type,

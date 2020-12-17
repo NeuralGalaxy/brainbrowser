@@ -291,7 +291,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       loadIntensityData(cachedData.data, filename, options);
     } else {
       loader.loadFromURL(url, (text, filename, options) => {
-        loadModel(text, filename, options);
+        loadIntensityData(text, filename, options);
         if (SurfaceViewer.canCached) {
           SurfaceViewer.cachedLoader[url] = {
             data: text,
