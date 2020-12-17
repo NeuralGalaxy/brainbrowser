@@ -47,7 +47,7 @@
   "use strict";
 
   self.addEventListener("message", function(e) {
-    var input = e.data;
+    var input = e.data || {};
 
     /* Need to prepend the base url, which is transfered with the
      * message. This gets around issues with loading a script from

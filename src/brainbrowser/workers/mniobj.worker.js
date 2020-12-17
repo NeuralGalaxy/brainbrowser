@@ -32,7 +32,7 @@
   var stack_index;
   
   self.addEventListener("message", function(e) {
-    var input = e.data;
+    var input = e.data || {};
 
     var result = parse(input.data, input.options) || {
       error: true,
