@@ -88,6 +88,8 @@
   });
   
   function parse(data, options) {
+    if (!data || !data.trim) return undefined;
+    
     stack = data.trim().split(/\s+/).reverse();
     stack_index = stack.length - 1;
     
