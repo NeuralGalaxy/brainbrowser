@@ -542,7 +542,11 @@
 
       // Trigger a redraw on any event.
       BrainBrowser.events.addEventListener("*", function(event_name) {
-        if (event_name !== "draw") {
+        const ignoreNames = ['draw', 'sliceupdate'];
+
+        const name = event_name.name || event_name;
+
+        if (!ignoreNames.includes(name)) {
           viewer.updated = true;
         }
       });
