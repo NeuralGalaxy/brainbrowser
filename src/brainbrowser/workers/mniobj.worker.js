@@ -45,6 +45,8 @@
       result = parse(input.data, input.options) || errorObj;
     }
 
+    if (errorObj) return;
+
     var data = {
       type: result.type,
       vertices: result.vertices,
@@ -66,7 +68,7 @@
       transfer.push(data.colors.buffer);
     }
 
-    if (data.normals) {
+    if (data.normals && data.normals.buffer) {
       transfer.push(data.normals.buffer);
     }
 
@@ -84,9 +86,11 @@
       data.shapes = [
         { indices: result.indices }
       ];
-      transfer.push(
-        result.indices.buffer
-      );
+      if (result.indices && result.indices.buffer) {
+        transfer.push(
+          result.indices.buffer
+        );
+      }
     }
 
     self.postMessage(data, transfer);
