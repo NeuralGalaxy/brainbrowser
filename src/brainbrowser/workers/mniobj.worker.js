@@ -56,6 +56,8 @@
       error_message: result.error_message
     };
 
+    var transfer = [];
+
     if (data.vertices && data.vertices.buffer) {
       transfer.push(data.vertices.buffer);
     }
