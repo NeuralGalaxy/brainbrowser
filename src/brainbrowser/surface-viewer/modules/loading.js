@@ -201,8 +201,6 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadModelFromURL = function(url, options) {
     options = checkBinary("model_types", options);
-
-    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
     // const cachedData = SurfaceViewer.cachedLoader[url];
     
     // if (SurfaceViewer.canCached && cachedData) {
@@ -390,6 +388,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   ////////////////////////////////////
 
   function loadModel(data, filename, options) {
+    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
+
     options           = options        || {};
     var type          = options.format || "mniobj";
     var parse_options = options.parse  || {};
