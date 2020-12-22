@@ -56,14 +56,13 @@
       error_message: result.error_message
     };
 
-    var verticesBuffer = (data.vertices && data.vertices.buffer && data.vertices.buffer.length) ? data.vertices.buffer : [];
-    var colorsBuffer = (data.colors && data.colors.buffer && data.colors.buffer.length) ? data.colors.buffer : [];
-    
+    if (data.vertices && data.vertices.buffer) {
+      transfer.push(data.vertices.buffer);
+    }
 
-    var transfer = [
-      ...verticesBuffer,
-      ...colorsBuffer,
-    ];
+    if (data.colors && data.colors.buffer) {
+      transfer.push(data.colors.buffer);
+    }
 
     if (data.normals) {
       transfer.push(data.normals.buffer);
