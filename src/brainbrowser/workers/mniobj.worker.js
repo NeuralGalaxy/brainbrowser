@@ -57,8 +57,8 @@
     };
 
     var transfer = [
-      data.vertices.buffer,
-      data.colors.buffer
+      ...(data.vertices ? data.vertices.buffer : []),
+      ...(data.colors ? data.colors.buffer : [])
     ];
 
     if (data.normals) {
