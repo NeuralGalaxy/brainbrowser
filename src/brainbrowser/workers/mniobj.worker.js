@@ -45,7 +45,7 @@
       result = parse(input.data, input.options) || errorObj;
     }
 
-    if (errorObj) return;
+    if (result === errorObj) return;
 
     var data = {
       type: result.type,
