@@ -203,23 +203,13 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     options = checkBinary("model_types", options);
 
     SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
-    const cachedData = SurfaceViewer.cachedLoader[url];
+    // const cachedData = SurfaceViewer.cachedLoader[url];
     
-    if (SurfaceViewer.canCached && cachedData) {
-      var parts = url.split("/");
-      var parts2 = parts[parts.length-1].split("?");
-      var filename = parts2[0];
-      loadModel(cachedData.data, filename, options);
-    } else {
-      loader.loadFromURL(url, (data, filename, options) => {
-        loadModel(data, filename, options);
-        if (SurfaceViewer.canCached) {
-          SurfaceViewer.cachedLoader[url] = {
-            data,
-          };
-        }
-      }, { ...options, isSurface: true });
-    }
+    // if (SurfaceViewer.canCached && cachedData) {
+    options.cachedUrl = url;
+    loader.loadFromURL(url, (data, filename, options) => {
+      loadModel(data, filename, options);
+    }, { ...options, isSurface: true });
     
   };
 
@@ -281,24 +271,10 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
     
-    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
-    const cachedData = SurfaceViewer.cachedLoader[url];
-
-    if (SurfaceViewer.canCached && cachedData) {
-      var parts = url.split("/");
-      var parts2 = parts[parts.length-1].split("?");
-      var filename = parts2[0];
-      loadIntensityData(cachedData.data, filename, options);
-    } else {
-      loader.loadFromURL(url, (text, filename, options) => {
-        loadIntensityData(text, filename, options);
-        if (SurfaceViewer.canCached) {
-          SurfaceViewer.cachedLoader[url] = {
-            data: text,
-          };
-        }
-      }, { ...options, isSurface: true });
-    }
+    options.cachedUrl = url;
+    loader.loadFromURL(url, (text, filename, options) => {
+      loadIntensityData(text, filename, options);
+    }, { ...options, isSurface: true });
   };
 
   viewer.loadIntensityDataFromText = function(text, options) {
@@ -418,12 +394,28 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var type          = options.format || "mniobj";
     var parse_options = options.parse  || {};
 
-    // Parse model info based on the given file type.
-    parseModel(data, type, parse_options, function(model_data) {
+    var cachedUrl = options.cachedUrl || '';
+    var cachedData;
+
+    if (cachedUrl && SurfaceViewer.canCached) {
+      cachedData = SurfaceViewer.cachedLoader[cachedUrl];
+    }
+
+    if (cachedData) {
       if (!BrainBrowser.loader.checkCancel(options.cancel)) {
-        displayModel(model_data, filename, options);
+        displayModel(cachedData, filename, options);
       }
-    });
+    } else {
+      // Parse model info based on the given file type.
+      parseModel(data, type, parse_options, function(model_data) {
+        if (!BrainBrowser.loader.checkCancel(options.cancel)) {
+          displayModel(model_data, filename, options);
+          if (SurfaceViewer.canCached && cachedUrl) {
+            SurfaceViewer.cachedLoader[cachedUrl] = model_data;
+          }
+        }
+      });
+    }
   }
 
   function loadIntensityData(text, filename, options) {
