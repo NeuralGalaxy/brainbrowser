@@ -179,6 +179,10 @@
         brightness *= scale;
         contrast *= scale;
 
+        if (min === 0 && (max === 17 || max === 18)) {
+          increment = 1;
+        }
+
         //for each value, assign a color
         for (i = 0, count = intensity_values.length; i < count; i++) {
           value = intensity_values[i];
