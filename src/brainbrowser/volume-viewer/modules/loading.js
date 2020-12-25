@@ -1062,7 +1062,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         canvas.addEventListener("wheel", wheelHandler, false);
         canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
         
-        canvas.clearAllListeners = function () {
+        /* canvas.clearAllListeners = function () {
           canvas.removeEventListener('mousedown', canvasMousedown, false);
           canvas.removeEventListener('touchstart', canvasTouchstart, false);
           canvas.removeEventListener('mousewheel', wheelHandler, false);
@@ -1074,7 +1074,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("touchend", touchZoomEnd, false);
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-        }
+        } */
       });
     })();
 
