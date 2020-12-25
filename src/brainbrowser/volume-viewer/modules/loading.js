@@ -421,7 +421,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const inter = Math.floor(Math.sqrt(
       Math.pow(start.i - end.i, 2) + 
       Math.pow(start.j - end.j, 2) +
-      Math.pow(start.k - end.k, 2)));
+      Math.pow(start.k - end.k, 2))) + 1;
 
     // 构造轨迹的坐标路径
     let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
