@@ -440,6 +440,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }
 
     SurfaceViewer.parseIntensityData(text, type, function(intensity_data) {
+      if (!model_data) return;
       var min;
       var max;
 
