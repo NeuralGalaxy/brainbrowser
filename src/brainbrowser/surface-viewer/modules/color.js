@@ -64,6 +64,8 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
     var model_data = viewer.model_data.get(model_name);
     var intensity_data, blend;
 
+    if (!model_data) return;
+
     if (BrainBrowser.utils.isFunction(complete)) {
       complete_callbacks.push(complete);
     }
@@ -116,12 +118,14 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       if (blend) {
         applyColorArray(blendColors(intensity_data, options.model_name));
       } else {
+        const nextModel = viewer.model_data.get(options.model_name);
+        if (!nextModel) return;
         applyColorArray(viewer.color_map.mapColors(intensity_data.values, {
           min: intensity_data.range_min,
           max: intensity_data.range_max,
           clamp,
           colorOptions: options.colorOptions,
-          default_colors: viewer.model_data.get(options.model_name).colors
+          default_colors: nextModel.colors
         }));
       }
     }, 0);
