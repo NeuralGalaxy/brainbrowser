@@ -24,6 +24,8 @@
 * Author: Tarek Sherif <tsherif@gmail.com> (http://tareksherif.ca/)
 */
 
+import * as math from '../../lib/math/7.1.0/math';
+
 BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   "use strict";
 
@@ -92,24 +94,33 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * Other parameters may be required for given volume types.
   */
   viewer.loadVolumes = function(options) {
-
     options = options || {};
+    if (options.isPlan) {
+      BrainBrowser.loader.abortCacheVolumeXHRs();
+    }
+
     var overlay_options = options.overlay && typeof options.overlay === "object" ? options.overlay : {};
+    var hideCursor = !!options.hideCursor;
           
     var volume_descriptions = options.volumes;
+    var hideBorder = !!volume_descriptions.find(des => des.hideBorder);
     var num_descriptions = options.volumes.length;
     var complete = options.complete;
     var num_loaded = 0;
     var i;
         
     function loadVolume(i) {
-      setVolume(i, volume_descriptions[i], function() {
+      setVolume(i, {
+        ...volume_descriptions[i],
+        hideBorder,
+        hideCursor,
+      }, function() {
         if (++num_loaded < num_descriptions) {
           return;
         }
 
         if (options.overlay && num_descriptions > 1) {
-          viewer.createOverlay(overlay_options, function() {
+          viewer.createOverlay(overlay_options, hideBorder, hideCursor, function() {
             if (BrainBrowser.utils.isFunction(complete)) {
               complete();
             }
@@ -238,6 +249,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * ```
   */
   viewer.setVolumeColorMap = function(vol_id, color_map) {
+    if (!viewer.volumes[vol_id]) return;
     viewer.volumes[vol_id].color_map = color_map;
   };
 
@@ -292,7 +304,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * viewer.clearVolumes();
   * ```
   */
-  viewer.clearVolumes = function() {
+  viewer.clearVolumes = function(cacheDom = false) {
     viewer.volumes.forEach(function(volume) {
       volume.triggerEvent("eventmodelcleanup");
     });
@@ -300,7 +312,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     viewer.volumes = [];
     viewer.containers = [];
     viewer.active_panel = null;
-    viewer.dom_element.innerHTML = "";
+    if (!cacheDom) {
+      viewer.dom_element.innerHTML = "";
+    }
   };
 
   /**
@@ -322,13 +336,15 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   * });
   * ```
   */
-  viewer.createOverlay = function(description, callback) {
+  viewer.createOverlay = function(description, hideBorder, hideCursor, callback) {
 
     description = description || {};
     var overlay_type = description.type || 'overlay';
     var views = description.views;
 
     viewer.loadVolume({
+        hideBorder,
+        hideCursor,
         volumes: viewer.volumes,
         type: overlay_type,
         views: views,
@@ -390,30 +406,218 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     }
   }
 
+  function flyVolume(volume, flyPoints) {
+    const { data, type } = volume;
+    const { entry, target } = flyPoints;
+    const isVessel = type === 'nifti';
+    let start = volume.worldToVoxel(entry.x, entry.y, entry.z);
+    let end = volume.worldToVoxel(target.x, target.y, target.z);
+    if (isVessel) {
+      start = { i: start.j, j: start.i, k: start.k };
+      end = { i: end.j, j: end.i, k: end.k };
+    }
+    // const start = { i: 127, j: 127, k: 30 };
+    // const end = { i: 127, j: 127, k: 127 };
+
+    const inter = Math.floor(Math.sqrt(
+      Math.pow(start.i - end.i, 2) + 
+      Math.pow(start.j - end.j, 2) +
+      Math.pow(start.k - end.k, 2))) + 1;
+
+    // 构造轨迹的坐标路径
+    let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
+    let yList = math.range(start.j, end.j, (end.j - start.j) / inter)._data;
+    let zList = math.range(start.k, end.k, (end.k - start.k) / inter)._data;
+    if (!xList.length) {
+      xList = Array.apply(undefined, Array(inter)).map(item => start.i);
+    }
+    if (!yList.length) {
+      yList = Array.apply(undefined, Array(inter)).map(item => start.j);
+    }
+    if (!zList.length) {
+      zList = Array.apply(undefined, Array(inter)).map(item => start.k);
+    }
+
+    // x y z 方向的尺寸
+    const xSize = xList[xList.length - 1] - xList[0];
+    const ySize = yList[yList.length - 1] - yList[0];
+    const zSize = zList[zList.length - 1] - zList[0];
+
+    // x y z 与路径尺寸的比例
+    const size = Math.sqrt(Math.pow(xSize, 2) + Math.pow(ySize, 2) + Math.pow(zSize, 2));
+    const xRotio = xSize / size;
+    const yRotio = ySize / size;
+    let zRotio = zSize / size;
+    if (!zRotio) zRotio += 0.0001;
+
+    const vector1Norm = [xRotio, yRotio, zRotio];
+
+    // 矩阵转换
+    let a = math.matrix([
+      [xRotio, yRotio, zRotio], 
+      [1, 0, 0],
+      [0, 1, 0],
+    ]);
+
+    let b = math.matrix([[0], [1], [0]]);
+
+    const vector2 = math.lusolve(a, b)._data;
+
+    const vector2Size = Math.sqrt(
+      Math.pow(vector2[0][0], 2) + 
+      Math.pow(vector2[1][0], 2) +
+      Math.pow(vector2[2][0], 2));
+    const vector2x = vector2[0][0] / vector2Size;
+    const vector2y = vector2[1][0] / vector2Size;
+    const vector2z = vector2[2][0] / vector2Size;
+    const vector2Norm = [vector2x, vector2y, vector2z];
+
+    [vector1Norm, vector2Norm].forEach((norm, index) => {
+      const symbolVal = (index % 2 ? 1 : -1);
+      if (`${norm}` === `${[0, 1, 0]}`) {
+        norm[0] = norm[0] + symbolVal * 0.0001;
+        norm[1] = norm[1] + symbolVal * 0.0001;
+        norm[2] = norm[2] + symbolVal * 0.0001;
+      }
+    })
+
+    // 另一个矩阵转换
+    a = math.matrix([
+      [vector1Norm[0], vector1Norm[1], vector1Norm[2]],
+      [vector2Norm[0], vector2Norm[1], vector2Norm[2]],
+      [0, 1, 0],
+    ]);
+
+    
+
+    b = math.matrix([[0], [0], [1]]);
+
+    const vector3 = math.lusolve(a, b)._data;
+
+    const vector3Size = Math.sqrt(
+      Math.pow(vector3[0][0], 2) +
+      Math.pow(vector3[1][0], 2) +
+      Math.pow(vector3[2][0], 2));
+    const vector3x = vector3[0][0] / vector3Size;
+    const vector3y = vector3[1][0] / vector3Size;
+    const vector3z = vector3[2][0] / vector3Size;
+    const vector3Norm = [vector3x, vector3y, vector3z];
+
+    // pointx, pointy, pointz = data.shape
+    // pic_center = [data.shape[0] / 2, data.shape[1] / 2, data.shape[2] / 2]
+    const width = 256;
+    const half = width >> 1;
+    const floorHalf = ~~half;
+    const picCenter = { x: half, y: half, z: half };
+
+    let nextData = [];
+    const vesselDistance = [];
+    for(let index = 0; index < xList.length; index++) {
+      const newX = xList[index];
+      const newY = yList[index];
+      const newZ = zList[index];
+
+      const newData = math.zeros(width * width)._data;
+      const newCenter = { x: newX, y: newY, z: newZ };
+
+      const startX = -floorHalf >> 1;
+      const endX = floorHalf >> 1;
+      for (let i = startX; i < endX; i++) {
+        const startY = -floorHalf >> 1;
+        const endY = floorHalf >> 1;
+
+        for (let j = startY; j < endY; j++) {
+          const nextI = ~~((i * vector2Norm[0] + j * vector3Norm[0]) + floorHalf + newCenter.x - picCenter.x);
+          const nextJ = ~~((i * vector2Norm[1] + j * vector3Norm[1]) + floorHalf + newCenter.y - picCenter.y);
+          const nextK = ~~(i * vector2Norm[2] + j * vector3Norm[2] + floorHalf + newCenter.z - picCenter.z);
+
+          if (nextI < 0 || nextJ < 0 || nextK < 0) continue;
+
+          const dataIndex = Math.pow(width, 2) * nextK + width * nextJ + nextI;
+
+          const newDataIndex = width * (j + floorHalf) + (i + floorHalf);
+
+          newData[newDataIndex] = data[dataIndex];
+        }
+      }
+
+      if (isVessel) {
+        const dis = countVesselDistance(newData);
+        vesselDistance.push(dis);
+      }
+
+      nextData = nextData.concat(newData);
+    }
+
+    volume.data = nextData;
+    if (isVessel) {
+      volume.vesselDistance = vesselDistance;
+    }
+
+    return volume;
+  }
+
+  function countVesselDistance(data) {
+    const center = 127;
+    const width = 256;
+    // const centerIndex = center * width + center;
+    const maxDis = Number.MAX_VALUE;
+    const nextData = data.map((val, index) => {
+      if (!val) return maxDis;
+      
+      const x = index % width - center;
+      const y = ~~(index / width) - center;
+
+      return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    });
+
+    const minDis = Math.min(...nextData);
+
+    return minDis;
+  }
+
   // Place a volume at a certain position in the volumes array.
   // This function should be used with care as empty places in the volumes
   // array will cause problems with rendering.
   function setVolume(vol_id, volume_description, callback) {
+    const { flyPoints, hideCursor } = volume_description;
+    const isFly = !!flyPoints;
+
     openVolume(volume_description, function(volume) {
+      if (isFly && volume.type !== 'overlay') {
+        volume = flyVolume(volume, flyPoints);
+      }
+
+      if (isFly) {
+        volume.flyPoints = flyPoints;
+      }
       var slices_loaded = 0;
       var views = volume_description.views || ["xspace","yspace","zspace"];
 
       BrainBrowser.events.addEventModel(volume);
 
       volume.addEventListener("eventmodelcleanup", function() {
-        volume.display.triggerEvent("eventmodelcleanup");
+        if (volume.display) {
+          volume.display.triggerEvent("eventmodelcleanup");
+        }
       });
 
       viewer.volumes[vol_id] = volume;
       volume.color_map = default_color_map;
       volume.display = createVolumeDisplay(viewer.dom_element, vol_id, volume_description);
+      volume.opacity = typeof volume_description.opacity === 'undefined' ? 1 : volume_description.opacity;
       volume.propagateEventTo("*", viewer);
 
       ["xspace", "yspace", "zspace"].forEach(function(axis) {
         volume.position[axis] = Math.floor(volume.header[axis].space_length / 2);
       });
 
+      if (isFly) {
+        volume.position['yspace'] = 0;
+      }
+
       volume.display.forEach(function(panel) {
+        panel.hideCursor = hideCursor;
         panel.updateSlice(function() {
           if (++slices_loaded === views.length) {
             viewer.triggerEvent("volumeloaded", {
@@ -478,7 +682,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   function createVolumeDisplay(dom_element, vol_id, volume_description) {
     var container = document.createElement("div");
     var volume = viewer.volumes[vol_id];
-          
+
     var display = VolumeViewer.createDisplay();
     var template_options = volume_description.template || {};
     var views = volume_description.views || ["xspace", "yspace", "zspace"];
@@ -502,6 +706,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           volume_id: vol_id,
           axis: axis_name,
           canvas: canvas,
+          hideBorder: volume_description.hideBorder,
+          hideCursor: volume_description.hideCursor,
           image_center: {
             x: canvas.width / 2,
             y: canvas.height / 2
@@ -763,6 +969,9 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           if (viewer.active_panel) {
             viewer.active_panel.updated = true;
           }
+          panel.volume.display.forEach(function(other_panel) {
+            other_panel.hideCursor = false;
+          });
           viewer.active_panel = panel;
           document.addEventListener("mousemove", mouseDrag , false);
           document.addEventListener("mouseup", mouseDragEnd, false);
@@ -854,7 +1063,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         canvas.addEventListener("wheel", wheelHandler, false);
         canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
         
-        canvas.clearAllListeners = function () {
+        /* canvas.clearAllListeners = function () {
           canvas.removeEventListener('mousedown', canvasMousedown, false);
           canvas.removeEventListener('touchstart', canvasTouchstart, false);
           canvas.removeEventListener('mousewheel', wheelHandler, false);
@@ -866,11 +1075,16 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           document.removeEventListener("touchend", touchZoomEnd, false);
           document.removeEventListener("mousemove", mouseDrag, false);
           document.removeEventListener("mouseup", mouseDragEnd, false);
-        }
+        } */
       });
     })();
 
     viewer.containers[vol_id] = container;
+
+    /* const prevDom = dom_element.querySelector('.volume-container');
+    if (prevDom && prevDom.childNodes && prevDom.childNodes.length) {
+      prevDom.parentNode.removeChild(prevDom);
+    } */
 
     /* See if a subsequent volume has already been loaded. If so we want
      * to be sure that this container is inserted before the subsequent
@@ -881,14 +1095,25 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     for (next_id = vol_id + 1; next_id < containers.length; next_id++) {
       if (next_id in containers) {
         if (volume_description.show_volume !== false) {
-          dom_element.insertBefore(container, containers[next_id]);
+          try {
+            dom_element.insertBefore(container, containers[next_id]);
+          } catch (e) {
+            console.error('Volume Viewer Loading.js insertBefore Error', e);
+          }
         }
         break;
       }
     }
     if (next_id === containers.length) {
       if (volume_description.show_volume !== false) {
-        dom_element.appendChild(container);
+        try {
+          setTimeout(() => {
+            viewer.dom_element.innerHTML = "";
+            dom_element.appendChild(container);
+          }, 60);
+        } catch (e) {
+          console.error('Volume Viewer Loading.js appendChild Error', e);
+        }
       }
     }
     viewer.triggerEvent("volumeuiloaded", {

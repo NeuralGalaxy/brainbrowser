@@ -48,11 +48,27 @@
   VolumeViewer.volume_loaders.mgh = function(description, callback) {
     var error_message;
     if (description.url) {
-      BrainBrowser.loader.loadFromURL(description.url, function(data) {
-        parseMGHHeader(data, description.display_zindex, function(header) {
-          createMGHVolume(header, data, callback);
-        });
-      }, {result_type: "arraybuffer" });
+      VolumeViewer.cachedLoader = VolumeViewer.cachedLoader || {};
+      const cachedData = VolumeViewer.cachedLoader[description.url];
+      if (VolumeViewer.canCached && cachedData) {
+        createMGHVolume(cachedData.header, undefined, callback, cachedData);
+      } else {
+        BrainBrowser.loader.loadFromURL(
+          description.url, 
+          function(data) {
+            parseMGHHeader(data, description.display_zindex, function(header) {
+              const formatedData = createMGHVolume(header, data, callback);
+              if (VolumeViewer.canCached) {
+                VolumeViewer.cachedLoader[description.url] = {
+                  data: formatedData,
+                  header,
+                }
+              }
+            });
+          }, 
+          {result_type: "arraybuffer", isVolume: true }, 
+        );
+      }
 
     } else if (description.file) {
       BrainBrowser.loader.loadFromFile(description.file, function(data) {
@@ -292,9 +308,9 @@
     }
   }
 
-  function createMGHVolume(header, raw_data, callback) {
-    var volume = VolumeViewer.createVolume(header,
-                                           createMGHData(header, raw_data));
+  function createMGHVolume(header, raw_data, callback, cachedData) {
+    const createdData = cachedData ? cachedData.data : createMGHData(header, raw_data);
+    var volume = VolumeViewer.createVolume(header, createdData);
     volume.type = "mgh";
     volume.intensity_min = header.voxel_min;
     volume.intensity_max = header.voxel_max;
@@ -302,6 +318,7 @@
     if (BrainBrowser.utils.isFunction(callback)) {
       callback(volume);
     }
+    return createdData;
   }
 
   function createMGHData(header, raw_data) {

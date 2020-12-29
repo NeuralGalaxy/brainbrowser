@@ -37,6 +37,22 @@
   var VolumeViewer = BrainBrowser.VolumeViewer;
   var image_creation_context = document.createElement("canvas").getContext("2d");
 
+  const checkIsRiskHeatMap = (volume) => {
+    return !!volume && !!volume.isRiskHeatMap;
+  }
+
+  const getRiskMaskSlice = (slices = [], volumes = []) => {
+    let riskMaskSlice;
+    slices.forEach((slice, index) => {
+      const volume = volumes[index];
+      if (volume && volume.isRiskMask) {
+        riskMaskSlice = slice;
+      }
+    })
+
+    return riskMaskSlice;
+  }
+
   VolumeViewer.volume_loaders.overlayaligned = function(options, callback) {
     options = options || {};
     var volumes = options.volumes || [];
@@ -75,7 +91,7 @@
     overlay_volume.size = SIZE;
     overlay_volume.volumes = [];
     overlay_volume.blend_ratios = [];
-
+    overlay_volume.opacitys = [];
     overlay_volume.saveOriginAndTransform(header);
 
     /* Override the default slice function. This one does not really
@@ -125,6 +141,7 @@
       var max_height = Math.round(slices[0].height * zoom);
 
       slices.forEach(function (slice, i) {
+        if (slice.width === undefined || slice.height === undefined) return;
         var volume = overlay_volume.volumes[i];
         var color_map = volume.color_map;
         var error_message;
@@ -145,7 +162,19 @@
           source_image.data.set(tmp, 0);
         }
         else {
-          color_map.mapColors(slice.data, {
+          let mergedData = slice.data;
+
+          const isRiskHeatMap = checkIsRiskHeatMap(volume);
+          const riskMaskSlice = getRiskMaskSlice(slices, overlay_volume.volumes);
+
+          if (isRiskHeatMap && riskMaskSlice) {
+            mergedData = slice.data.map((val, sliceIndex) => {
+              const maskVal = riskMaskSlice.data[sliceIndex];
+              return volume.riskId && maskVal === volume.riskId ? slice.data[sliceIndex]: 0;
+            });
+          }
+
+          color_map.mapColors(mergedData, {
             min: volume.intensity_min,
             max: volume.intensity_max,
             contrast: contrast,
@@ -172,7 +201,8 @@
 
       return blendImages(
         images,
-        image_creation_context.createImageData(max_width, max_height)
+        image_creation_context.createImageData(max_width, max_height),
+        overlay_volume.opacitys,
       );
     };
 
@@ -199,10 +229,11 @@
         return intensity + current_value * overlay_volume.blend_ratios[i];
       }, 0);
     };
-
     volumes.forEach(function(volume) {
       overlay_volume.volumes.push(volume);
       overlay_volume.blend_ratios.push(1 / volumes.length);
+      const opacity = typeof volume.opacity === 'undefined' ? 1 : volume.opacity;
+      overlay_volume.opacitys.push(opacity);
     });
 
     if (BrainBrowser.utils.isFunction(callback)) {
@@ -211,7 +242,7 @@
   };
 
   // if image 1 has value, use image 1, otherwise use image 0
-  function blendImages(images, target) {
+  function blendImages(images, target, blend_opacitys) {
     var num_images = images.length;
     if (num_images === 1) {
       return images[0];
@@ -221,44 +252,42 @@
       var b_zindex = b.display_zindex || 0;
       return a_zindex - b_zindex;
 
-    })
+    });
     var target_data = target.data;
     var width = target.width;
     var height = target.height;
     var y, x;
     var i;
-    var image, image_data, pixel, alpha, current;
+    var image, image_data, pixel, opacity, current;
     var row_offset;
 
     //This will be used to keep the position in each image of its next pixel
     var image_iter = new Uint32Array(images.length);
-
+    var opacitys = new Float32Array(blend_opacitys);
     for (y = 0; y < height; y += 1) {
       row_offset = y * width;
 
       for (x = 0; x < width; x += 1) {
         pixel = (row_offset + x) * 4;
-        alpha = 0;
 
         for (i = 0; i < num_images; i += 1) {
           image = images[i];
+          opacity = i === 0 ? 0 : 1 - opacitys[i];
 
           if(y < image.height &&  x < image.width) {
-
             image_data = image.data;
 
             current = image_iter[i];
 
             if (image_data[current] > 0 || image_data[current + 1] > 0 || image_data[current + 2] > 0) {
               //Red
-              target_data[pixel] = image_data[current];
+              target_data[pixel] = target_data[pixel] * opacity + image_data[current] * opacitys[i];
 
               //Green
-              target_data[pixel+1] = image_data[current+1];
+              target_data[pixel+1] = target_data[pixel + 1] * opacity + image_data[current + 1] * opacitys[i];
 
               //Blue
-              target_data[pixel+2] = image_data[current+2];
-
+              target_data[pixel+2] = target_data[pixel + 2] * opacity + image_data[current + 2] * opacitys[i];
             }
             target_data[pixel + 3] = 255;
 

@@ -27,6 +27,12 @@
 * Author: Natacha Beck <natabeck@gmail.com>
 */
 
+import {
+  MeshLine,
+  MeshLineMaterial,
+  MeshLineRaycast
+} from '../lib/THREE.MeshLine';
+
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
@@ -38,6 +44,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
   var renderer = new THREE.WebGLRenderer({
+    antialias: true,
     preserveDrawingBuffer: true,
     alpha: true,
     autoClear: false,
@@ -86,7 +93,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
-    renderer.clearCachedWebglObjects();
+    // renderer.clearCachedWebglObjects();
   };
 
   /**
@@ -207,7 +214,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var inv   = new THREE.Matrix4();
     inv.getInverse(model.matrix);
 
-    model.applyMatrix(inv);
+    model.applyMatrix4(inv);
     camera.position.set(0, 0, default_camera_distance);
     light.position.set(0, 0, default_camera_distance);
 
@@ -220,15 +227,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       // this is a loaded model, rather than
       // an annotation, etc.
       if (shape.userData.original_data) {
-        if (centroid && recentered) {
-          shape.position.set(
-            centroid.x + offset.x,
-            centroid.y + offset.y,
-            centroid.z + offset.z
-          );
-        } else {
-          shape.position.set(offset.x, offset.y, offset.z);
-        }
+        shape.position.set(offset.x, offset.y, offset.z);
         shape.rotation.set(0, 0, 0);
         shape.material.opacity = 1;
       }
@@ -279,15 +278,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
-    var geometry = new THREE.SphereGeometry(2);
+    var geometry = new THREE.SphereGeometry(2, 32, 32);
     var material = new THREE.MeshPhongMaterial({
       color: color,
       specular: 0xFFFFFF,
+      shininess: 10,
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
     sphere.name = 'Dot';
-    if (viewer.model.children[0]) {
+    if (viewer.model.children[0] && viewer.model.children[0].userData.recentered) {
       sphere.position.set(
         x - viewer.model.children[0].userData.centroid.x,
         y - viewer.model.children[0].userData.centroid.y, 
@@ -336,11 +336,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.customizedrawLines = function(startPoint, endPoint) {
     var point = getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
-    for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line') {
-        viewer.model.children.splice(i, 1);
-      }
-    }
+    viewer.model.children = children.filter(child => child.name !== 'Line');
     viewer.drawLine(point.start, point.end, {
       color: 0xffffff,
     });
@@ -348,11 +344,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   viewer.drawPolyLine = function(startPoint, endPoint) {
     var children = [].concat(viewer.model.children);
-    for (var i = 0; i < children.length; i++){
-      if (children[i].name === 'Line') {
-        viewer.model.children.splice(i, 1);
-      }
-    }
+    viewer.model.children = children.filter(child => child.name !== 'Line');
     for (var i = 0; i < viewer.polyLinePoints.length; i++){
       var end = i === viewer.polyLinePoints.length - 1 ? endPoint : viewer.polyLinePoints[i + 1].point;
       var point = getDrawLinesStartEndPoint(viewer.polyLinePoints[i].point, end);
@@ -396,17 +388,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var euler_rotation    = options.euler_rotation;
 
     // Define default size and step
-    if (size === undefined || size <= 0) { size = 100; }
-    if (step === undefined || step <= 0) { step = 10; }
+    if (size === undefined || size <= 0) { size = 200; }
+    if (step === undefined || step <= 0) { step = 20; }
 
     // Define default colors
     color_center_line = color_center_line >= 0 ? color_center_line : 0x444444;
     color_grid        = color_grid        >= 0 ? color_grid        : 0x888888;
 
     // Create the grid
-    var grid  = new THREE.GridHelper(size, step);
+    var grid  = new THREE.GridHelper(size, step, color_center_line, color_grid);
     grid.name = name;
-    grid.setColors(color_center_line, color_grid);
     grid.position.set(x,y,z);
     // Used euler_rotation only if present
     if ( euler_rotation !== undefined ) { grid.setRotationFromEuler(euler_rotation); }
@@ -422,12 +413,17 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     return grid;
   };
 
-  viewer.drawGridXYZ = function(grid_name, is_checked) {
+  viewer.drawGridXYZ = function(grid_name, is_checked, options) {
+    options               = options || {};
+    var x                 = options.x || 0;
+    var y                 = options.y || 0;
+    var z                 = options.z || 0;
     var rotation = new THREE.Euler();
     var color_grid;
     var grid = viewer.model.getObjectByName(grid_name);
     if (grid !== undefined) {
         grid.visible   = is_checked;
+        grid.position.set(x,y,z);
         viewer.updated = true;
       return;
     }
@@ -447,7 +443,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       color_grid = 0xff0000;
     }
 
-    viewer.drawGrid(100, 10, {euler_rotation: rotation, name: grid_name, color_grid: color_grid});
+    viewer.drawGrid(200, 20, {
+      euler_rotation: rotation, name: grid_name, color_grid: color_grid,
+      x:x,
+      y:y,
+      z:z,
+    });
   };
   /**
   * @doc function
@@ -498,7 +499,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       geometry.colors.push( vertical_color, vertical_color );
     }
 
-    THREE.Line.call( grid, geometry, material, THREE.LinePieces );
+    THREE.Line.call( grid, geometry, material, THREE.LineSegments );
     return grid;
   };
 
@@ -525,31 +526,133 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.drawLine = function( start, end, options ) {
     options      = options || {};
     var color    = options.color >= 0 ? options.color : 0x444444;
-
     // Create the geometry
     var geometry = new THREE.Geometry();
     geometry.vertices.push( start.clone() );
     geometry.vertices.push( end.clone() );
-    geometry.computeLineDistances();
+    var meshLine = new MeshLine();
 
-    // Set the material according with the dashed option
-    var material = options.dashed === true ?
-                     new THREE.LineDashedMaterial({ linewidth: 13, color: color, gapSize: 3 })
-                   : new THREE.LineBasicMaterial( { linewidth: 13, color: color });
+    var material = new MeshLineMaterial({
+      lineWidth: 1,
+      color: color,
+    });
 
-    var line = new THREE.Line( geometry, material, THREE.LinePieces );
-    line.name = 'Line';
-    if (options.draw === false) {return line;}
+    meshLine.setGeometry(geometry, p => 1);
+    meshLine.name = options.geometryName;
+    var mesh = new THREE.Mesh(meshLine, material);
+    mesh.name = 'Line';
+    mesh.raycast = MeshLineRaycast;
+    if (options.draw === false) {return mesh;}
 
     if (viewer.model) {
-      viewer.model.add(line);      
+      viewer.model.add(mesh);      
     } else {
-      scene.add(line);
+      scene.add(mesh);
     }
+
+    // [start, end].forEach(point => {
+    //   var sphereGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+    //   var sphereMaterial = new THREE.LineBasicMaterial({ 
+    //     color
+    //   });
+    //   var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+    //   sphere.position.set(point.x, point.y, point.z);
+    //   sphere.name = 'Line';
+
+    //   if (viewer.model) {
+    //     viewer.model.add(sphere);
+    //   } else {
+    //     scene.add(sphere);
+    //   }
+    // });
 
     viewer.updated = true;
 
-    return line;
+    return mesh;
+  };
+
+  viewer.drawTrajectory = function(start, end, options) {
+    const { x: startX, y: startY, z: startZ } = start;
+    const { x: endX, y: endY, z: endZ } = end;
+    const gapX = endX - startX;
+    const gapY = endY - startY;
+    const gapZ = endZ - startZ;
+    
+    const m = Math.sqrt(
+      Math.pow(endX - startX, 2) + 
+      Math.pow(endY - startY, 2) +
+      Math.pow(endZ - startZ, 2))
+    
+    const k = 10 / m;
+    const x = endX + gapX * k;
+    const y = endY + gapY * k;
+    const z = endZ + gapZ * k;
+    
+    var startVector = new THREE.Vector3(start.x, start.y, start.z);
+    var endVector = new THREE.Vector3(x, y, z);
+    viewer.drawLine(startVector, endVector, options);
+  };
+
+  viewer.drawSticksLine = function( start, end, options ) {
+    options      = options || {};
+
+    const lineLength = Math.sqrt(
+      Math.pow(start.x - end.x, 2) +
+      Math.pow(start.y - end.y, 2) +
+      Math.pow(start.z - end.z, 2)
+    );
+    const lineMulti = 4 / (lineLength - 4);
+    const verticePoint = {
+      x: (end.x - start.x) * lineMulti,
+      y: (end.y - start.y) * lineMulti,
+      z: (end.z - start.z) * lineMulti,
+    };
+    const points = [start];
+    while (true) {
+      if (points.length - 1 >= (1 / lineMulti)) break;
+      const prevPoint = points[points.length - 1];
+      const nextPoint = {
+        x: prevPoint.x + verticePoint.x,
+        y: prevPoint.y + verticePoint.y,
+        z: prevPoint.z + verticePoint.z,
+      };
+      points.push(nextPoint);
+      
+    }
+    points.push(end);
+    points.forEach(point => {
+      var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+      var sphereMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff6666
+      });
+      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+      sphere.position.set(point.x, point.y, point.z);
+      sphere.name = 'SticksLine';
+
+      if (viewer.model) {
+        viewer.model.add(sphere);      
+      } else {
+        scene.add(sphere);
+      }
+    })
+
+    viewer.updated = true;
+  };
+
+  viewer.highlightTrajectorys = function(geometryName) {
+    viewer.model.children.forEach(function(obj) {
+      if (obj.name === 'Line') {
+        console.log(geometryName, obj.geometry.name, 'obj.geometry.name');
+        if (geometryName === obj.geometry.name){
+          obj.material.color = new THREE.Color(0xffffff);
+          obj.material.needsUpdate = true;
+        }else {
+          obj.material.color = new THREE.Color(0x444444);
+          obj.material.needsUpdate = true;
+        }
+      }
+    });
+    viewer.updated = true;
   };
 
   /**
@@ -641,7 +744,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * ```
   */
   viewer.pick = function(x, y, opacity_threshold) {
-    // console.log(viewer.mouse.x, viewer.mouse.y, 'viewer.pick');
     x = x === undefined ? viewer.mouse.x : x;
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
@@ -662,27 +764,28 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var index, coords, distance;
     var i, count;
     var centroid, cx, cy, cz;
-
     // Because we're comparing against
     // the vertices in their original positions,
     // we have move everything to place the model at its
     // original position.
     var inv_matrix = new THREE.Matrix4();
-
     vector.unproject(camera);
     raycaster.set(camera.position, vector.sub(camera.position).normalize());
     intersects = raycaster.intersectObject(model, true);
 
     for (i = 0; i < intersects.length; i++) {
       intersects[i].object.userData.pick_ignore = (intersects[i].object.material.opacity < opacity_threshold);
-      if (!intersects[i].object.userData.pick_ignore) {
+      if (
+        !intersects[i].object.userData.pick_ignore && 
+        intersects[i].face && 
+        intersects[i].object.userData.original_data
+      ) {
         intersection = intersects[i];
         break;
       }
     }
 
     if (intersection !== null && intersection.face) {
-
       intersect_object = intersection.object;
       intersect_face = intersection.face;
       
@@ -1313,7 +1416,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         startVertexData.point = { x: pick.point.x, y: pick.point.y, z: pick.point.z};
         startVertexData.position2D = {x: viewer.mouse.x, y: viewer.mouse.y };
         if (viewer.polyLinePoints.length === 0) {
-          console.log('mousedown === 0');
           viewer.polyLinePoints.push(JSON.parse(JSON.stringify(startVertexData)));
         }
       }

@@ -55,10 +55,16 @@
      */
     importScripts(input.url + 'gifti-reader.js');
 
-    var result = parse(input.data) || {
+    var errorObj = {
       error: true,
       error_message: "Error parsing data."
     };
+
+    var result = errorObj;
+    
+    if (input) {
+      result = parse(input.data) || errorObj;
+    }
 
     var transfer = [];
     if (result.vertices && result.shapes[0].indices) {

@@ -64,6 +64,8 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
     var model_data = viewer.model_data.get(model_name);
     var intensity_data, blend;
 
+    if (!model_data) return;
+
     if (BrainBrowser.utils.isFunction(complete)) {
       complete_callbacks.push(complete);
     }
@@ -116,11 +118,14 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       if (blend) {
         applyColorArray(blendColors(intensity_data, options.model_name));
       } else {
+        const nextModel = viewer.model_data.get(options.model_name);
+        if (!nextModel) return;
         applyColorArray(viewer.color_map.mapColors(intensity_data.values, {
           min: intensity_data.range_min,
           max: intensity_data.range_max,
           clamp,
-          default_colors: viewer.model_data.get(options.model_name).colors
+          colorOptions: options.colorOptions,
+          default_colors: nextModel.colors
         }));
       }
     }, 0);
@@ -322,8 +327,10 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       if (BrainBrowser.WEBGL_UINT_INDEX_ENABLED) {
         // Fixed bug introduced by commit ce8d3c277fef (Skip deindexing if uint indices supported.)
         // Just use the first colors present in color_array, ignored left-over.
-        for (i = 0; i < geometry_color.length ; i++ ) {
-          geometry_color[i] = color_array[i];
+        if (geometry_color && color_array) {
+          for (i = 0; i < geometry_color.length ; i++ ) {
+            geometry_color[i] = color_array[i];
+          }
         }
         if (has_wireframe) {
           wireframe.geometry.attributes.color.array.set(color_array);

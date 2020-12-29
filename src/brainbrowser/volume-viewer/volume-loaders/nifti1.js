@@ -37,11 +37,24 @@
   VolumeViewer.volume_loaders.nifti1 = function(description, callback) {
     var error_message;
     if (description.nii_url) {
-      BrainBrowser.loader.loadFromURL(description.nii_url, function(nii_data) {
-        parseNifti1Header(nii_data, description.display_zindex, function(header) {
-          createNifti1Volume(header, nii_data, callback);
-        });
-      }, {result_type: "arraybuffer" });
+      VolumeViewer.cachedLoader = VolumeViewer.cachedLoader || {};
+      const cachedData = VolumeViewer.cachedLoader[description.nii_url];
+
+      if (VolumeViewer.canCached && cachedData) {
+        createNifti1Volume(cachedData.header, undefined, callback, cachedData);
+      } else {
+        BrainBrowser.loader.loadFromURL(description.nii_url, function(nii_data) {
+          parseNifti1Header(nii_data, description.display_zindex, function(header) {
+            const formatedData = createNifti1Volume(header, nii_data, callback);
+            if (VolumeViewer.canCached) {
+              VolumeViewer.cachedLoader[description.nii_url] = {
+                data: formatedData,
+                header,
+              }
+            }
+          });
+        }, {result_type: "arraybuffer", isVolume: true });
+      }
 
     } else if (description.nii_file) {
       BrainBrowser.loader.loadFromFile(description.nii_file, function(nii_data) {
@@ -374,9 +387,10 @@
     return m;
   }
 
-  function createNifti1Volume(header, raw_data, callback) {
-    var volume = VolumeViewer.createVolume(header,
-                                           createNifti1Data(header, raw_data));
+  function createNifti1Volume(header, raw_data, callback, cachedData) {
+    const createdData = cachedData ? cachedData.data : createNifti1Data(header, raw_data);
+
+    var volume = VolumeViewer.createVolume(header, createdData);
     volume.type = "nifti";
     volume.intensity_min = volume.header.voxel_min;
     volume.intensity_max = volume.header.voxel_max;
@@ -384,6 +398,8 @@
     if (BrainBrowser.utils.isFunction(callback)) {
       callback(volume);
     }
+
+    return createdData;
   }
 
   VolumeViewer.utils.swapn = function(byte_data, n_per_item) {
