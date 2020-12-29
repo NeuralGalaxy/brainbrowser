@@ -201,8 +201,14 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadModelFromURL = function(url, options) {
     options = checkBinary("model_types", options);
-
-    loader.loadFromURL(url, loadModel, options);
+    // const cachedData = SurfaceViewer.cachedLoader[url];
+    
+    // if (SurfaceViewer.canCached && cachedData) {
+    options.cachedUrl = url;
+    loader.loadFromURL(url, (data, filename, options) => {
+      loadModel(data, filename, options);
+    }, { ...options, isSurface: true });
+    
   };
 
   /**
@@ -262,7 +268,11 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-    loader.loadFromURL(url, loadIntensityData, options);
+    
+    options.cachedUrl = url;
+    loader.loadFromURL(url, (text, filename, options) => {
+      loadIntensityData(text, filename, options);
+    }, { ...options, isSurface: true });
   };
 
   viewer.loadIntensityDataFromText = function(text, options) {
@@ -276,7 +286,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       text = formatCb ? formatCb(text) : text;
       loadIntensityData(text, filename, options);
     }
-    loader.loadFromURL(url, cb, options);
+    loader.loadFromURL(url, cb, { ...options, isSurface: true });
   };
 
 
@@ -363,15 +373,14 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     while (children.length > 0) {
       viewer.model.remove(children[0]);
     }
-
     viewer.model_data.clear();
 
     viewer.resetView();
     viewer.triggerEvent("clearscreen");
   };
 
-  viewer.updateColorMap = function(data, clamp = true) {
-    loadColorMap(BrainBrowser.createColorMap(data), clamp);
+  viewer.updateColorMap = function(data, clamp = true, options) {
+    loadColorMap(BrainBrowser.createColorMap(data), clamp, options);
   };
 
   ////////////////////////////////////
@@ -379,16 +388,34 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   ////////////////////////////////////
 
   function loadModel(data, filename, options) {
+    SurfaceViewer.cachedLoader = SurfaceViewer.cachedLoader || {};
+
     options           = options        || {};
     var type          = options.format || "mniobj";
     var parse_options = options.parse  || {};
 
-    // Parse model info based on the given file type.
-    parseModel(data, type, parse_options, function(model_data) {
+    var cachedUrl = options.cachedUrl || '';
+    var cachedData;
+
+    if (cachedUrl && SurfaceViewer.canCached) {
+      cachedData = SurfaceViewer.cachedLoader[cachedUrl];
+    }
+
+    if (cachedData) {
       if (!BrainBrowser.loader.checkCancel(options.cancel)) {
-        displayModel(model_data, filename, options);
+        displayModel(cachedData, filename, options);
       }
-    });
+    } else {
+      // Parse model info based on the given file type.
+      parseModel(data, type, parse_options, function(model_data) {
+        if (!BrainBrowser.loader.checkCancel(options.cancel)) {
+          displayModel(model_data, filename, options);
+          if (SurfaceViewer.canCached && cachedUrl) {
+            SurfaceViewer.cachedLoader[cachedUrl] = model_data;
+          }
+        }
+      });
+    }
   }
 
   function loadIntensityData(text, filename, options) {
@@ -413,6 +440,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }
 
     SurfaceViewer.parseIntensityData(text, type, function(intensity_data) {
+      if (!model_data) return;
       var min;
       var max;
 
@@ -458,7 +486,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     });
   }
 
-  function loadColorMap(color_map, clamp = true) {
+  function loadColorMap(color_map, clamp = true, options) {
+    options = options || {};
     viewer.color_map = color_map;
 
     viewer.triggerEvent("loadcolormap", {
@@ -468,8 +497,9 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     viewer.model_data.forEach(function(model_data) {
       if (model_data.intensity_data[0]) {
         viewer.updateColors({
-          model_name: model_data.name,
+          model_name: options.modelName || model_data.name,
           clamp,
+          colorOptions: options.colorOptions,
         });
       }
     });
@@ -636,8 +666,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       }
     }
 
-    model_data.name = model_data.name || filename;
-
+    model_data.name = model_data.name || options.model_name || filename;
+    console.log(model_data.name, 'model_data.name');
     viewer.model_data.add(model_data.name, model_data);
 
     if (shapes) {
@@ -684,8 +714,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
         object_description.centroid = shape_data.centroid;
         object_description.recenter = recenter;
 
-        shape      = createShape(object_description);
-        shape.name = shape_data.name || filename + "_" + (i + 1);
+        shape      = createShape(object_description, options);
+        shape.name = shape_data.name || options.model_name + "_" + (i + 1);
 
         shape.userData.model_name = model_data.name;
 
@@ -718,7 +748,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   // Create a three.js object to represent
   // a shape from the model data 'shapes'
   // array.
-  function createShape(object_description) {
+  function createShape(object_description, options) {
     var position       = object_description.position;
     var position_array = position.array;
     var normal         = object_description.normal;
@@ -727,6 +757,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     var centroid       = object_description.centroid;
     var is_line        = object_description.is_line;
     var recenter       = object_description.recenter;
+    var opacity        = options.opacity === undefined ? 100 : options.opacity;
 
     var geometry = new THREE.BufferGeometry();
     var index_array, tmp_position_array, position_index;
@@ -735,7 +766,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
 
     geometry.dynamic = true;
 
-    if (true) {
+    if (options.recenter) {
       if (index) {
         index_array = index.array;
         // tmp_position_array used because there will be repeats in the index array.
@@ -755,36 +786,46 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       }
     }
 
-    geometry.addAttribute("position", position);
+    geometry.setAttribute("position", position);
 
     if (index) {
-      geometry.addAttribute("index", index);
+      geometry.setIndex(index);
     }
 
     if (normal) {
-      geometry.addAttribute("normal", normal);
+      geometry.setAttribute("normal", normal);
     } else {
       geometry.computeVertexNormals();
     }
 
     if(color) {
-      geometry.addAttribute("color", color);
+      geometry.setAttribute("color", color);
     }
 
     if (is_line) {
       material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
-      shape    = new THREE.Line(geometry, material, THREE.LinePieces);
+      shape    = new THREE.Line(geometry, material, THREE.LineSegments);
     } else {
-      material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, ambient: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
+      material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
+      
+      // set opacity
+      if (opacity !== 100) {
+        material.opacity = opacity / 100;
+        material.transparent = true;
+      }
+      
       shape    = new THREE.Mesh(geometry, material);
       shape.userData.has_wireframe = true;
     }
 
     shape.userData.centroid = centroid;
-
-    if (recenter) {
+    // if (recenter) {
+    //   console.log(recenter, 'recenterifff');
+    //   shape.userData.recentered = true;
+    //   shape.position.set(centroid.x, centroid.y, centroid.z);
+    // }
+    if (options.recenter) {
       shape.userData.recentered = true;
-      shape.position.set(centroid.x, centroid.y, centroid.z);
     }
 
     return shape;

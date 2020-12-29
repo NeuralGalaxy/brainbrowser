@@ -46,13 +46,13 @@
         parseHeader(tmp.header_text, description.display_zindex, function(header) {
           createMincVolume(header, tmp.raw_data, callback);
         });
-      }, { result_type: "arraybuffer" });
+      }, { result_type: "arraybuffer", isVolume: true });
     } else if (description.header_url && description.raw_data_url) {
       BrainBrowser.loader.loadFromURL(description.header_url, function(header_text) {
         parseHeader(header_text, description.display_zindex, function(header) {
           BrainBrowser.loader.loadFromURL(description.raw_data_url, function(raw_data) {
             createMincVolume(header, raw_data, callback);
-          }, { result_type: "arraybuffer" });
+          }, { result_type: "arraybuffer", isVolume: true });
         });
       });
     } else if (description.header_file && description.raw_data_file) {
@@ -60,7 +60,7 @@
         parseHeader(header_text, description.display_zindex, function(header) {
           BrainBrowser.loader.loadFromFile(description.raw_data_file, function(raw_data) {
             createMincVolume(header, raw_data, callback);
-          }, { result_type: "arraybuffer" });
+          }, { result_type: "arraybuffer", isVolume: true });
         });
       });
     } else if (description.header_source && description.raw_data_source) {
@@ -283,7 +283,7 @@
 
         return target_image;
       },
-
+      
       getIntensityValue: function(i, j, k, time) {
         var header = volume.header;
         var vc = volume.getVoxelCoords();

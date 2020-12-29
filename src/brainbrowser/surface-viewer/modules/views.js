@@ -269,17 +269,17 @@ BrainBrowser.SurfaceViewer.modules.views = function(viewer) {
         color_buffer = geometry.color;
       }
 
-      wire_geometry.addAttribute("position", position_buffer);
-      wire_geometry.addAttribute("color", color_buffer);
+      wire_geometry.setAttribute("position", position_buffer);
+      wire_geometry.setAttribute("color", color_buffer);
 
       if (event.data.indices) {
-        wire_geometry.addAttribute("index", new THREE.BufferAttribute(event.data.indices, 1));
+        wire_geometry.setIndex(new THREE.BufferAttribute(event.data.indices, 1));
       }
 
       wire_geometry.attributes.color.needsUpdate = true;
 
       material = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors });
-      wireframe = new THREE.Line(wire_geometry, material, THREE.LinePieces);
+      wireframe = new THREE.Line(wire_geometry, material, THREE.LineSegments);
 
       wireframe.name = "__WIREFRAME__";
       wireframe.material.visible = false;
@@ -293,7 +293,7 @@ BrainBrowser.SurfaceViewer.modules.views = function(viewer) {
 
     if (BrainBrowser.WEBGL_UINT_INDEX_ENABLED) {
       message = {
-        indices: geometry.index.array
+        indices: shape.geometry.index.array
       };
     } else {
       message = {

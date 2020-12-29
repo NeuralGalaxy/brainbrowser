@@ -34,10 +34,18 @@
   self.addEventListener("message", function(e) {
     var input = e.data;
 
-    var result = parse(input.data, input.options) || {
+    var errorObj = {
       error: true,
       error_message: "Error parsing data."
     };
+
+    var result = errorObj;
+    
+    if (input) {
+      result = parse(input.data, input.options) || errorObj;
+    }
+
+    if (result === errorObj) return;
 
     var data = {
       type: result.type,
@@ -50,12 +58,17 @@
       error_message: result.error_message
     };
 
-    var transfer = [
-      data.vertices.buffer,
-      data.colors.buffer
-    ];
+    var transfer = [];
 
-    if (data.normals) {
+    if (data.vertices && data.vertices.buffer) {
+      transfer.push(data.vertices.buffer);
+    }
+
+    if (data.colors && data.colors.buffer) {
+      transfer.push(data.colors.buffer);
+    }
+
+    if (data.normals && data.normals.buffer) {
       transfer.push(data.normals.buffer);
     }
 
@@ -73,15 +86,19 @@
       data.shapes = [
         { indices: result.indices }
       ];
-      transfer.push(
-        result.indices.buffer
-      );
+      if (result.indices && result.indices.buffer) {
+        transfer.push(
+          result.indices.buffer
+        );
+      }
     }
 
     self.postMessage(data, transfer);
   });
   
   function parse(data, options) {
+    if (!data || !data.trim) return undefined;
+    
     stack = data.trim().split(/\s+/).reverse();
     stack_index = stack.length - 1;
     
