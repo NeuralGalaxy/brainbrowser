@@ -929,7 +929,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if (Object.keys(child.userData).length === 0 && child.userData.constructor === Object) { return ; }
       if (Object.keys(child.userData).length !== 0 && child.userData.model_name !== options.model_name) { return ; }
 
-      var vertices = child.geometry.attributes.index.array;
+      var vertices = child.geometry.index.array;
       var j;
 
       index = parseInt(index,0);
