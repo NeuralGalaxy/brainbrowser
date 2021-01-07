@@ -416,8 +416,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       start = { i: start.j, j: start.i, k: start.k };
       end = { i: end.j, j: end.i, k: end.k };
     }
-    // const start = { i: 127, j: 127, k: 30 };
-    // const end = { i: 127, j: 127, k: 127 };
 
     const inter = Math.floor(Math.sqrt(
       Math.pow(start.i - end.i, 2) + 
@@ -428,6 +426,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
     let yList = math.range(start.j, end.j, (end.j - start.j) / inter)._data;
     let zList = math.range(start.k, end.k, (end.k - start.k) / inter)._data;
+    
     if (!xList.length) {
       xList = Array.apply(undefined, Array(inter)).map(item => start.i);
     }
@@ -511,7 +510,6 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const picCenter = { x: half, y: half, z: half };
 
     let nextData = [];
-    const vesselDistance = [];
     for(let index = 0; index < xList.length; index++) {
       const newX = xList[index];
       const newY = yList[index];
@@ -541,24 +539,52 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
       }
 
-      if (isVessel) {
+      /* if (isVessel) {
         const dis = countVesselDistance(newData);
         vesselDistance.push(dis);
-      }
+      } */
 
       nextData = nextData.concat(newData);
     }
 
     volume.data = nextData;
     if (isVessel) {
-      volume.vesselDistance = vesselDistance;
+      volume.vesselDistance = countVesselDistance(data, inter, xList, yList, zList);
     }
 
     return volume;
   }
 
-  function countVesselDistance(data) {
-    const center = 127;
+  function countVesselDistance(data, inter, xList, yList, zList) {
+    const size = 256;
+    const maxVal = size >> 1;
+    let vesselDistance = Array.apply(undefined, Array(inter)).map(item => maxVal);
+    // loop vessel data
+    data.forEach((val, index) => {
+      if (val) {
+        const vX = index % size;
+        const vY = ~~(index / size) % size;
+        const vZ = ~~(index / (size * size)) % size;
+
+        // loop traj points
+        for (let xIndex of Object.keys(xList)) {
+          const cX = xList[xIndex];
+          const cY = yList[xIndex];
+          const cZ = zList[xIndex];
+
+          const l = Math.sqrt(Math.pow(vX - cX, 2) + Math.pow(vY - cY, 2) + Math.pow(vZ - cZ, 2));
+
+          const preVal = vesselDistance[xIndex];
+          vesselDistance[xIndex] = l < preVal ? l : preVal;
+        }
+      }
+    });
+
+    return vesselDistance;
+  }
+
+  /* function countVesselDistance(data) {
+    const center = 128;
     const width = 256;
     // const centerIndex = center * width + center;
     const maxDis = Number.MAX_VALUE;
@@ -574,7 +600,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const minDis = Math.min(...nextData);
 
     return minDis;
-  }
+  } */
 
   // Place a volume at a certain position in the volumes array.
   // This function should be used with care as empty places in the volumes
