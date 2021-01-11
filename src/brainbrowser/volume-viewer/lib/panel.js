@@ -643,7 +643,7 @@
         Math.pow(end_y - start_y, 2) +
         Math.pow(end_z - start_z, 2))
       
-      const k = 10 / m;
+      const k = 20 / m;
       const x = start_x + gapX * k;
       const y = start_y + gapY * k;
       const z = start_z + gapZ * k;
@@ -696,10 +696,11 @@
     
     space = 1;
 
-    targets.forEach((target, index) => {
+    targets.forEach((target) => {
+      const { coord } = target;
     
       context.save();
-      var { i, j, k } = panel.volume.worldToVoxel(target.x, target.y, target.z);
+      var { i, j, k } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
       var { i: i1, j: j1, k: k1 } = panel.volume.getVoxelCoords();
       let x;
       let y;
@@ -714,7 +715,7 @@
         x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
         y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
       } else return;
-      var color =  pathColors[index % pathColors.length][1];
+      var color =  pathColors[target.index % pathColors.length][1];
       context.strokeStyle =  color;
       context.fillStyle = color;
       context.lineWidth = 1;

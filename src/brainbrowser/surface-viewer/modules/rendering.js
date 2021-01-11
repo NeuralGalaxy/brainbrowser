@@ -583,7 +583,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       Math.pow(endY - startY, 2) +
       Math.pow(endZ - startZ, 2))
     
-    const k = 10 / m;
+    const k = 20 / m;
     const x = endX + gapX * k;
     const y = endY + gapY * k;
     const z = endZ + gapZ * k;
@@ -929,7 +929,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if (Object.keys(child.userData).length === 0 && child.userData.constructor === Object) { return ; }
       if (Object.keys(child.userData).length !== 0 && child.userData.model_name !== options.model_name) { return ; }
 
-      var vertices = child.geometry.attributes.index.array;
+      var vertices = child.geometry.index.array;
       var j;
 
       index = parseInt(index,0);
