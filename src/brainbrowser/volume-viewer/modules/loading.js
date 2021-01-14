@@ -611,7 +611,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     openVolume(volume_description, function(volume) {
       if (formatDataFun) {
-        volume.data = volume.data.map(v => formatDataFun);
+        volume.data = volume.data.map(formatDataFun);
       }
 
       if (isFly && volume.type !== 'overlay') {
