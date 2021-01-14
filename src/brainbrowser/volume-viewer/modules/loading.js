@@ -606,10 +606,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   // This function should be used with care as empty places in the volumes
   // array will cause problems with rendering.
   function setVolume(vol_id, volume_description, callback) {
-    const { flyPoints, hideCursor } = volume_description;
+    const { flyPoints, hideCursor, formatDataFun } = volume_description;
     const isFly = !!flyPoints;
 
     openVolume(volume_description, function(volume) {
+      if (formatDataFun) {
+        volume.data = volume.data.map(v => formatDataFun);
+      }
+
       if (isFly && volume.type !== 'overlay') {
         volume = flyVolume(volume, flyPoints);
       }
