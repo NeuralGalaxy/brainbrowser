@@ -275,8 +275,9 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }, { ...options, isSurface: true });
   };
 
-  viewer.loadIntensityDataFromText = function(text, options) {
+  viewer.loadIntensityDataFromText = function(text, options, formatCb) {
     options = checkBinary("intensity_data_types", options);
+    text = formatCb ? formatCb(text) : text;
     loadIntensityData(text, undefined, options);
   };
 
