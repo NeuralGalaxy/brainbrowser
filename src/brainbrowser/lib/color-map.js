@@ -182,7 +182,6 @@
         if (min === 0 && (max === 17 || max === 18)) {
           increment = 1;
         }
-
         //for each value, assign a color
         for (i = 0, count = intensity_values.length; i < count; i++) {
           value = intensity_values[i];
@@ -230,6 +229,7 @@
             destination[ic + 1] = contrast * color_map_colors[color_map_index + 1] + brightness;
             destination[ic + 2] = contrast * color_map_colors[color_map_index + 2] + brightness;
             destination[ic + 3] = scale    * color_map_colors[color_map_index + 3];
+
           }
         }
 
@@ -374,7 +374,7 @@
        * createLogPElement val = Math.pow(10, -p)
        * min and max is reverse
        */
-      createLogPElement: function(min, max, width) {
+      createLogPElement: function(min, max, width, isVolume = false) {
         /* const powPFun = (p) => {
           return Number.parseFloat(Math.pow(10, -p).toFixed(4));
         } */
@@ -390,7 +390,9 @@
         var range = max - min;
         var cutPrevColor = true;
 
-        canvas  = createCanvas(colors, 20, 40, width, cutPrevColor);
+        const filterColors = isVolume ? [0, 0, 0, 1] : undefined;
+
+        canvas  = createCanvas(colors, 20, 40, width, cutPrevColor, filterColors);
         context = canvas.getContext("2d");
 
         context.fillStyle = "#BFBFBF";
@@ -598,7 +600,7 @@
     //   colors: array of colors
     //   color_height: height of the color bar
     //   full_height: height of the canvas
-    function createCanvas(colors, color_height, full_height,full_width, cutPrevColor = false) {
+    function createCanvas(colors, color_height, full_height,full_width, cutPrevColor = false, filterColors) {
       var canvas = document.createElement("canvas");
       var value_array  = new Array(256);
       var i;
@@ -617,11 +619,32 @@
       color_map.scale = 255;
       colors = color_map.mapColors(value_array, undefined, (colors) => {
         if (!cutPrevColor) return colors;
+
         while(true) {
           const [color1, color2, color3, color4] = colors;
+          
           if (color1 === 1 && color2 === 1 && color3 === 1 && color4 === 1) {
             colors = colors.slice(4);
           } else break;
+        }
+
+        if (filterColors) {
+          const colorLen = colors.length;
+          const filterIndexs = [];
+          colors.forEach((colorSubVal, index) => {
+            if (
+              index % 4 === 0 && 
+              colorLen >= index + 3 && 
+              colors[index] === filterColors[0] && 
+              colors[index + 1] === filterColors[1] && 
+              colors[index + 2] === filterColors[2] && 
+              colors[index + 3] === filterColors[3]
+            ) {
+              filterIndexs.push(...[index, index + 1, index + 2, index + 3]);
+            }
+          });
+
+          colors = colors.filter((val, index) => !filterIndexs.includes(index));
         }
         
         return colors;
