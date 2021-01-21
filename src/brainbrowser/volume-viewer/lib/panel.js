@@ -591,9 +591,6 @@
   function drawTrajectory(panel) {
     var { trajectories = [], showTrajectory = false } = panel;
     if (!showTrajectory) return;
-    /* var trajectories = [
-      [[30.34, 23.66, 20.73], [-7.663, -26.34, -27.27]],
-    ]; */
     const context = panel.context;
 
     trajectories.forEach((trajectory, index) => {
@@ -603,11 +600,6 @@
       if (trajectoryColor && trajectoryColor.length >= 2) {
         color = trajectoryColor[1];
       }
-      context.strokeStyle = color;
-      context.fillStyle = color;
-      context.lineWidth = 2;
-      context.setLineDash([4]);
-      context.beginPath();
 
       const widthSpace = Math.abs(panel.slice.width_space.space_length);
       const heightSpace = Math.abs(panel.slice.height_space.space_length);
@@ -657,16 +649,26 @@
       const endY = revertY ? heightSpace - endVoxel[yName] : endVoxel[yName];
       start = panel.voxelToCursor(startX, startY);
       end = panel.voxelToCursor(endX, endY);
-      context.moveTo(start.x, start.y);
-      context.lineTo(end.x, end.y);
-      context.stroke();
-      context.setLineDash([]);
 
       const kv = (curVoxel[curName] - startVoxel[curName]) / (endVoxel[curName] - startVoxel[curName]);
 
       const jt = kv * (endX - startX) + startX;
       const kt = kv * (endY - startY) + startY;
       const target = panel.voxelToCursor(jt, kt);
+
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      context.lineWidth = 2;
+
+      if (!(target.x === end.x && target.y === end.y)) {
+        context.setLineDash([4]);
+      }
+      context.beginPath();
+
+      context.moveTo(start.x, start.y);
+      context.lineTo(end.x, end.y);
+      context.stroke();
+      context.setLineDash([]);
 
       if (
         target.x >= (start.x > end.x ? end.x : start.x) && 
