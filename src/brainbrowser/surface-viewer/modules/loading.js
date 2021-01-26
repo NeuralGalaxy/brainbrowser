@@ -501,6 +501,8 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
           model_name: options.modelName || model_data.name,
           clamp,
           colorOptions: options.colorOptions,
+          limitMax: options.limitMax,
+          maxSpectrum: options.maxSpectrum,
         });
       }
     });
