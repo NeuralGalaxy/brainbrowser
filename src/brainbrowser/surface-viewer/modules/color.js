@@ -75,6 +75,20 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       blend = true;
     } else {
       intensity_data = model_data.intensity_data[0];
+      var limitMax = options.limitMax;
+      var maxSpectrum = options.maxSpectrum || 4;
+      if(limitMax) {
+        var values = intensity_data.values;
+        var range_max = intensity_data.range_max;
+        if(values && range_max > 0) {
+          values = values.map((value,index) => {
+            var nVal = value > range_max && value <= maxSpectrum ? range_max - 0.0001 : value;
+          
+            return nVal;
+          })
+          intensity_data.values = values;
+        }
+      }
       blend = false;
     }
 
@@ -224,6 +238,8 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       model_name: model_data.name,
       complete: options.complete,
       clamp: options.clamp,
+      limitMax: options.limitMax,
+      maxSpectrum: options.maxSpectrum,
     });
 
     viewer.triggerEvent("changeintensityrange", {
