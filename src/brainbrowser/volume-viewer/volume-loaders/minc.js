@@ -350,7 +350,7 @@
       // 0           | 0           | 0           | 1
       //
       // Taken from (http://www.bic.mni.mcgill.ca/software/minc/minc2_format/node4.html)
-      voxelToWorld: function(i, j, k) {
+      voxelToWorld: function(i, j, k, stepRotio = 1) {
         var ordered = {};
         var x, y, z;
         var header = volume.header;
@@ -366,9 +366,9 @@
         var cx = header.xspace.direction_cosines;
         var cy = header.yspace.direction_cosines;
         var cz = header.zspace.direction_cosines;
-        var stepx = header.xspace.step;
-        var stepy = header.yspace.step;
-        var stepz = header.zspace.step;
+        var stepx = header.xspace.step * stepRotio;
+        var stepy = header.yspace.step * stepRotio;
+        var stepz = header.zspace.step * stepRotio;
         var o = header.voxel_origin;
 
         return {
