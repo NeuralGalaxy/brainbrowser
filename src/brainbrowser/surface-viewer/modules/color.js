@@ -51,6 +51,8 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
   */
   var timeout = null;
 
+  var model_data_store = null;
+
   // Because color updates can be interrupted, keep
   // callbacks in an array to be executed at the end.
   var complete_callbacks = [];
@@ -79,6 +81,22 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       var maxSpectrum = options.maxSpectrum || 4;
       if(limitMax) {
         var values = intensity_data.values;
+        let isChange = false;
+        if(model_data_store) {
+          let i  = 0;
+          while(i < 50) {
+            if(model_data_store[i] !== values[i]) {
+              isChange = true;
+              i = 50;
+            }
+            i++;
+          }
+        }
+        if(isChange) {
+          model_data_store = JSON.parse(JSON.stringify(values));
+        } else {
+          values = model_data_store;
+        }
         var range_max = intensity_data.range_max;
         if(values && range_max > 0) {
           values = values.map((value,index) => {
