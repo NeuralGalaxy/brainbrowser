@@ -51,7 +51,7 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
   */
   var timeout = null;
 
-  var model_data_store = null;
+  // var model_data_store = null;
 
   // Because color updates can be interrupted, keep
   // callbacks in an array to be executed at the end.
@@ -77,36 +77,38 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       blend = true;
     } else {
       intensity_data = model_data.intensity_data[0];
-      var limitMax = options.limitMax;
-      var maxSpectrum = options.maxSpectrum || 4;
-      if(limitMax) {
-        var values = intensity_data.values;
-        let isChange = false;
-        if(model_data_store) {
-          let i  = 0;
-          while(i < 50) {
-            if(model_data_store[i] !== values[i]) {
-              isChange = true;
-              i = 50;
-            }
-            i++;
-          }
-        }
-        if(isChange) {
-          model_data_store = JSON.parse(JSON.stringify(values));
-        } else {
-          values = model_data_store;
-        }
-        var range_max = intensity_data.range_max;
-        if(values && range_max > 0) {
-          values = values.map((value,index) => {
-            var nVal = value > range_max && value <= maxSpectrum ? range_max - 0.0001 : value;
+      // var limitMax = options.limitMax;
+      // var maxSpectrum = options.maxSpectrum || 4;
+      // if(limitMax) {
+      //   var values = intensity_data.values;
+      //   let isChange = false;
+      //   if(model_data_store) {
+      //     let i  = 0;
+      //     while(i < 10) {
+      //       if(model_data_store[i] !== values[i]) {
+      //         isChange = true;
+      //         i = 10;
+      //       }
+      //       i++;
+      //     }
+      //   } else {
+      //     isChange = true;
+      //   }
+      //   if(isChange) {
+      //     model_data_store = values;
+      //   }
+      //   var range_max = intensity_data.range_max;
+      //   var nValues = null;
+      //   console.log('range_max', range_max, isChange)
+      //   if(model_data_store && range_max > 0) {
+      //     nValues = model_data_store.map((value,index) => {
+      //       var nVal = value > range_max && value <= maxSpectrum ? range_max - 0.0001 : value;
           
-            return nVal;
-          })
-          intensity_data.values = values;
-        }
-      }
+      //       return nVal;
+      //     });
+      //     if(nValues) intensity_data.values = nValues;
+      //   }
+      // }
       blend = false;
     }
 
@@ -152,12 +154,16 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       } else {
         const nextModel = viewer.model_data.get(options.model_name);
         if (!nextModel) return;
+        // var limitMax = options.limitMax;
+      // var maxSpectrum = options.maxSpectrum || 4;
         applyColorArray(viewer.color_map.mapColors(intensity_data.values, {
           min: intensity_data.range_min,
           max: intensity_data.range_max,
           clamp,
           colorOptions: options.colorOptions,
-          default_colors: nextModel.colors
+          default_colors: nextModel.colors,
+          limitMax: options.limitMax,
+          maxSpectrum: options.maxSpectrum || 4,
         }));
       }
     }, 0);
@@ -449,7 +455,9 @@ BrainBrowser.SurfaceViewer.modules.color = function(viewer) {
       color_arrays.push(viewer.color_map.mapColors(intensity_data.values, {
         min: intensity_data.range_min,
         max: intensity_data.range_max,
-        default_colors: model_data.colors
+        default_colors: model_data.colors,
+        limitMax: options.limitMax,
+        maxSpectrum: options.maxSpectrum || 4,
       }));
 
       alphas.push(intensity_data.alpha);

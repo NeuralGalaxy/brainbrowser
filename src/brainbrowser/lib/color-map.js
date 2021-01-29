@@ -147,6 +147,14 @@
         options = options || {};
         var min = options.min === undefined ? 0 : options.min;
         var max = options.max === undefined ? 255 : options.max;
+        var maxSpectrum = options.maxSpectrum || 4;
+
+        intensity_values = intensity_values.map(value => {
+          var nVal = value > max && value <= maxSpectrum ? max - 0.0001 : value;
+          
+            return nVal;
+        })
+
         var default_colors = options.default_colors || [0, 0, 0, 1];
         var destination = options.destination || new Float32Array(intensity_values.length * 4);
 
