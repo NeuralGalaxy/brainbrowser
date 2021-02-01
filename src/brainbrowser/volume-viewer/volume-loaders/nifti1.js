@@ -35,6 +35,7 @@
   var VolumeViewer = BrainBrowser.VolumeViewer;
 
   VolumeViewer.volume_loaders.nifti1 = function(description, callback) {
+    const { stepRotio } = description;
     var error_message;
     if (description.nii_url) {
       VolumeViewer.cachedLoader = VolumeViewer.cachedLoader || {};
@@ -44,7 +45,7 @@
         createNifti1Volume(cachedData.header, undefined, callback, cachedData);
       } else {
         BrainBrowser.loader.loadFromURL(description.nii_url, function(nii_data) {
-          parseNifti1Header(nii_data, description.display_zindex, function(header) {
+          parseNifti1Header(nii_data, description.display_zindex, stepRotio, function(header) {
             const formatedData = createNifti1Volume(header, nii_data, callback);
             if (VolumeViewer.canCached) {
               VolumeViewer.cachedLoader[description.nii_url] = {
@@ -58,12 +59,12 @@
 
     } else if (description.nii_file) {
       BrainBrowser.loader.loadFromFile(description.nii_file, function(nii_data) {
-        parseNifti1Header(nii_data, description.display_zindex, function(header) {
+        parseNifti1Header(nii_data, description.display_zindex, stepRotio, function(header) {
           createNifti1Volume(header, nii_data, callback);
         });
       }, {result_type: "arraybuffer" });
     } else if (description.nii_source) {
-      parseNifti1Header(description.nii_source, description.display_zindex, function(header) {
+      parseNifti1Header(description.nii_source, description.display_zindex, stepRotio, function(header) {
         createNifti1Volume(header, description.nii_source, callback);
       });
     } else {
@@ -76,7 +77,7 @@
 
   };
 
-  VolumeViewer.utils.transformToMinc = function(transform, header) {
+  VolumeViewer.utils.transformToMinc = function(transform, header, stepRotio = 1) {
     var x_dir_cosines = [];
     var y_dir_cosines = [];
     var z_dir_cosines = [];
@@ -125,9 +126,9 @@
       z_dir_cosines[i] = transform[i][2] / zstep;
     }
 
-    header.xspace.step = xstep;
-    header.yspace.step = ystep;
-    header.zspace.step = zstep;
+    header.xspace.step = xstep / stepRotio;
+    header.yspace.step = ystep / stepRotio;
+    header.zspace.step = zstep / stepRotio;
 
     // Calculate the corrected start values.
     var starts = [transform[0][3],
@@ -153,7 +154,7 @@
     header.zspace.direction_cosines = z_dir_cosines;
   };
 
-  function parseNifti1Header(raw_data, display_zindex, callback) {
+  function parseNifti1Header(raw_data, display_zindex, isSeedToBrainMNI2mm, callback) {
     var header = {
       order: [],
       xspace: {},
@@ -307,7 +308,7 @@
       }
     }
 
-    VolumeViewer.utils.transformToMinc(transform, header);
+    VolumeViewer.utils.transformToMinc(transform, header, isSeedToBrainMNI2mm);
 
     header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
     header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
