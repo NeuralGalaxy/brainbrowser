@@ -589,7 +589,7 @@
   }
 
   function drawTrajectory(panel) {
-    var { trajectories = [], showTrajectory = false } = panel;
+    var { trajectories = [], showTrajectory = false, isSafety = false } = panel;
     if (!showTrajectory) return;
     const context = panel.context;
 
@@ -635,14 +635,19 @@
         Math.pow(end_y - start_y, 2) +
         Math.pow(end_z - start_z, 2))
       
-      const k = 60 / m;
+      const k = (isSafety ? 0 : 60) / m;
       const x = start_x + gapX * k;
       const y = start_y + gapY * k;
       const z = start_z + gapZ * k;
 
 
-      const startVoxel = panel.volume.worldToVoxel(x, y, z);
-      const endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
+      let startVoxel = panel.volume.worldToVoxel(x, y, z);
+      let endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
+      if (isSafety) {
+        startVoxel = { i: startVoxel.i, j: startVoxel.k, k: startVoxel.j };
+        endVoxel = { i: endVoxel.i, j: endVoxel.k, k: endVoxel.j };
+      }
+
       const startX = revertX ? widthSpace - startVoxel[xName] : startVoxel[xName];
       const startY = revertY ? heightSpace - startVoxel[yName] : startVoxel[yName];
       const endX = revertX ? widthSpace - endVoxel[xName] : endVoxel[xName];
