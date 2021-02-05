@@ -89,7 +89,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
     });
   };
 
-  viewer.updateTrajectories = function(trajectories) {
+  viewer.updateTrajectories = function(trajectories, isSafety = false) {
     const { showTrajectory = false } = viewer;
 
     viewer.volumes.forEach(function(volume, vol_id) {
@@ -98,6 +98,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
       volume.display.forEach(function(panel) {
         panel.trajectories = trajectories;
         panel.showTrajectory = showTrajectory;
+        panel.isSafety = isSafety;
       });
     });
     
