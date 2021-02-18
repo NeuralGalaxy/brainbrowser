@@ -32,12 +32,12 @@
 * @property {string} axis The name of the axis being displayed (xspace, yspace or zspace).
 * @property {object} slice The slice currently being displayed.
 * @property {object} canvas Reference to the canvas area used for drawing.
-* @property {object} context The 2D context of the canvas. 
+* @property {object} context The 2D context of the canvas.
 * @property {object} image_center The **x** and **y** coordinates of the
 *   center of the slice currently being displayed.
-* @property {number} zoom The current zoom level of the panel. 
-* @property {object} cursor The current **x** and **y** coordinates of the cursor. 
-* @property {object} mouse The current **x** and **y** coordinates of the mouse. 
+* @property {number} zoom The current zoom level of the panel.
+* @property {object} cursor The current **x** and **y** coordinates of the cursor.
+* @property {object} mouse The current **x** and **y** coordinates of the mouse.
 * @description
 * Object representing an individual canvas panel.
 */
@@ -80,13 +80,13 @@
   * * **volume_id** The ID of the volume being displayed on the panel.
   * * **axis** The axis being displayed on the panel (xspace, yspace or zspace).
   * * **canvas** The canvas on which to draw slices.
-  * * **image_center** An object containing the starting **x** and **y** positions of 
+  * * **image_center** An object containing the starting **x** and **y** positions of
   *     the slice image center.
   * * **updated** Boolean value indicating whether the panel should be redrawn.
   *
   * @returns {object} Panel object used to control display of a slice.
   * @description
-  * Factory function to produce the panel object used to control the 
+  * Factory function to produce the panel object used to control the
   * display of a slice.
   * ```js
   * BrainBrowser.VolumeViewer.createPanel({
@@ -123,7 +123,7 @@
   * @name VolumeViewer.Panel Events:sliceupdate
   *
   * @description
-  * Triggered when the slice being displayed is updated. 
+  * Triggered when the slice being displayed is updated.
   * The following information will be passed in the event object:
   *
   * * **event.volume**: the volume on which the slice was updated.
@@ -193,7 +193,7 @@
     options = options || {};
 
     var old_zoom_level = 0;
-    
+
     // Where the cursor used to be.
     var old_cursor_position = {
       x: 0,
@@ -440,7 +440,7 @@
         try {
           var volume = panel.volume;
           var slice;
-          
+
           slice = volume.slice(panel.axis);
 
           setSlice(panel, slice);
@@ -516,12 +516,12 @@
         var context = panel.context;
         var frame_width = 2;
         var half_frame_width = frame_width / 2;
-        
+
         context.globalAlpha = 255;
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         drawSlice(panel);
-        
+
         panel.triggerEvent("draw", {
           volume: panel.volume,
           cursor: cursor,
@@ -538,7 +538,7 @@
         drawTrajectory(panel);
 
         context.save();
-        context.strokeStyle = panel.hideBorder ? 
+        context.strokeStyle = panel.hideBorder ?
           '#000000' :
           (active ? "#1BACC8" : "#303030");
         context.lineWidth = frame_width;
@@ -596,7 +596,7 @@
     trajectories.forEach((trajectory, index) => {
       context.save();
       var color = pathColors[index % pathColors.length][1];
-      const { color: trajectoryColor } = trajectory;
+      const { color: trajectoryColor, lineWidth= 2 } = trajectory;
       if (trajectoryColor && trajectoryColor.length >= 2) {
         color = trajectoryColor[1];
       }
@@ -629,12 +629,12 @@
       const gapX = start_x - end_x;
       const gapY = start_y - end_y;
       const gapZ = start_z - end_z;
-      
+
       const m = Math.sqrt(
-        Math.pow(end_x - start_x, 2) + 
+        Math.pow(end_x - start_x, 2) +
         Math.pow(end_y - start_y, 2) +
         Math.pow(end_z - start_z, 2))
-      
+
       const k = (isSafety ? 0 : 60) / m;
       const x = start_x + gapX * k;
       const y = start_y + gapY * k;
@@ -663,7 +663,7 @@
 
       context.strokeStyle = color;
       context.fillStyle = color;
-      context.lineWidth = 2;
+      context.lineWidth = lineWidth;
 
       if (!(target.x === end.x && target.y === end.y)) {
         context.setLineDash([4]);
@@ -676,13 +676,13 @@
       context.setLineDash([]);
 
       if (
-        target.x >= (start.x > end.x ? end.x : start.x) && 
+        target.x >= (start.x > end.x ? end.x : start.x) &&
         target.x <= (start.x < end.x ? end.x : start.x) &&
         target.y >= (start.y > end.y ? end.y : start.y) &&
         target.y <= (start.y < end.y ? end.y : start.y)
       ) {
         context.fillStyle = color;
-        context.lineWidth = 2;
+        context.lineWidth = lineWidth;
         context.setLineDash([]);
         context.beginPath();
         context.arc(target.x, target.y, 2, 0, 2 * Math.PI);
@@ -700,12 +700,12 @@
     var zoom = panel.zoom;
     var length = 8 * (zoom / panel.default_zoom);
     var space;
-    
+
     space = 1;
 
     targets.forEach((target) => {
       const { coord } = target;
-    
+
       context.save();
       var { i, j, k } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
       var { i: i1, j: j1, k: k1 } = panel.volume.getVoxelCoords();
@@ -769,9 +769,9 @@
     var length = 8 * (zoom / panel.default_zoom);
     var space;
     color = color || "#FF0000";
-    
+
     context.save();
-    
+
     context.strokeStyle = color;
     context.fillStyle = color;
 
@@ -818,9 +818,9 @@
         dy = (start.y - end.y) / panel.zoom;
         distance = Math.sqrt(dx * dx + dy * dy);
         if (start.x > end.x) {
-          x = end.x + (start.x - end.x) / 2; 
+          x = end.x + (start.x - end.x) / 2;
         }else {
-          x = start.x + (end.x - start.x) / 2; 
+          x = start.x + (end.x - start.x) / 2;
         }
         if (start.y > end.y) {
           y = end.y + (start.y - end.y) / 2;
@@ -875,7 +875,7 @@
           }
         });
       }
-      
+
       return { x: x, y: y, distance: point.distance };
     };
 
