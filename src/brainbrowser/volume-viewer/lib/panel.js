@@ -421,7 +421,7 @@
       * panel.updateSlice();
       * ```
       */
-      updateSlice: function(callback) {
+      updateSlice: function(callback,isSeegOverlay) {
         clearTimeout(update_timeout);
         if (BrainBrowser.utils.isFunction(callback)) {
           update_callbacks.push(callback);
@@ -431,19 +431,28 @@
           panel.updateSliceSimple();
         } else {
           update_timeout = setTimeout(function() {
-            panel.updateSliceSimple();
+            panel.updateSliceSimple(isSeegOverlay);
           }, 0);
         }
       },
 
-      updateSliceSimple: function() {
+      updateSliceSimple: function(isSeegOverlay) {
         try {
           var volume = panel.volume;
           var slice;
 
           slice = volume.slice(panel.axis);
           // 只针对 slices中的方法调用updateSlice，updateSlice中slices.foEach()
-          if(slice.hasOwnProperty('slices')){
+          if(isSeegOverlay){
+            if(slice.hasOwnProperty('slices')){
+              setSlice(panel, slice);
+              panel.triggerEvent("sliceupdate", {
+                volume: volume,
+                slice: slice
+              });
+              panel.updated = true;
+            }
+          }else{
             setSlice(panel, slice);
             panel.triggerEvent("sliceupdate", {
               volume: volume,
@@ -451,6 +460,7 @@
             });
             panel.updated = true;
           }
+
           update_callbacks.forEach(function(callback) {
             callback(slice);
           });

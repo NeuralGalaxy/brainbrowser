@@ -88,7 +88,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
       if(isSeegOverlay){
         // 此过滤可以将30次调用，减少到3次，updateSlice中的forEach 会再乘以9
         if(panel.volume.type === 'overlay'){
-          panel.updateSlice();
+          panel.updateSlice(undefined,isSeegOverlay);
         }
       }else{
         panel.updateSlice();
