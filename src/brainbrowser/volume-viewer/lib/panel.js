@@ -428,10 +428,10 @@
         }
         if (callback === true) { // callback === true mean isInit
           panel.hideCursor = true;
-          panel.updateSliceSimple(update_callbacks);
+          panel.updateSliceSimple();
         } else {
           update_timeout = setTimeout(function() {
-            panel.updateSliceSimple(update_callbacks);
+            panel.updateSliceSimple();
           }, 0);
         }
       },
@@ -442,15 +442,15 @@
           var slice;
 
           slice = volume.slice(panel.axis);
-
-          setSlice(panel, slice);
-          panel.triggerEvent("sliceupdate", {
-            volume: volume,
-            slice: slice
-          });
-
-          panel.updated = true;
-
+          // 只针对 slices中的方法调用updateSlice，updateSlice中slices.foEach()
+          if(slice.hasOwnProperty('slices')){
+            setSlice(panel, slice);
+            panel.triggerEvent("sliceupdate", {
+              volume: volume,
+              slice: slice
+            });
+            panel.updated = true;
+          }
           update_callbacks.forEach(function(callback) {
             callback(slice);
           });
