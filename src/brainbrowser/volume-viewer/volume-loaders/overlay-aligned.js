@@ -161,13 +161,10 @@
 
           const isRiskHeatMap = checkIsRiskHeatMap(volume);
           if (isRiskHeatMap && riskMaskSlice) {
-            if(volume.riskId >0 && riskMaskSlice.data.includes(volume.riskId)){
-              mergedData = slice.data.map((val, sliceIndex) => {
-                return riskMaskSlice.data[sliceIndex] === volume.riskId ? val : 0
-              });
-            }else{
-              mergedData = slice.data.map(v => 0);
-            }
+            mergedData = slice.data.map((val, sliceIndex) => {
+              const maskVal = riskMaskSlice.data[sliceIndex];
+              return volume.riskId && maskVal === volume.riskId ? slice.data[sliceIndex]: 0;
+            });
           }
           color_map.mapColors(mergedData, {
             min: volume.intensity_min,
