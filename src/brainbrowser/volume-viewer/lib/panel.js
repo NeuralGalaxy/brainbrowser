@@ -651,12 +651,8 @@
       const z = start_z + gapZ * k;
 
 
-      let startVoxel = panel.volume.worldToVoxel(x, y, z);
-      let endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
-      if (isSafety) {
-        startVoxel = { i: startVoxel.i, j: startVoxel.k, k: startVoxel.j };
-        endVoxel = { i: endVoxel.i, j: endVoxel.k, k: endVoxel.j };
-      }
+      const startVoxel = panel.volume.worldToVoxel(x, y, z);
+      const endVoxel = panel.volume.worldToVoxel(end[0], end[1], end[2]);
 
       const startX = revertX ? widthSpace - startVoxel[xName] : startVoxel[xName];
       const startY = revertY ? heightSpace - startVoxel[yName] : startVoxel[yName];
