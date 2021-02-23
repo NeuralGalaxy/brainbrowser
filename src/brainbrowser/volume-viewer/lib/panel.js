@@ -661,10 +661,16 @@
       start = panel.voxelToCursor(startX, startY);
       end = panel.voxelToCursor(endX, endY);
 
-      const kv = (curVoxel[curName] - startVoxel[curName]) / (endVoxel[curName] - startVoxel[curName]);
+      const kv = (curVoxel[curName] - startVoxel[curName]) / (endVoxel[curName] - startVoxel[curName]) || 0;
 
-      const jt = kv * (endX - startX) + startX;
-      const kt = kv * (endY - startY) + startY;
+      let jt = kv * (endX - startX) + startX;
+      let kt = kv * (endY - startY) + startY;
+
+      if (kv === 0) {
+        jt = endX;
+        kt = endY;
+      }
+
       const target = panel.voxelToCursor(jt, kt);
 
       context.strokeStyle = color;
