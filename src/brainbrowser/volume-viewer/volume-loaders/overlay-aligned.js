@@ -42,15 +42,10 @@
   }
 
   const getRiskMaskSlice = (slices = [], volumes = []) => {
-    let riskMaskSlice;
-    slices.forEach((slice, index) => {
-      const volume = volumes[index];
-      if (volume && volume.isRiskMask) {
-        riskMaskSlice = slice;
-      }
-    })
-
-    return riskMaskSlice;
+    let riskMaskSlice = slices.find((slice,index) => {
+      return !!(volumes[index] && volumes[index].isRiskMask)
+    });
+    return riskMaskSlice ? riskMaskSlice : false;
   }
 
   VolumeViewer.volume_loaders.overlayaligned = function(options, callback) {
@@ -139,7 +134,7 @@
 
       var max_width = Math.round(slices[0].width * zoom);
       var max_height = Math.round(slices[0].height * zoom);
-
+      const riskMaskSlice = getRiskMaskSlice(slices, overlay_volume.volumes);
       slices.forEach(function (slice, i) {
         if (slice.width === undefined || slice.height === undefined) return;
         var volume = overlay_volume.volumes[i];
@@ -165,15 +160,12 @@
           let mergedData = slice.data;
 
           const isRiskHeatMap = checkIsRiskHeatMap(volume);
-          const riskMaskSlice = getRiskMaskSlice(slices, overlay_volume.volumes);
-
           if (isRiskHeatMap && riskMaskSlice) {
             mergedData = slice.data.map((val, sliceIndex) => {
               const maskVal = riskMaskSlice.data[sliceIndex];
               return volume.riskId && maskVal === volume.riskId ? slice.data[sliceIndex]: 0;
             });
           }
-
           color_map.mapColors(mergedData, {
             min: volume.intensity_min,
             max: volume.intensity_max,
@@ -195,10 +187,8 @@
         );
 
         target_image.display_zindex = slice.display_zindex;
-
         images.push(target_image);
       });
-
       return blendImages(
         images,
         image_creation_context.createImageData(max_width, max_height),
@@ -296,7 +286,6 @@
         }
       }
     }
-
     return target;
 
   }

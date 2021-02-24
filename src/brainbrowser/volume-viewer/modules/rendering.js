@@ -81,11 +81,18 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   * viewer.redrawVolume(vol_id);
   * ```
   */
-  viewer.redrawVolume = function(vol_id) {
+  viewer.redrawVolume = function(vol_id, isSeegOverlay = false) {
     var volume = viewer.volumes[vol_id];
     if (!volume || !volume.display) return;
     volume.display.forEach(function(panel) {
-      panel.updateSlice();
+      if(isSeegOverlay){
+        // 此过滤可以将30次调用，减少到3次，updateSlice中的forEach 会再乘以9
+        if(panel.volume.type === 'overlay'){
+          panel.updateSlice(undefined,isSeegOverlay);
+        }
+      }else{
+        panel.updateSlice();
+      }
     });
   };
 
@@ -101,7 +108,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
         panel.isSafety = isSafety;
       });
     });
-    
+
     viewer.redrawVolumes();
   }
 
@@ -116,7 +123,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
         panel.showTarget = showTarget;
       });
     });
-    
+
     viewer.redrawVolumes();
   }
 
@@ -159,7 +166,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
         panel.reset();
       });
     });
-    
+
   };
 
   /**
