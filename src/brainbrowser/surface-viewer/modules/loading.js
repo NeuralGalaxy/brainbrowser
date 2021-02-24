@@ -458,6 +458,10 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
         max = options.max === undefined ? intensity_data.max : options.max;
       }
 
+      if (min === max) {
+        max++;
+      }
+
       intensity_data.name = name;
 
       if (!blend) {
