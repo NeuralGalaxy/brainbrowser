@@ -386,6 +386,24 @@
 
         panel.updated = true;
       },
+
+      // update mouse position by mouseover tooltip
+      updateMousePosition: function(x, y) {
+        var origin = getDrawingOrigin(panel);
+        var zoom = panel.zoom;
+        var volume = panel.volume;
+        var slice = panel.slice;
+        var slice_x, slice_y;
+        volume.mousePosition = Object.assign({},volume.position);
+
+        slice_x = Math.round((x - origin.x) / zoom / Math.abs(slice.width_space.step));
+        slice_y = Math.round(slice.height_space.space_length - (y - origin.y) / zoom  / Math.abs(slice.height_space.step) - 1);
+
+        volume.mousePosition[panel.slice.width_space.name] = slice_x;
+        volume.mousePosition[panel.slice.height_space.name] = slice_y;
+
+        panel.updated = true;
+      },
       // panel.cursorToVoxel(130, 165);
       cursorToVoxel: function(x, y) {
         var origin = getDrawingOrigin(panel);
