@@ -41,6 +41,17 @@
     return !!volume && !!volume.isRiskHeatMap;
   }
 
+  const checkIsSafety = (volume) => {
+    return !!volume && !!volume.isSafety;
+  }
+
+  const getAnatSlice = (slices, volumes) => {
+    let AnatSlice = slices.find((slice,index) => {
+      return !!(volumes[index] && volumes[index].isAnat)
+    });
+    return AnatSlice ? AnatSlice : false;
+  }
+
   const getRiskMaskSlice = (slices = [], volumes = []) => {
     let riskMaskSlice = slices.find((slice,index) => {
       return !!(volumes[index] && volumes[index].isRiskMask)
@@ -135,6 +146,7 @@
       var max_width = Math.round(slices[0].width * zoom);
       var max_height = Math.round(slices[0].height * zoom);
       const riskMaskSlice = getRiskMaskSlice(slices, overlay_volume.volumes);
+      const anatSlice = getAnatSlice(slices, overlay_volume.volumes);
       slices.forEach(function (slice, i) {
         if (slice.width === undefined || slice.height === undefined) return;
         var volume = overlay_volume.volumes[i];
@@ -158,14 +170,22 @@
         }
         else {
           let mergedData = slice.data;
-
           const isRiskHeatMap = checkIsRiskHeatMap(volume);
-          if (isRiskHeatMap && riskMaskSlice) {
+          const isSafety =  checkIsSafety(volume)
+          if (isSafety) {
+            if (isRiskHeatMap && anatSlice){
+              mergedData = slice.data.map((val, sliceIndex) => {
+                const maskVal = anatSlice.data[sliceIndex];
+                return volume.riskId && maskVal === volume.riskId ? val: 0;
+              });
+            }
+          }else if (isRiskHeatMap && riskMaskSlice) {
             mergedData = slice.data.map((val, sliceIndex) => {
               const maskVal = riskMaskSlice.data[sliceIndex];
-              return volume.riskId && maskVal === volume.riskId ? slice.data[sliceIndex]: 0;
+              return volume.riskId && maskVal === volume.riskId ? val: 0;
             });
           }
+
           color_map.mapColors(mergedData, {
             min: volume.intensity_min,
             max: volume.intensity_max,
