@@ -366,6 +366,7 @@
       */
       updateVolumePosition: function(x, y) {
         var origin = getDrawingOrigin(panel);
+        console.log(origin, 'updateVolumePosition');
         var zoom = panel.zoom;
         var volume = panel.volume;
         var slice = panel.slice;
@@ -389,22 +390,47 @@
 
       // update mouse position by mouseover tooltip
       updateMousePosition: function(x, y) {
+        var currentPanel = {...panel};
         var origin = getDrawingOrigin(panel);
         var zoom = panel.zoom;
         var volume = panel.volume;
         var slice = panel.slice;
         var slice_x, slice_y;
-        volume.mousePosition = Object.assign({},volume.position);
+        var currentVox = panel.cursorToVoxel(x, y);
+        let i,j,k;
+        volume.display.forEach(function(panel) {
+          var cursor = panel.getCursorPosition();
+       
+          var voxel = panel.cursorToVoxel(cursor.x, cursor.y);
+          if (currentPanel.axis === 'xspace') {
+              i = currentVox.voxelX;
+              j = currentVox.voxelY;
+              if (panel.axis !== 'xspace') {
+                k = voxel.voxelX + 1;
+              }
+          } else if (currentPanel.axis === 'yspace') {
+            if (panel.axis === 'xspace') {
+              i = voxel.voxelX + 1;
+              j = currentVox.voxelY + 1;
+            }
+            if (panel.axis === 'zspace') {
+              k = slice.height_space.space_length - currentVox.voxelX;
+            }
+          } else if (currentPanel.axis === 'zspace') {
+            if (panel.axis === 'xspace') {
+              i = slice.height_space.space_length - currentVox.voxelY;
+              j = voxel.voxelY + 1;
+            }
+            if (panel.axis === 'yspace') {
+              k = slice.height_space.space_length - currentVox.voxelX;
+            }
+          }
+          
+        });
 
-        slice_x = Math.round((x - origin.x) / zoom / Math.abs(slice.width_space.step));
-        slice_y = Math.round(slice.height_space.space_length - (y - origin.y) / zoom  / Math.abs(slice.height_space.step) - 1);
-
-        volume.mousePosition[panel.slice.width_space.name] = slice_x;
-        volume.mousePosition[panel.slice.height_space.name] = slice_y;
-
-        panel.updated = true;
+        return { i: Math.floor(i), j: Math.floor(j) ,k: Math.floor(k)};
       },
-      // panel.cursorToVoxel(130, 165);
+
       cursorToVoxel: function(x, y) {
         var origin = getDrawingOrigin(panel);
         var zoom = panel.zoom;
