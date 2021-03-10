@@ -366,7 +366,6 @@
       */
       updateVolumePosition: function(x, y) {
         var origin = getDrawingOrigin(panel);
-        console.log(origin, 'updateVolumePosition');
         var zoom = panel.zoom;
         var volume = panel.volume;
         var slice = panel.slice;
