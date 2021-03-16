@@ -402,10 +402,11 @@
        
           var voxel = panel.cursorToVoxel(cursor.x, cursor.y);
           if (currentPanel.axis === 'xspace') {
-              i = currentVox.voxelX;
-              j = currentVox.voxelY;
-              if (panel.axis !== 'xspace') {
-                k = voxel.voxelX + 1;
+              i = currentVox.voxelX + 1;
+              if (panel.axis === 'yspace') {
+                k = slice.height_space.space_length - voxel.voxelX - 1;
+                j = voxel.voxelY + 1;
+                console.log(voxel,currentVox, 'voxel')
               }
           } else if (currentPanel.axis === 'yspace') {
             if (panel.axis === 'xspace') {
@@ -426,7 +427,7 @@
           }
           
         });
-
+        console.log(i, j, k);
         return { i: Math.floor(i), j: Math.floor(j) ,k: Math.floor(k)};
       },
 
