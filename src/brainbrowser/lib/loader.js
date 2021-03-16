@@ -74,7 +74,7 @@
       var result;
       var request = new XMLHttpRequest();
       
-      if (options.isVolume) {
+      if (options.isVolume && !options.noCatchVolumeXHR) {
         loader.cacheVolumeXHRs.push(request);
       }
       

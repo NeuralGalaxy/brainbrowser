@@ -35,7 +35,7 @@
   var VolumeViewer = BrainBrowser.VolumeViewer;
 
   VolumeViewer.volume_loaders.nifti1 = function(description, callback) {
-    const { stepRotio } = description;
+    const { stepRotio, noCatchVolumeXHR } = description;
     var error_message;
     if (description.nii_url) {
       VolumeViewer.cachedLoader = VolumeViewer.cachedLoader || {};
@@ -54,7 +54,7 @@
               }
             }
           });
-        }, {result_type: "arraybuffer", isVolume: true });
+        }, {result_type: "arraybuffer", isVolume: true, noCatchVolumeXHR });
       }
 
     } else if (description.nii_file) {
