@@ -688,7 +688,7 @@
         Math.pow(end_y - start_y, 2) +
         Math.pow(end_z - start_z, 2))
 
-      const k = (isSafety ? 0 : 60) / m;
+      const k = 60 / m;
       const x = start_x + gapX * k;
       const y = start_y + gapY * k;
       const z = start_z + gapZ * k;
