@@ -642,7 +642,6 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.highlightTrajectorys = function(geometryName) {
     viewer.model.children.forEach(function(obj) {
       if (obj.name === 'Line') {
-        console.log(geometryName, obj.geometry.name, 'obj.geometry.name');
         if (geometryName === obj.geometry.name){
           obj.material.color = new THREE.Color(0xffffff);
           obj.material.needsUpdate = true;
