@@ -229,7 +229,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       if (shape.userData.original_data) {
         shape.position.set(offset.x, offset.y, offset.z);
         shape.rotation.set(0, 0, 0);
-        shape.material.opacity = 1;
+        // shape.material.opacity = 1;
       }
     });
 

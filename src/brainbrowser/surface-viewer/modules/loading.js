@@ -814,6 +814,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     } else {
       material = new THREE.MeshLambertMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, emissive:0x262626, vertexColors: THREE.VertexColors});
 
+      material.opacity = 1;
       // set opacity
       if (opacity !== 100) {
         material.opacity = opacity / 100;
