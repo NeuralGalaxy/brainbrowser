@@ -407,7 +407,6 @@
                 k = slice.height_space.space_length - voxel.voxelX - 1;
                 j = currentVox.voxelY;
               }
-              console.log(voxel, 'voxel');
           } else if (currentPanel.axis === 'yspace') {
             if (panel.axis === 'xspace') {
               i = voxel.voxelX + 1;
@@ -427,8 +426,7 @@
           }
           
         });
-        console.log(currentVox, 'currentVox');
-        console.log(Math.floor(i), Math.floor(j), Math.floor(k))
+
         return { i: Math.floor(i), j: Math.floor(j) ,k: Math.floor(k)};
       },
 
