@@ -33,6 +33,8 @@ import {
   MeshLineRaycast
 } from '../lib/THREE.MeshLine';
 
+let renderer;
+
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
 
@@ -43,12 +45,15 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   var THREE = BrainBrowser.SurfaceViewer.THREE;
 
-  var renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    preserveDrawingBuffer: true,
-    alpha: true,
-    autoClear: false,
-  });
+  if (!renderer) {
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true,
+      alpha: true,
+      autoClear: false,
+    });
+  }
+
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(30, viewer.dom_element.offsetWidth / viewer.dom_element.offsetHeight, 1, 3000);
   var default_camera_distance = 500;
@@ -747,7 +752,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     y = y === undefined ? viewer.mouse.y : y;
     opacity_threshold = opacity_threshold === undefined ? 0.25 : (opacity_threshold / 100.0);
 
+    if (!viewer.dom_element) return;
+
     // Convert to normalized device coordinates.
+
     x = (x / viewer.dom_element.offsetWidth) * 2 - 1;
     y = (-y / viewer.dom_element.offsetHeight) * 2 + 1;
 
