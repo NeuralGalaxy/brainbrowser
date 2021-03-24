@@ -98,6 +98,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
+    renderer.clear();
+    renderer.dispose();
+    renderer = undefined;
     // renderer.clearCachedWebglObjects();
   };
 
