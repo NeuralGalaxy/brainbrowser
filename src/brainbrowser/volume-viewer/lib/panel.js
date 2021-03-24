@@ -677,8 +677,16 @@
       var curVoxel = panel.volume.getVoxelCoords();
       let { start, end } = trajectory;
 
-      const [start_x, start_y, start_z] = start;
-      const [end_x, end_y, end_z] = end;
+      let [start_x, start_y, start_z] = start;
+      let [end_x, end_y, end_z] = end;
+      
+      start_x = +start_x;
+      start_y = +start_y;
+      start_z = +start_z;
+      end_x = +end_x;
+      end_y = +end_y;
+      end_z = +end_z;
+
       const gapX = start_x - end_x;
       const gapY = start_y - end_y;
       const gapZ = start_z - end_z;
