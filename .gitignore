@@ -2,6 +2,7 @@
 *\#*\#
 log/*
 .#*
+.idea
 *.log
 tmp
 node_modules
