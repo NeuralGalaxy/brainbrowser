@@ -106,7 +106,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       agent.indexOf("wow64") >= 0;
     const isDesk = typeof global !== 'undefined';
 
-    if (!(isWin && isDesk)) return;
+    if (isWin && isDesk) return;
 
     // renderer.clear();
     renderer.dispose();
