@@ -98,6 +98,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
+
+    const agent = navigator.userAgent.toLowerCase();
+    const isWin = agent.indexOf("win32") >= 0 ||
+      agent.indexOf("wow32") >= 0 ||
+      agent.indexOf("win64") >= 0 ||
+      agent.indexOf("wow64") >= 0;
+    const isDesk = typeof global !== 'undefined';
+
+    if (!(isWin && isDesk)) return;
+
     // renderer.clear();
     renderer.dispose();
     // renderer = undefined;
