@@ -92,12 +92,21 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     renderFrame();
   };
 
-  viewer.clearCachedWebgl = function () {
+  viewer.clearCachedWebgl = function (isDesk = false) {
     viewer.clearAllListeners && viewer.clearAllListeners();
     viewer.model_data && viewer.model_data.clear();
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
+
+    const agent = navigator.userAgent.toLowerCase();
+    let isWin = agent.indexOf("win32") >= 0 ||
+      agent.indexOf("wow32") >= 0 ||
+      agent.indexOf("win64") >= 0 ||
+      agent.indexOf("wow64") >= 0;
+
+    if (!(isWin && isDesk)) return;
+
     // renderer.clear();
     renderer.dispose();
     // renderer = undefined;
