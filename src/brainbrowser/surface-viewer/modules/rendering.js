@@ -92,7 +92,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     renderFrame();
   };
 
-  viewer.clearCachedWebgl = function (isDesk = false) {
+  viewer.clearCachedWebgl = function () {
     viewer.clearAllListeners && viewer.clearAllListeners();
     viewer.model_data && viewer.model_data.clear();
     if (viewer.model && viewer.model.children) {
@@ -100,10 +100,11 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     }
 
     const agent = navigator.userAgent.toLowerCase();
-    let isWin = agent.indexOf("win32") >= 0 ||
+    const isWin = agent.indexOf("win32") >= 0 ||
       agent.indexOf("wow32") >= 0 ||
       agent.indexOf("win64") >= 0 ||
       agent.indexOf("wow64") >= 0;
+    const isDesk = typeof global !== 'undefined';
 
     if (!(isWin && isDesk)) return;
 
