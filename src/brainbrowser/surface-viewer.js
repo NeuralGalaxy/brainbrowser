@@ -207,7 +207,7 @@
     *   });
     * ```
     */
-    start: function(element, callback) {
+    start: function(element, callback, moreSurf) {
 
       console.log("BrainBrowser Surface Viewer v" + BrainBrowser.version);
 
@@ -268,6 +268,7 @@
       }
 
       var viewer = {
+        moreSurf: moreSurf,
         dom_element: dom_element,
         model: null,                                      // Scene graph root. Created in rendering module.
         model_data: null,                                 // Descriptions of all models. Created in loading module.
