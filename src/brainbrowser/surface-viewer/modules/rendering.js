@@ -33,7 +33,7 @@ import {
   MeshLineRaycast
 } from '../lib/THREE.MeshLine';
 
-let rendererCache;
+let renderer;
 
 BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   "use strict";
@@ -45,23 +45,13 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   var renderer;
   var THREE = BrainBrowser.SurfaceViewer.THREE;
-  if(!viewer.moreSurf && !rendererCache) {
+  if(!renderer || viewer.moreSurf) {
     renderer = new THREE.WebGLRenderer({
       antialias: true,
       preserveDrawingBuffer: true,
       alpha: true,
       autoClear: false,
     });
-    rendererCache = renderer;
-  } else if (viewer.moreSurf) {
-    renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      preserveDrawingBuffer: true,
-      alpha: true,
-      autoClear: false,
-    });
-  } else {
-    renderer = rendererCache;
   }
 
   var scene = new THREE.Scene();
@@ -119,7 +109,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (isWin && isDesk) return;
 
     // renderer.clear();
-    // renderer.dispose();
+    renderer.dispose();
     // renderer = undefined;
     // renderer.clearCachedWebglObjects();
   };
