@@ -43,7 +43,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     viewer.dom_element = document.createElement('div');
   }
 
-  var renderer;
+  let renderer;
   var THREE = BrainBrowser.SurfaceViewer.THREE;
   if(!renderer || viewer.moreSurf) {
     renderer = new THREE.WebGLRenderer({
