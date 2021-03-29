@@ -110,19 +110,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       viewer.model.children = [];
     }
 
-    const isWinAndDesk = viewer.checkIsWinAndDesk();
-
-    if (isWinAndDesk) {
+    renderer.clear();
+    renderer.dispose();
+    
+    // const isWinAndDesk = viewer.checkIsWinAndDesk();
+    /* if (isWinAndDesk) {
       renderer.dispose();
       renderer = undefined;
 
       return;
-    }
-
-    // renderer.clear();
-    renderer.dispose();
-    // renderer = undefined;
-    // renderer.clearCachedWebglObjects();
+    } */
   };
 
   /**
