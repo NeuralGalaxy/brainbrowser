@@ -202,13 +202,13 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   viewer.loadModelFromURL = function(url, options) {
     options = checkBinary("model_types", options);
     // const cachedData = SurfaceViewer.cachedLoader[url];
-    
+
     // if (SurfaceViewer.canCached && cachedData) {
     options.cachedUrl = url;
     loader.loadFromURL(url, (data, filename, options) => {
       loadModel(data, filename, options);
     }, { ...options, isSurface: true });
-    
+
   };
 
   /**
@@ -268,7 +268,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
   */
   viewer.loadIntensityDataFromURL = function(url, options) {
     options = checkBinary("intensity_data_types", options);
-    
+
     options.cachedUrl = url;
     loader.loadFromURL(url, (text, filename, options) => {
       loadIntensityData(text, filename, options);
@@ -456,6 +456,10 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       } else {
         min = options.min === undefined ? intensity_data.min : options.min;
         max = options.max === undefined ? intensity_data.max : options.max;
+      }
+
+      if (min === max) {
+        max++;
       }
 
       intensity_data.name = name;
@@ -670,7 +674,6 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
     }
 
     model_data.name = model_data.name || options.model_name || filename;
-    console.log(model_data.name, 'model_data.name');
     viewer.model_data.add(model_data.name, model_data);
 
     if (shapes) {
@@ -809,14 +812,15 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
       shape    = new THREE.Line(geometry, material, THREE.LineSegments);
     } else {
-      material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, vertexColors: THREE.VertexColors});
-      
+      material = new THREE.MeshLambertMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, emissive:0x262626, vertexColors: THREE.VertexColors});
+
+      material.opacity = 1;
       // set opacity
       if (opacity !== 100) {
         material.opacity = opacity / 100;
         material.transparent = true;
       }
-      
+
       shape    = new THREE.Mesh(geometry, material);
       shape.userData.has_wireframe = true;
     }

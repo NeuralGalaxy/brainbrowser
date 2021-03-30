@@ -101,14 +101,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     var overlay_options = options.overlay && typeof options.overlay === "object" ? options.overlay : {};
     var hideCursor = !!options.hideCursor;
-          
+
     var volume_descriptions = options.volumes;
     var hideBorder = !!volume_descriptions.find(des => des.hideBorder);
     var num_descriptions = options.volumes.length;
     var complete = options.complete;
     var num_loaded = 0;
     var i;
-        
+
     function loadVolume(i) {
       setVolume(i, {
         ...volume_descriptions[i],
@@ -136,7 +136,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
       });
     }
-    
+
     for (i = 0; i < num_descriptions; i++) {
       loadVolume(i);
     }
@@ -395,7 +395,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   function openVolume(volume_description, callback){
     var loader = VolumeViewer.volume_loaders[volume_description.type];
     var error_message;
-    
+
     if(loader){
       loader(volume_description, callback);
     } else {
@@ -418,7 +418,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     }
 
     const inter = Math.floor(Math.sqrt(
-      Math.pow(start.i - end.i, 2) + 
+      Math.pow(start.i - end.i, 2) +
       Math.pow(start.j - end.j, 2) +
       Math.pow(start.k - end.k, 2))) + 1;
 
@@ -426,7 +426,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     let xList = math.range(start.i, end.i, (end.i - start.i) / inter)._data;
     let yList = math.range(start.j, end.j, (end.j - start.j) / inter)._data;
     let zList = math.range(start.k, end.k, (end.k - start.k) / inter)._data;
-    
+
     if (!xList.length) {
       xList = Array.apply(undefined, Array(inter)).map(item => start.i);
     }
@@ -453,7 +453,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
 
     // 矩阵转换
     let a = math.matrix([
-      [xRotio, yRotio, zRotio], 
+      [xRotio, yRotio, zRotio],
       [1, 0, 0],
       [0, 1, 0],
     ]);
@@ -463,7 +463,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const vector2 = math.lusolve(a, b)._data;
 
     const vector2Size = Math.sqrt(
-      Math.pow(vector2[0][0], 2) + 
+      Math.pow(vector2[0][0], 2) +
       Math.pow(vector2[1][0], 2) +
       Math.pow(vector2[2][0], 2));
     const vector2x = vector2[0][0] / vector2Size;
@@ -487,7 +487,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       [0, 1, 0],
     ]);
 
-    
+
 
     b = math.matrix([[0], [0], [1]]);
 
@@ -590,7 +590,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     const maxDis = Number.MAX_VALUE;
     const nextData = data.map((val, index) => {
       if (!val) return maxDis;
-      
+
       const x = index % width - center;
       const y = ~~(index / width) - center;
 
@@ -679,7 +679,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
   function setVolumeColorMap(vol_id, color_map, cursor_color, callback) {
     color_map.cursor_color = cursor_color;
     viewer.setVolumeColorMap(vol_id, color_map);
-    
+
     if (BrainBrowser.utils.isFunction(callback)) {
       callback(viewer.volumes[vol_id], color_map);
     }
@@ -689,7 +689,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     var template = document.getElementById(template_id).innerHTML.replace(/\{\{VOLID\}\}/gm, vol_id);
     var temp = document.createElement("div");
     temp.innerHTML = template;
-    
+
     var template_elements = temp.childNodes;
     var viewer_insert = temp.getElementsByClassName(viewer_insert_class)[0];
 
@@ -721,7 +721,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
     display.propagateEventTo("*", volume);
 
     container.classList.add("volume-container");
-    
+
     views.forEach(function(axis_name) {
       var canvas = document.createElement("canvas");
       canvas.width = default_panel_width;
@@ -759,14 +759,14 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         }
       });
     }
-  
+
     ///////////////////////////////////
     // Mouse Events
     ///////////////////////////////////
-    
+
     (function() {
       var current_target = null;
-      
+
       views.forEach(function(axis_name) {
         var panel = display.getPanel(axis_name);
         panel.drawPolyline = viewer.drawPolyline;
@@ -820,7 +820,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               });
             }
             var voxel = panel.cursorToVoxel(pointer.x, pointer.y);
-            panel.drawPoints.push(voxel);    
+            panel.drawPoints.push(voxel);
             var coords = viewer.volumes[viewer.volumes.length - 1].getWorldCoords();
             viewer.pointsWorldCoords.push(coords);
             if (viewer.drawLineCallBack) {
@@ -828,8 +828,8 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
               var drawPoints = [];
               if (panel.drawPoints.length === 2) {
                 allLength += calculationLine(
-                  panel.voxelToCursor(panel.drawPoints[0].voxelX, panel.drawPoints[0].voxelY), 
-                  panel.voxelToCursor(panel.drawPoints[1].voxelX, panel.drawPoints[1].voxelY), 
+                  panel.voxelToCursor(panel.drawPoints[0].voxelX, panel.drawPoints[0].voxelY),
+                  panel.voxelToCursor(panel.drawPoints[1].voxelX, panel.drawPoints[1].voxelY),
                   panel);
               } else if (panel.drawPoints.length > 2){
                 for (var i = 0; i < panel.drawPoints.length; i++) {
@@ -838,22 +838,25 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
                   );
                   var endpoint = i === panel.drawPoints.length - 1 ? panel.drawPoints[0] : panel.drawPoints[i+1];
                   allLength += calculationLine(
-                    panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY), 
+                    panel.voxelToCursor(panel.drawPoints[i].voxelX, panel.drawPoints[i].voxelY),
                     panel.voxelToCursor(endpoint.voxelX, endpoint.voxelY), panel);
                 }
               }
-              
+
               viewer.drawLineCallBack(viewer.pointsWorldCoords, allLength, drawPoints, panel.zoom);
             }
           }
 
           if (!shift_key) {
             panel.updateVolumePosition(pointer.x, pointer.y);
-            volume.display.forEach(function(other_panel) {
-              if (panel !== other_panel) {
-                other_panel.updateSlice();
-              }
-            });
+            // 针对seeg overlay 情况，这里不再进行updateSlice调用，因为planVolumeViewer中redraw（）中调用了updateSlice
+            if(!viewer.hasOwnProperty('isSeegOverlay') || !viewer.isSeegOverlay){
+              volume.display.forEach(function(other_panel) {
+                if (panel !== other_panel) {
+                  other_panel.updateSlice();
+                }
+              });
+            }
 
             if (viewer.synced){
               viewer.syncPosition(panel, volume, axis_name);
@@ -913,7 +916,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             drag(panel.touches[0], panel.touches.length === views.length);
           }
         }
-        
+
         function mouseDragEnd(event) {
           event.preventDefault();
           document.removeEventListener("mousemove", mouseDrag, false);
@@ -995,7 +998,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           event.preventDefault();
 
           current_target = event.target;
-          
+
           if (viewer.active_panel) {
             viewer.active_panel.updated = true;
           }
@@ -1034,12 +1037,27 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
           }
 
         }
-        
+
         function wheelHandler(event) {
           if (event.ctrlKey) {
             event.preventDefault();
 
             zoom(Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail))));
+          }else {
+           const wheelDelta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+           const { i, j, k } = panel.volume.getVoxelCoords();
+           if (panel.axis === "xspace") {
+              if (i === 0 || i >= 256) return;
+              panel.volume.setVoxelCoords(i + wheelDelta, j, k);
+           }else if (panel.axis === "yspace") {
+              if (j === 0 || j >= 256) return;
+              panel.volume.setVoxelCoords(i, j + wheelDelta, k);
+           }else if (panel.axis === "zspace") {
+              if (k === 0 || k >= 256) return;
+              panel.volume.setVoxelCoords(i, j, k + wheelDelta);
+           }
+           panel.updateVolumePosition();
+           panel.updateSlice();
           }
         }
 
@@ -1092,7 +1110,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
         canvas.addEventListener("mousewheel", wheelHandler, false);
         canvas.addEventListener("wheel", wheelHandler, false);
         canvas.addEventListener("DOMMouseScroll", wheelHandler, false); // Dammit Firefox
-        
+
         /* canvas.clearAllListeners = function () {
           canvas.removeEventListener('mousedown', canvasMousedown, false);
           canvas.removeEventListener('touchstart', canvasTouchstart, false);
