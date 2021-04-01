@@ -812,7 +812,11 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
       shape    = new THREE.Line(geometry, material, THREE.LineSegments);
     } else {
-      material = new THREE.MeshLambertMaterial({color: 0xFFFFFF, specular: 0x101010, shininess: 150, emissive:0x262626, vertexColors: THREE.VertexColors});
+      material = new THREE.MeshLambertMaterial({
+        color: 0xFFFFFF,
+        emissive:0x262626,
+        emissiveIntensity: 0.7,
+        vertexColors: THREE.VertexColors});
 
       material.opacity = 1;
       // set opacity
