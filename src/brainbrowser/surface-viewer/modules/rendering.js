@@ -43,9 +43,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     viewer.dom_element = document.createElement('div');
   }
 
+  let renderer;
   var THREE = BrainBrowser.SurfaceViewer.THREE;
-
-  if (!renderer) {
+  if(!renderer || viewer.moreSurf) {
     renderer = new THREE.WebGLRenderer({
       antialias: true,
       preserveDrawingBuffer: true,
@@ -81,6 +81,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   viewer.lineMode = false;
   viewer.polyLineMode = false;
   viewer.polyLinePoints = [];
+  viewer.isFs4 = false;
   viewer.render = function() {
     var dom_element = viewer.dom_element;
     renderer.setClearColor(0x000000);
@@ -109,63 +110,58 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model && viewer.model.children) {
       viewer.model.children = [];
     }
+    
+    const isWinAndDesk = viewer.checkIsWinAndDesk();
+    if (isWinAndDesk) return;
 
     renderer.clear();
     renderer.dispose();
-    
-    // const isWinAndDesk = viewer.checkIsWinAndDesk();
-    /* if (isWinAndDesk) {
-      renderer.dispose();
-      renderer = undefined;
-
-      return;
-    } */
   };
 
   /**
-  * @doc function
-  * @name viewer.rendering:updateViewport
-  * @description
-  * Update the viewport size and aspect ratio to fit
-  * the current size of the viewer DOM element.
-  * ```js
-  * viewer.updateViewport();
-  * ```
-  */
- viewer.updateViewport = function(height, widht) {
-  var dom_element = viewer.dom_element;
-  effect.setSize(widht || dom_element.offsetWidth, height || dom_element.offsetHeight);
-  camera.aspect = dom_element.offsetWidth / dom_element.offsetHeight;
-  camera.updateProjectionMatrix();
+   * @doc function
+   * @name viewer.rendering:updateViewport
+   * @description
+   * Update the viewport size and aspect ratio to fit
+   * the current size of the viewer DOM element.
+   * ```js
+   * viewer.updateViewport();
+   * ```
+   */
+  viewer.updateViewport = function(height, widht) {
+    var dom_element = viewer.dom_element;
+    effect.setSize(widht || dom_element.offsetWidth, height || dom_element.offsetHeight);
+    camera.aspect = dom_element.offsetWidth / dom_element.offsetHeight;
+    camera.updateProjectionMatrix();
 
-  viewer.updated = true;
-};
+    viewer.updated = true;
+  };
 
   /**
-  * @doc function
-  * @name viewer.rendering:canvasDataURL
-  * @returns {string} The data URL.
-  * @description
-  * Returns the Data URL of the canvas the viewer is using
-  * so it can be used to create an image.
-  * ```js
-  * viewer.canvasDataURL();
-  * ```
-  */
+   * @doc function
+   * @name viewer.rendering:canvasDataURL
+   * @returns {string} The data URL.
+   * @description
+   * Returns the Data URL of the canvas the viewer is using
+   * so it can be used to create an image.
+   * ```js
+   * viewer.canvasDataURL();
+   * ```
+   */
   viewer.canvasDataURL = function() {
     return renderer.domElement.toDataURL();
   };
 
   /**
-  * @doc function
-  * @name viewer.rendering:addEffect
-  * @param {string} effect_name The name of the effect as defined in three.js.
-  * @description
-  * Add a three.js postprocessing effect to the viewer.
-  * ```js
-  * viewer.addEffect("AnaglyphEffect");
-  * ```
-  */
+   * @doc function
+   * @name viewer.rendering:addEffect
+   * @param {string} effect_name The name of the effect as defined in three.js.
+   * @description
+   * Add a three.js postprocessing effect to the viewer.
+   * ```js
+   * viewer.addEffect("AnaglyphEffect");
+   * ```
+   */
   viewer.addEffect = function(effect_name) {
     var effect;
     if (BrainBrowser.utils.isFunction(THREE[effect_name])) {
@@ -316,7 +312,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (viewer.model.children[0] && viewer.model.children[0].userData.recentered) {
       sphere.position.set(
         x - viewer.model.children[0].userData.centroid.x,
-        y - viewer.model.children[0].userData.centroid.y, 
+        y - viewer.model.children[0].userData.centroid.y,
         z - viewer.model.children[0].userData.centroid.z
       );
     } else {
@@ -345,7 +341,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
   };
 
-  function getDrawLinesStartEndPoint(startPoint, endPoint) {
+  viewer.getDrawLinesStartEndPoint = function(startPoint, endPoint) {
     var centroidX = 0;
     var centroidY = 0;
     var centroidZ = 0;
@@ -360,7 +356,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   }
 
   viewer.customizedrawLines = function(startPoint, endPoint) {
-    var point = getDrawLinesStartEndPoint(startPoint, endPoint);
+    var point = viewer.getDrawLinesStartEndPoint(startPoint, endPoint);
     var children = [].concat(viewer.model.children);
     viewer.model.children = children.filter(child => child.name !== 'Line');
     viewer.drawLine(point.start, point.end, {
@@ -373,7 +369,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     viewer.model.children = children.filter(child => child.name !== 'Line');
     for (var i = 0; i < viewer.polyLinePoints.length; i++){
       var end = i === viewer.polyLinePoints.length - 1 ? endPoint : viewer.polyLinePoints[i + 1].point;
-      var point = getDrawLinesStartEndPoint(viewer.polyLinePoints[i].point, end);
+      var point = viewer.getDrawLinesStartEndPoint(viewer.polyLinePoints[i].point, end);
       viewer.drawLine(point.start, point.end, {
         color: 0xffffff,
       });
@@ -448,9 +444,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     var color_grid;
     var grid = viewer.model.getObjectByName(grid_name);
     if (grid !== undefined) {
-        grid.visible   = is_checked;
-        grid.position.set(x,y,z);
-        viewer.updated = true;
+      grid.visible   = is_checked;
+      grid.position.set(x,y,z);
+      viewer.updated = true;
       return;
     }
     if (!grid && !is_checked) {
@@ -571,14 +567,14 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (options.draw === false) {return mesh;}
 
     if (viewer.model) {
-      viewer.model.add(mesh);      
+      viewer.model.add(mesh);
     } else {
       scene.add(mesh);
     }
 
     // [start, end].forEach(point => {
     //   var sphereGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
-    //   var sphereMaterial = new THREE.LineBasicMaterial({ 
+    //   var sphereMaterial = new THREE.LineBasicMaterial({
     //     color
     //   });
     //   var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
@@ -603,17 +599,17 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     const gapX = endX - startX;
     const gapY = endY - startY;
     const gapZ = endZ - startZ;
-    
+
     const m = Math.sqrt(
-      Math.pow(endX - startX, 2) + 
-      Math.pow(endY - startY, 2) +
-      Math.pow(endZ - startZ, 2))
-    
+        Math.pow(endX - startX, 2) +
+        Math.pow(endY - startY, 2) +
+        Math.pow(endZ - startZ, 2))
+
     const k = 60 / m;
     const x = endX + gapX * k;
     const y = endY + gapY * k;
     const z = endZ + gapZ * k;
-    
+
     var startVector = new THREE.Vector3(start.x, start.y, start.z);
     var endVector = new THREE.Vector3(x, y, z);
     viewer.drawLine(startVector, endVector, options);
@@ -623,9 +619,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     options      = options || {};
 
     const lineLength = Math.sqrt(
-      Math.pow(start.x - end.x, 2) +
-      Math.pow(start.y - end.y, 2) +
-      Math.pow(start.z - end.z, 2)
+        Math.pow(start.x - end.x, 2) +
+        Math.pow(start.y - end.y, 2) +
+        Math.pow(start.z - end.z, 2)
     );
     const lineMulti = 4 / (lineLength - 4);
     const verticePoint = {
@@ -643,12 +639,12 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         z: prevPoint.z + verticePoint.z,
       };
       points.push(nextPoint);
-      
+
     }
     points.push(end);
     points.forEach(point => {
       var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
-      var sphereMaterial = new THREE.MeshPhongMaterial({ 
+      var sphereMaterial = new THREE.MeshPhongMaterial({
         color: 0xff6666
       });
       var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
@@ -656,7 +652,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       sphere.name = 'SticksLine';
 
       if (viewer.model) {
-        viewer.model.add(sphere);      
+        viewer.model.add(sphere);
       } else {
         scene.add(sphere);
       }
@@ -804,9 +800,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     for (i = 0; i < intersects.length; i++) {
       intersects[i].object.userData.pick_ignore = (intersects[i].object.material.opacity < opacity_threshold);
       if (
-        !intersects[i].object.userData.pick_ignore && 
-        intersects[i].face && 
-        intersects[i].object.userData.original_data
+          !intersects[i].object.userData.pick_ignore &&
+          intersects[i].face &&
+          intersects[i].object.userData.original_data
       ) {
         intersection = intersects[i];
         break;
@@ -816,7 +812,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     if (intersection !== null && intersection.face) {
       intersect_object = intersection.object;
       intersect_face = intersection.face;
-      
+
       intersect_indices = intersect_face ? [
         intersect_face.a,
         intersect_face.b,
@@ -862,18 +858,18 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         intersect_vertex_index = index;
 
         intersect_vertex_coords = new THREE.Vector3(
-          original_vertices[index*3],
-          original_vertices[index*3+1],
-          original_vertices[index*3+2]
+            original_vertices[index*3],
+            original_vertices[index*3+1],
+            original_vertices[index*3+2]
         );
 
         //Compensate for a translated center.
         min_distance = intersect_point.distanceTo(
-          new THREE.Vector3(
-            intersect_vertex_coords.x - cx,
-            intersect_vertex_coords.y - cy,
-            intersect_vertex_coords.z - cz
-          )
+            new THREE.Vector3(
+                intersect_vertex_coords.x - cx,
+                intersect_vertex_coords.y - cy,
+                intersect_vertex_coords.z - cz
+            )
         );
 
         for (i = 1, count = intersect_indices.length; i < count; i++) {
@@ -884,16 +880,16 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
             index = original_indices[index];
           }
           coords = new THREE.Vector3(
-            original_vertices[index*3],
-            original_vertices[index*3+1],
-            original_vertices[index*3+2]
+              original_vertices[index*3],
+              original_vertices[index*3+1],
+              original_vertices[index*3+2]
           );
           distance = intersect_point.distanceTo(
-            new THREE.Vector3(
-              coords.x - cx,
-              coords.y - cy,
-              coords.z - cz
-            )
+              new THREE.Vector3(
+                  coords.x - cx,
+                  coords.y - cy,
+                  coords.z - cz
+              )
           );
 
           if (distance < min_distance) {
@@ -1137,9 +1133,21 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     });
   };
 
-  viewer.updateLineText = function() {
-    var ele = document.getElementById('line-lenght-text-view');
-    var eles = document.getElementsByClassName('polyLine-lenght-text-view');
+  viewer.updateLineText = function(eleIdParam, eleNameParam) {
+    let eleId = 'line-lenght-text-view';
+    if(viewer.isFs4){
+      eleId = 'line-length-text-view-fs4';
+    }else if (eleIdParam){
+      eleId = eleIdParam;
+    }
+    let eleName = 'polyLine-lenght-text-view';
+    if(viewer.isFs4){
+      eleName = 'polyLine-length-text-view-fs4';
+    }else if (eleNameParam){
+      eleName = eleNameParam;
+    }
+    var ele = document.getElementById(eleId);
+    var eles = document.getElementsByClassName(eleName);
     var update = function(element) {
       var startVector3 = element.getAttribute('startVector3').split(',');
       var endVector3 = element.getAttribute('endVector3').split(',');
@@ -1188,9 +1196,127 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         viewer.dom_element.removeChild(eles[i]);
       }
     }
-
     viewer.updated = true;
   };
+
+  viewer.clearFs4Line = function() {
+    var children = [].concat(viewer.model.children);
+    var newChildren = children.filter(function(obj) {
+      return (obj.name !== 'Line' && obj.name !== 'Dot');
+    });
+    viewer.model.children = newChildren;
+    var eleFs4 = document.getElementById('line-length-text-view-fs4');
+    if (eleFs4) {
+      viewer.dom_element.removeChild(eleFs4);
+    }
+    var elesPloyFs4 = document.getElementsByClassName('polyLine-length-text-view-fs4');
+    if (elesPloyFs4 && elesPloyFs4.length > 0) {
+      for(var i = elesPloyFs4.length - 1; i >= 0; i--) {
+        elesPloyFs4[i].textContent = '';
+        viewer.dom_element.removeChild(elesPloyFs4[i]);
+      }
+    }
+    viewer.updated = true;
+  }
+
+
+  viewer.insertDom = function(startPoint, endPoint, lineLenght) {
+    var textPoint = lineTextPoint(startPoint, endPoint);
+    var top = textPoint.top;
+    var left = textPoint.left;
+    var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
+    var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
+    let eleId = 'line-lenght-text-view';
+    if(viewer.isFs4){
+      eleId = 'line-length-text-view-fs4';
+    }
+
+    var ele = document.getElementById(eleId);
+    if (ele) {
+      if (left !== 0) {
+        ele.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        ele.style.top = top + 'px';
+      }
+      ele.style.color = 'white';
+      ele.style.fontWeight = 900;
+      ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+      ele.textContent = lineLenght + '(mm)';
+      ele.setAttribute("endVector3", endVector3);
+    } else {
+      var el1 = document.createElement('div');
+      var text = document.createTextNode(lineLenght + '(mm)');
+      el1.style.height = '5px';
+      el1.style.width = '5px';
+      el1.style.fontWeight = 900;
+      el1.style.position = 'absolute';
+      if (left !== 0) {
+        el1.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        el1.style.top = top + 'px';
+      }
+      el1.style.color = 'white';
+      el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+      el1.id = eleId;
+      el1.setAttribute("startVector3", startVector3);
+      el1.setAttribute("endVector3", endVector3);
+      viewer.dom_element.appendChild(el1);
+      el1.appendChild(text);
+    }
+
+  }
+
+  viewer.polyLineInsertDom = function (startPoint, endPoint, lineLenght) {
+    var textPoint = lineTextPoint(startPoint, endPoint);
+    var top = textPoint.top;
+    var left = textPoint.left;
+    var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
+    var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
+
+    let eleName = 'polyLine-lenght-text-view';
+    if(viewer.isFs4){
+      eleName = 'polyLine-length-text-view-fs4';
+    }
+    var eles = document.getElementsByClassName(eleName);
+    if (viewer.polyLinePoints.length > eles.length) {
+      var el1 = document.createElement('div');
+      var text = document.createTextNode(lineLenght + '(mm)');
+      el1.style.height = '5px';
+      el1.style.width = '5px';
+      el1.style.position = 'absolute';
+      if (left !== 0) {
+        el1.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        el1.style.top = top + 'px';
+      }
+      el1.style.color = 'white';
+      el1.className = eleName;
+      el1.style.fontWeight = 900;
+      el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
+      el1.setAttribute("startVector3", startVector3);
+      el1.setAttribute("endVector3", endVector3);
+      viewer.dom_element.appendChild(el1);
+      el1.appendChild(text);
+    } else {
+      var lastEle = eles[eles.length - 1];
+      if (left !== 0) {
+        lastEle.style.left = left + 'px';
+      }
+      if (top !== 0) {
+        lastEle.style.top = top + 'px';
+      }
+      lastEle.style.color = 'white';
+      lastEle.textContent = lineLenght + '(mm)';
+      lastEle.style.fontWeight = 900;
+      lastEle.setAttribute("startVector3", startVector3);
+      lastEle.setAttribute("endVector3", endVector3);
+    }
+
+  }
+
   ////////////////////////////////////
   // PRIVATE FUNCTIONS
   ////////////////////////////////////
@@ -1265,7 +1391,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
 
     return { left: left, top: top };
   };
-  
+
   var startVertexData = { point: { x: 0, y: 0, z:0 }, position2D: { x: 0, y: 0 }};
   var endPoinxyz; // x y z;
   var lineEndPosition2D;
@@ -1359,10 +1485,10 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         }
         var endPosition = { point: obj.vertex_data.point, x: obj.x, y: obj.y };
         var lineLenght = calculationLineWidth(startVertexData, obj.vertex_data);
-        insertDom({x: startVertexData.position2D.x, y: startVertexData.position2D.y, point: startVertexData.point}, endPosition, lineLenght);
+        viewer.insertDom({x: startVertexData.position2D.x, y: startVertexData.position2D.y, point: startVertexData.point}, endPosition, lineLenght);
         viewer.customizedrawLines(startVertexData.point, obj.vertex_data.point);
         if (viewer.drawLineCallBack) {
-          viewer.drawLineCallBack([startVertexData, obj.vertex_data], parseFloat(lineLenght));
+          viewer.drawLineCallBack([startVertexData, obj.vertex_data], parseFloat(lineLenght),endPosition);
         }
       }
       if (viewer.polyLineMode) {
@@ -1373,9 +1499,9 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
         endPoinxyz = { point:  {x: obj.vertex_data.point.x, y: obj.vertex_data.point.y, z: obj.vertex_data.point.z}, position2D: { x: obj.x, y: obj.y }};
         var polyLinePoints = JSON.parse(JSON.stringify(viewer.polyLinePoints));
         var lastPolyLine = polyLinePoints[polyLinePoints.length - 1];
-        viewer.drawPolyLine(lastPolyLine.point, obj.vertex_data.point); 
+        viewer.drawPolyLine(lastPolyLine.point, obj.vertex_data.point);
         var lineLenght = calculationLineWidth(lastPolyLine, obj.vertex_data);
-        polyLineInsertDom({x: lastPolyLine.position2D.x, y: lastPolyLine.position2D.y, point: lastPolyLine.point}, {point: obj.vertex_data.point, x: obj.x, y: obj.y}, lineLenght);
+        viewer.polyLineInsertDom({x: lastPolyLine.position2D.x, y: lastPolyLine.position2D.y, point: lastPolyLine.point}, {point: obj.vertex_data.point, x: obj.x, y: obj.y}, lineLenght);
         if (viewer.drawLineCallBack) {
           var allpolyLines = [].concat(polyLinePoints);
           allpolyLines.push(obj.vertex_data);
@@ -1383,7 +1509,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
           for(var i = 0; i < allpolyLines.length - 1; i ++) {
             allLength += parseFloat(calculationLineWidth(allpolyLines[i], allpolyLines[i + 1]));
           }
-          viewer.drawLineCallBack(allpolyLines, allLength);
+          viewer.drawLineCallBack(allpolyLines, allLength, obj);
         }
       }
       if (!viewer.lineMode && !viewer.polyLineMode) {
@@ -1457,8 +1583,8 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       document.addEventListener("touchmove", touchDrag, false);
       document.addEventListener("touchend", touchDragEnd, false);
       movement = event.touches.length === 1 ? "rotate" :
-                 event.touches.length === 2 ? "zoom" :
-                 "translate";
+          event.touches.length === 2 ? "zoom" :
+              "translate";
     }, false);
 
     canvas.addEventListener("mousewheel", wheelHandler, false);
@@ -1469,113 +1595,24 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     canvas.addEventListener('contextmenu', function(event) {
       event.preventDefault();
     }, false);
-    
+
     function get3DPoint(event) {
       var offset = BrainBrowser.utils.getOffset(renderer.domElement,  'surface-viewer');
-        var x, y;
-        if (event.pageX !== undefined) {
-          x = event.pageX;
-          y = event.pageY;
-        } else {
-          x = event.clientX + window.pageXOffset;
-          y = event.clientY + window.pageYOffset;
-        }
-
-        var vertex_data = viewer.pick(x - offset.left, y - offset.top);
-        if (vertex_data) {
-          return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
-        }else {
-          return undefined;
-        }
-    }
-
-    function polyLineInsertDom(startPoint, endPoint, lineLenght) {
-      var textPoint = lineTextPoint(startPoint, endPoint);
-      var top = textPoint.top;
-      var left = textPoint.left;
-      var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
-      var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
- 
-      var eles = document.getElementsByClassName('polyLine-lenght-text-view');
-      if (viewer.polyLinePoints.length > eles.length) {
-        var el1 = document.createElement('div');
-        var text = document.createTextNode(lineLenght + '(mm)');
-        el1.style.height = '5px';
-        el1.style.width = '5px';
-        el1.style.position = 'absolute';
-        if (left !== 0) {
-          el1.style.left = left + 'px';
-        }
-        if (top !== 0) {
-          el1.style.top = top + 'px';
-        }
-        el1.style.color = 'white';
-        el1.className = 'polyLine-lenght-text-view';
-        el1.style.fontWeight = 900;
-        el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
-        el1.setAttribute("startVector3", startVector3);
-        el1.setAttribute("endVector3", endVector3);
-        viewer.dom_element.appendChild(el1);
-        el1.appendChild(text);
+      var x, y;
+      if (event.pageX !== undefined) {
+        x = event.pageX;
+        y = event.pageY;
       } else {
-        var lastEle = eles[eles.length - 1];
-        if (left !== 0) {
-          lastEle.style.left = left + 'px';
-        }
-        if (top !== 0) {
-          lastEle.style.top = top + 'px';
-        }
-        lastEle.style.color = 'white';
-        lastEle.textContent = lineLenght + '(mm)';
-        lastEle.style.fontWeight = 900;
-        lastEle.setAttribute("startVector3", startVector3);
-        lastEle.setAttribute("endVector3", endVector3);
+        x = event.clientX + window.pageXOffset;
+        y = event.clientY + window.pageYOffset;
       }
-      
-    }
 
-    function insertDom(startPoint, endPoint, lineLenght) {
-     var textPoint = lineTextPoint(startPoint, endPoint);
-     var top = textPoint.top;
-     var left = textPoint.left;
-     var startVector3 = '' + startPoint.point.x + ',' + startPoint.point.y + ',' + startPoint.point.z;
-     var endVector3 = '' + endPoint.point.x + ',' + endPoint.point.y + ',' + endPoint.point.z;
-
-     var ele = document.getElementById('line-lenght-text-view');
-     if (ele) {
-      if (left !== 0) {
-        ele.style.left = left + 'px';
+      var vertex_data = viewer.pick(x - offset.left, y - offset.top);
+      if (vertex_data) {
+        return { x: x - offset.left, y: y - offset.top, vertex_data: vertex_data };
+      }else {
+        return undefined;
       }
-      if (top !== 0) {
-        ele.style.top = top + 'px';
-      }
-      ele.style.color = 'white';
-      ele.style.fontWeight = 900;
-      ele.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
-      ele.textContent = lineLenght + '(mm)';
-      ele.setAttribute("endVector3", endVector3);
-     } else {
-      var el1 = document.createElement('div');
-      var text = document.createTextNode(lineLenght + '(mm)');
-      el1.style.height = '5px';
-      el1.style.width = '5px';
-      el1.style.fontWeight = 900;
-      el1.style.position = 'absolute';
-      if (left !== 0) {
-        el1.style.left = left + 'px';
-      }
-      if (top !== 0) {
-        el1.style.top = top + 'px';
-      }
-      el1.style.color = 'white';
-      el1.style.textShadow = '3px 0 black, 0 3px black, 3px 0 black, 0 3px black';
-      el1.id = 'line-lenght-text-view';
-      el1.setAttribute("startVector3", startVector3);
-      el1.setAttribute("endVector3", endVector3);
-      viewer.dom_element.appendChild(el1);
-      el1.appendChild(text);
-     }
-      
     }
 
     function calculationLineWidth(start, end) {
