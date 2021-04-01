@@ -111,9 +111,8 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
       viewer.model.children = [];
     }
     
-    const isWinAndDesk = viewer.checkIsWinAndDesk();
-    if (isWinAndDesk) return;
-
+    // const isWinAndDesk = viewer.checkIsWinAndDesk();
+    // if (isWinAndDesk) return;
     renderer.clear();
     renderer.dispose();
   };
