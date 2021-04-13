@@ -411,7 +411,7 @@ BrainBrowser.SurfaceViewer.modules.loading = function(viewer) {
       parseModel(data, type, parse_options, function(model_data) {
         if (!BrainBrowser.loader.checkCancel(options.cancel)) {
           displayModel(model_data, filename, options);
-          if (SurfaceViewer.canCached && cachedUrl) {
+          if (SurfaceViewer.canCached && cachedUrl && SurfaceViewer.cachedLoader) {
             SurfaceViewer.cachedLoader[cachedUrl] = model_data;
           }
         }
