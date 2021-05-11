@@ -85,6 +85,19 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
     },
 
     /**
+     * Update dots
+     * @param {*} dots : [{ vertex, activate }]
+     */
+    updateDots: function(dots, data) {
+      // clear dots
+      viewer.annotations.reset();
+      dots.forEach(dot => {
+        viewer.annotations.add(dot.vertex, data, { activate: dot.activate });
+      });
+      viewer.updated = true;
+    },
+
+    /**
     * @doc function
     * @name viewer.annotations:get
     * @param {number} vertex The vertex number of the annotation to be
