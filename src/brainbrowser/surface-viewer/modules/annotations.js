@@ -59,6 +59,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
       options = options || {};
 
       var model_name = getModelName(options);
+      const { radius } = options;
       var annotation, position;
 
       if (model_name) {
@@ -71,7 +72,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
           model_name: model_name,
           vertex: vertex,
           position: position,
-          marker: viewer.drawDot(position.x, position.y, position.z, marker_radius, marker_off_color)
+          marker: viewer.drawDot(position.x, position.y, position.z, (radius || marker_radius), marker_off_color)
         };
 
         annotation.marker.userData.annotation_info = annotation;

@@ -302,7 +302,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
     radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
 
-    var geometry = new THREE.SphereGeometry(2, 32, 32);
+    var geometry = new THREE.SphereGeometry(radius, 32, 32);
     var material = new THREE.MeshPhongMaterial({
       color: color,
       specular: 0xFFFFFF,
