@@ -757,7 +757,7 @@
   }
 
   function drawTargets(panel) {
-    var { targets = [], showTarget = false } = panel;
+    var { targets = [], showTarget = false, isCircleTarget = false } = panel;
     if (!showTarget) return;
     var context = panel.context;
     var zoom = panel.zoom;
@@ -767,7 +767,7 @@
     space = 1;
 
     targets.forEach((target) => {
-      const { coord } = target;
+      const { coord, color: targetColor } = target;
 
       context.save();
       var { i, j, k } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
@@ -785,7 +785,7 @@
         x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
         y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
       } else return;
-      var color =  pathColors[target.index % pathColors.length][1];
+      var color =  targetColor || pathColors[target.index % pathColors.length][1];
       context.strokeStyle =  color;
       context.fillStyle = color;
       context.lineWidth = 1;
@@ -793,16 +793,18 @@
       context.arc(x, y, 2 * space, 0, 2 * Math.PI);
       context.fill();
 
-      context.lineWidth = space * 2;
-      context.beginPath();
-      context.moveTo(x, y - length);
-      context.lineTo(x, y - space);
-      context.moveTo(x, y + space);
-      context.lineTo(x, y + length);
-      context.moveTo(x - length, y);
-      context.lineTo(x - space, y);
-      context.moveTo(x + space, y);
-      context.lineTo(x + length, y);
+      if (!isCircleTarget) {
+        context.lineWidth = space * 2;
+        context.beginPath();
+        context.moveTo(x, y - length);
+        context.lineTo(x, y - space);
+        context.moveTo(x, y + space);
+        context.lineTo(x, y + length);
+        context.moveTo(x - length, y);
+        context.lineTo(x - space, y);
+        context.moveTo(x + space, y);
+        context.lineTo(x + length, y);
+      }
 
       context.stroke();
     })
