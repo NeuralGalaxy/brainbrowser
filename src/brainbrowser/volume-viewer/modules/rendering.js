@@ -113,7 +113,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   }
 
   viewer.updateTargets = function(targets = []) {
-    const { showTarget = false, isCircleTarget = false } = viewer;
+    const { showTarget = false } = viewer;
 
     viewer.volumes.forEach(function(volume, vol_id) {
       if (!volume || !volume.display) return;
@@ -121,9 +121,23 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
       volume.display.forEach(function(panel) {
         panel.targets = targets;
         panel.showTarget = showTarget;
-        panel.isCircleTarget = isCircleTarget;
       });
     });
+
+    viewer.redrawVolumes();
+  }
+
+  viewer.updateMarks = function(marks = []) {
+    const { showMark = false } = viewer;
+
+    viewer.volumes.forEach(function(volume) {
+      if (!volume || !volume.display) return;
+
+      volume.display.forEach(function(panel) {
+        panel.marks = marks;
+        panel.showMark = showMark;
+      });
+    })
 
     viewer.redrawVolumes();
   }

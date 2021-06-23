@@ -297,16 +297,17 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   * viewer.drawDot(10, 5, 15, 3, 0x00FF00);
   * ```
   */
-  viewer.drawDot = function(x, y, z, radius, color) {
+  viewer.drawDot = function(x, y, z, radius, color, shininess) {
     radius = radius || 2;
     radius = radius >= 0 ? radius : 0;
     color  = color  >= 0 ? color  : 0xFF0000;
+    shininess = shininess || 10;
 
     var geometry = new THREE.SphereGeometry(radius, 32, 32);
     var material = new THREE.MeshPhongMaterial({
       color: color,
       specular: 0xFFFFFF,
-      shininess: 10,
+      shininess,
     });
 
     var sphere   = new THREE.Mesh(geometry, material);
