@@ -59,7 +59,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
       options = options || {};
 
       var model_name = getModelName(options);
-      const { radius } = options;
+      const { radius, color, shininess } = options;
       var annotation, position;
 
       if (model_name) {
@@ -72,7 +72,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
           model_name: model_name,
           vertex: vertex,
           position: position,
-          marker: viewer.drawDot(position.x, position.y, position.z, (radius || marker_radius), marker_off_color)
+          marker: viewer.drawDot(position.x, position.y, position.z, (radius || marker_radius), color || marker_off_color, shininess)
         };
 
         annotation.marker.userData.annotation_info = annotation;
@@ -94,6 +94,31 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
       viewer.annotations.reset();
       dots.forEach(dot => {
         viewer.annotations.add(dot.vertex, data, { activate: dot.activate });
+      });
+      viewer.updated = true;
+    },
+
+    /**
+     * Update Marks
+     * @param {*} marks : [{
+     * name: string;
+     * color: [number, string];
+     * vertex: number;
+     * index: number;
+     * ras?: worldCoordsType;
+     * valid?: boolean;
+     * }]
+     * @param {*} option : { model_name, radius }
+     */
+    updateMarks: function(marks, option) {
+      viewer.annotations.reset();
+      marks.forEach(mark => {
+        viewer.annotations.add(mark.vertex, {}, {
+          ...option,
+          activate: false,
+          shininess: 1,
+          color: mark.color[0],
+        });
       });
       viewer.updated = true;
     },

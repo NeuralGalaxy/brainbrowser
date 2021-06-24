@@ -588,6 +588,8 @@
 
         drawTargets(panel);
 
+        drawMarks(panel);
+
         drawTrajectory(panel);
 
         context.save();
@@ -756,8 +758,59 @@
     context.restore();
   }
 
+  
+  function drawMarks(panel) {
+    var { marks = [], showMark = false } = panel;
+
+    if (!showMark) return;
+    var context = panel.context;
+    var zoom = panel.zoom;
+    var space;
+
+    space = 4;
+
+    /* mark type MarkItemType = {
+      name: string;
+      color: [number, string];
+      vertex: number;
+      ras?: worldCoordsType;
+      valid?: boolean;
+    } */
+    marks.forEach((mark) => {
+      const { ras: coord, color: targetColor } = mark;
+
+      context.save();
+      var { i, j: k, k: j } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
+      var { i: i1, j: k1, k: j1 } = panel.volume.getVoxelCoords();
+      let x;
+      let y;
+
+      if (panel.axis === 'xspace' && i === i1) {
+        x = j * zoom;
+        y = k * zoom;
+      } else if (panel.axis === 'yspace' && j === j1) {
+        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
+        y = k * zoom;
+      } else if (panel.axis === 'zspace' && k === k1) {
+        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
+        y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
+      } else return;
+      var color =  targetColor[1];
+      context.strokeStyle =  color;
+      context.fillStyle = color;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(x, y, 2 * space, 0, 2 * Math.PI);
+      context.fill();
+
+      context.stroke();
+    })
+
+    context.restore();
+  }
+
   function drawTargets(panel) {
-    var { targets = [], showTarget = false, isCircleTarget = false } = panel;
+    var { targets = [], showTarget = false } = panel;
     if (!showTarget) return;
     var context = panel.context;
     var zoom = panel.zoom;
@@ -793,18 +846,16 @@
       context.arc(x, y, 2 * space, 0, 2 * Math.PI);
       context.fill();
 
-      if (!isCircleTarget) {
-        context.lineWidth = space * 2;
-        context.beginPath();
-        context.moveTo(x, y - length);
-        context.lineTo(x, y - space);
-        context.moveTo(x, y + space);
-        context.lineTo(x, y + length);
-        context.moveTo(x - length, y);
-        context.lineTo(x - space, y);
-        context.moveTo(x + space, y);
-        context.lineTo(x + length, y);
-      }
+      context.lineWidth = space * 2;
+      context.beginPath();
+      context.moveTo(x, y - length);
+      context.lineTo(x, y - space);
+      context.moveTo(x, y + space);
+      context.lineTo(x, y + length);
+      context.moveTo(x - length, y);
+      context.lineTo(x - space, y);
+      context.moveTo(x + space, y);
+      context.lineTo(x + length, y);
 
       context.stroke();
     })
