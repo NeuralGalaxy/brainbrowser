@@ -767,7 +767,7 @@
     var zoom = panel.zoom;
     var space;
 
-    space = 4;
+    space = 2;
 
     /* mark type MarkItemType = {
       name: string;
