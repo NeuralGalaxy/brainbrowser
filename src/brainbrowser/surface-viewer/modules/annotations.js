@@ -62,7 +62,7 @@ BrainBrowser.SurfaceViewer.modules.annotations = function(viewer) {
       const { radius, color, shininess } = options;
       var annotation, position;
 
-      if (model_name) {
+      if (model_name && viewer.model_data.get(options.model_name)) {
         position = viewer.getVertex(vertex, {
           model_name: options.model_name
         });

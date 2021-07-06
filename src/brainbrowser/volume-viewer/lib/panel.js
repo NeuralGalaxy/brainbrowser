@@ -780,21 +780,51 @@
       const { ras: coord, color: targetColor } = mark;
 
       context.save();
-      var { i, j: k, k: j } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
-      var { i: i1, j: k1, k: j1 } = panel.volume.getVoxelCoords();
+      var { i: i0, j: j0, k: k0 } = panel.volume.worldToVoxel(coord.x, coord.y, coord.z);
+      const { order } = panel.volume.header;
+      let { i: iCur, j: jCur, k: kCur } = panel.volume.getVoxelCoords();
+      const voxelAry = [i0, j0, k0];
+      const voxel2Ary = [i0, j0, k0];
+      const voxelCurAry = [iCur, jCur, kCur];
+      const voxel3Ary = [iCur, jCur, kCur];
+
+      for (let index = 0; index < order.length; index++) {
+        if (order[index] === 'xspace') {
+          voxel2Ary[0] = voxelAry[index];
+          voxel3Ary[0] = voxelCurAry[index];
+        } else if (order[index] === 'yspace') {
+          voxel2Ary[1] = voxelAry[index];
+          voxel3Ary[1] = voxelCurAry[index];
+        } else if (order[index] === 'zspace') {
+          voxel2Ary[2] = voxelAry[index];
+          voxel3Ary[2] = voxelCurAry[index];
+        }
+      }
+      const [i, j, k] = voxel2Ary;
+      const [i1, j1, k1] = voxel3Ary;
+      const turnI = Math.abs(panel.slice.height_space.space_length) - i;
+      const turnJ = Math.abs(panel.slice.height_space.space_length) - j;
+
       let x;
       let y;
 
-      if (panel.axis === 'xspace' && i === i1) {
-        x = j * zoom;
-        y = k * zoom;
-      } else if (panel.axis === 'yspace' && j === j1) {
-        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
-        y = k * zoom;
-      } else if (panel.axis === 'zspace' && k === k1) {
-        x = (Math.abs(panel.slice.width_space.space_length) - i) * zoom;
-        y = (Math.abs(panel.slice.height_space.space_length) - j) * zoom;
+      if ((panel.axis === order[0] && i === i1)) {
+        const nextX = panel.axis === 'xspace' ? j : (panel.axis === 'yspace' ? turnI : turnI);
+        const nextY = panel.axis === 'xspace' ? k : (panel.axis === 'yspace' ? k : turnJ);
+        x = nextX * zoom;
+        y = nextY * zoom;
+      } else if (panel.axis === order[1] && j === j1) {
+        const nextX = panel.axis === 'xspace' ? j : (panel.axis === 'yspace' ? turnI : turnI);
+        const nextY = panel.axis === 'xspace' ? k : (panel.axis === 'yspace' ? k : turnJ);
+        x = nextX * zoom;
+        y = nextY * zoom;
+      } else if (panel.axis === order[2] && k === k1) {
+        const nextX = panel.axis === 'xspace' ? j : (panel.axis === 'yspace' ? turnI : turnI);
+        const nextY = panel.axis === 'xspace' ? k : (panel.axis === 'yspace' ? k : turnJ);
+        x = nextX * zoom;
+        y = nextY * zoom;
       } else return;
+      
       var color =  targetColor[1];
       context.strokeStyle =  color;
       context.fillStyle = color;
