@@ -41,6 +41,7 @@ BrainBrowser.SurfaceViewer.modules.rendering = function(viewer) {
   if (!viewer.dom_element) {
     // reset dom element for rending async cause js error
     viewer.dom_element = document.createElement('div');
+  }
 
   const isSafari= /Apple/.test(navigator.userAgent);
 
