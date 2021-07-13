@@ -1043,21 +1043,27 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
             event.preventDefault();
 
             zoom(Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail))));
-          }else {
-           const wheelDelta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-           const { i, j, k } = panel.volume.getVoxelCoords();
-           if (panel.axis === "xspace") {
+          } else {
+            const wheelDelta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+            const { i, j, k } = panel.volume.getVoxelCoords();
+            const { order } = panel.volume.header;
+
+            const iSpace = order[0];
+            const jSpace = order[1];
+            const kSpace = order[2];
+
+            if (panel.axis === iSpace) {
               if (i === 0 || i >= 256) return;
               panel.volume.setVoxelCoords(i + wheelDelta, j, k);
-           }else if (panel.axis === "yspace") {
+            } else if (panel.axis === jSpace) {
               if (j === 0 || j >= 256) return;
               panel.volume.setVoxelCoords(i, j + wheelDelta, k);
-           }else if (panel.axis === "zspace") {
+            } else if (panel.axis === kSpace) {
               if (k === 0 || k >= 256) return;
               panel.volume.setVoxelCoords(i, j, k + wheelDelta);
-           }
-           panel.updateVolumePosition();
-           panel.updateSlice();
+            }
+            panel.updateVolumePosition();
+            panel.updateSlice();
           }
         }
 
